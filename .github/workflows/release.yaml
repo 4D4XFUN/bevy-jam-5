@@ -17,7 +17,7 @@ on:
 env:
   # TODO: This may become unnecessary: https://github.com/rust-lang/cargo/issues/6790
   # The base filename of the binary produced by `cargo build`.
-  BINARY: 4D4XFUN
+  BINARY: bevy-jam-5
   # The name to use for the packaged application produced by this workflow.
   PACKAGE_NAME: 4D4XFUN
   # The itch.io page to upload to, in the format: `user-name/project-name`.
