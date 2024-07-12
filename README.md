@@ -1,6 +1,6 @@
 # bevy-jam-5
 
-Most of the files are copied from https://github.com/TheBevyFlock/bevy-template. I've omitted a lot to make it more leightweight.
+Most of the files are copied from https://github.com/TheBevyFlock/bevy-template. I've omitted a lot to make it more lightweight.
 
 Run the game on any system with `cargo run`
 
