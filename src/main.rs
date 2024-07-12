@@ -5,7 +5,7 @@ fn main() {
         .add_plugins(
             DefaultPlugins
                 // to avoid blurry pixels
-                .set(ImagePlugin::default_nearest())
+                .set(ImagePlugin::default_nearest()),
         )
         .add_systems(Startup, startup)
         .run();
