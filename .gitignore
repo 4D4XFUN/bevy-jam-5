@@ -1,3 +1,6 @@
 /target
 
 /web/dist/
+
+# This file contains environment-specific configuration like linker settings
+.cargo/config.toml
