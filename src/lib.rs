@@ -4,6 +4,7 @@ mod game;
 mod screen;
 mod ui;
 
+use crate::game::spawn::player::Player;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
@@ -23,6 +24,7 @@ impl Plugin for AppPlugin {
 
         // Spawn the main camera.
         app.add_systems(Startup, (spawn_camera, spawn_ldtk_world_bundle).chain());
+        app.add_systems(Update, camera_follows_player); // rudimentary player-following camera
         app.insert_resource(LevelSelection::index(0));
 
         // Add Bevy plugins.
@@ -48,7 +50,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
-                        volume: Volume::new(0.3),
+                        volume: Volume::new(0.0), // mute audio
                     },
                     ..default()
                 })
@@ -86,15 +88,29 @@ enum AppSet {
 
 fn spawn_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 1.8;
-    camera.transform.translation.x += 1280.0 / 2.2;
-    camera.transform.translation.y += 720.0 / 1.3;
+    camera.projection.scale = 0.5;
+    // camera.transform.translation.x += 900.;
+    // camera.transform.translation.y += 400.;
     commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
 }
 
+fn camera_follows_player(
+    mut camera: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+    player: Query<&Transform, (With<Player>, Changed<Transform>, Without<Camera>)>,
+) {
+    if let Ok(player_transform) = player.get_single() {
+        if let Ok(mut camera_transform) = camera.get_single_mut() {
+            camera_transform.translation = player_transform.translation;
+        }
+    }
+}
+
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("tile-based-game.ldtk"),
-        ..Default::default()
-    });
+    commands.spawn((
+        Name::new("LdtkWorld"),
+        LdtkWorldBundle {
+            ldtk_handle: asset_server.load("tile-based-game.ldtk"),
+            ..Default::default()
+        },
+    ));
 }
