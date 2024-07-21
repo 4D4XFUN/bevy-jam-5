@@ -33,4 +33,4 @@ fn enter_ai_proving_grounds(mut commands: Commands) {
     commands.trigger(SpawnAiProvingGrounds);
 }
 
-fn exit_ai_proving_grounds(mut commands: Commands) {}
+fn exit_ai_proving_grounds(mut _commands: Commands) {}
