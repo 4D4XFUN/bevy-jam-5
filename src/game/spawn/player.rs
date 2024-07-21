@@ -1,12 +1,14 @@
 //! Spawn the player.
 
 use bevy::prelude::*;
-
+use bevy_ecs_ldtk::{LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use crate::{
     game::{
         animation::PlayerAnimation,
         assets::{ImageAsset, ImageAssets},
         movement::{Movement, MovementController, WrapWithinWindow},
+        spawn::ldtk::LdtkEntityBundle,
     },
     screen::Screen,
 };
@@ -14,6 +16,7 @@ use crate::{
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
     app.register_type::<Player>();
+    app.register_ldtk_entity::<LdtkEntityBundle>("Player");
 }
 
 #[derive(Event, Debug)]
