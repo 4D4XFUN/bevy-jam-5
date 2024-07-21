@@ -38,7 +38,7 @@ pub(crate) struct LevelWalls {
 }
 
 impl LevelWalls {
-    fn in_wall(&self, grid_coords: &GridCoords) -> bool {
+    fn _in_wall(&self, grid_coords: &GridCoords) -> bool {
         grid_coords.x < 0
             || grid_coords.y < 0
             || grid_coords.x >= self.level_width

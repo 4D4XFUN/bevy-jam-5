@@ -8,8 +8,11 @@ use std::ops::Sub;
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
         .add_systems(Update, update_grid_when_level_changes)
-        .add_systems(Update, update_grid_debug_overlay)
         .add_systems(Update, update_transform_for_entities_on_grid);
+
+    // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
+    app.init_state::<DebugOverlays>()
+        .add_systems(Update, update_grid_debug_overlay.run_if(in_state(DebugOverlays::Enabled)));
 
     app.register_type::<(GridPosition, GridLayout)>();
 }
@@ -39,11 +42,6 @@ pub struct GridSprite;
 #[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct GridPosition(pub Vec2);
-impl GridPosition {
-    pub fn new(x: f32, y: f32) -> Self {
-        GridPosition(Vec2::new(x, y))
-    }
-}
 
 impl Sub for GridPosition {
     type Output = Self;
@@ -152,6 +150,13 @@ fn update_transform_for_entities_on_grid(
         transform.translation.x = world_pos.x;
         transform.translation.y = world_pos.y;
     }
+}
+
+#[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
+enum DebugOverlays {
+    Disabled,
+    #[default] // change this to disable all the debug grid drawing
+    Enabled,
 }
 
 #[cfg(test)]

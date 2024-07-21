@@ -4,7 +4,7 @@ use crate::{
     game::{
         animation::PlayerAnimation,
         assets::{ImageAsset, ImageAssets},
-        movement::{Movement, MovementController, WrapWithinWindow},
+        movement::{Movement, MovementController},
         spawn::ldtk::LdtkEntityBundle,
     },
     screen::Screen,
@@ -38,12 +38,15 @@ fn spawn_player(
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
 
+    let mut player_transform = Transform::from_scale(Vec2::splat(0.5).extend(1.0));
+    player_transform.translation.z = 10.; // ensure player goes above level
+
     commands.spawn((
         Name::new("Player"),
         Player,
         SpriteBundle {
             texture: images[&ImageAsset::Crab].clone_weak(),
-            transform: Transform::from_scale(Vec2::splat(1.5).extend(100.0)),
+            transform: player_transform,
             ..Default::default()
         },
         TextureAtlas {
@@ -52,7 +55,6 @@ fn spawn_player(
         },
         MovementController::default(),
         Movement { speed: 420.0 },
-        WrapWithinWindow,
         player_animation,
         StateScoped(Screen::Playing),
     ));
