@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
-use bevy::sprite::{Material2d, MaterialMesh2dBundle};
+use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle};
 
 pub fn plugin(app: &mut App) {
     app
-        .add_plugins(MaterialPlugin::<FovMaterial>::default())
+        .add_plugins(Material2dPlugin::<FovMaterial>::default())
         .add_systems(Update, update_fov);
 }
 
@@ -12,7 +12,7 @@ pub fn plugin(app: &mut App) {
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FovMaterial {
     #[uniform(0)]
-    pub(crate) color: Color,
+    pub(crate) color: LinearRgba,
     #[uniform(0)]
     pub(crate) arc_params: Vec4, // x: start_angle, y: end_angle, z: inner_radius, w: outer_radius
 }

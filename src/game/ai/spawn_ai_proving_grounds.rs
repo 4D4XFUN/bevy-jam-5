@@ -50,9 +50,15 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
     )).id();
 
     // FOV arc
-    let fov_mesh: Handle<Mesh> = meshes.add(Circle::new(1.0).into());
+    let fov_mesh: Handle<Mesh> = meshes.add(Circle::new(1.0));
+
+    // convert to vec4 for shader
+    // let Color::Srgba(srgba) = Color::srgba(1.0, 1.0, 0.0, 0.5); // Semi-transparent yellow
+    let srgba = Color::srgba(1.0, 1.0, 0.0, 0.5); // Semi-transparent yellow
+    // let color = srgba.to_vec4();
+
     let fov_material = materials.add(FovMaterial {
-        color: Color::rgba(1.0, 1.0, 0.0, 0.5), // Semi-transparent yellow
+        color: LinearRgba::from(srgba),
         arc_params: Vec4::new(0.0, std::f32::consts::PI / 2.0, 0.0, 1.0),
     });
     commands.spawn((
