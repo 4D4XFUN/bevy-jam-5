@@ -57,6 +57,7 @@ egui = [
 too_many_arguments = "allow"
 # Queries that access many components may trigger this lint.
 type_complexity = "allow"
+dead_code = "allow"
 
 # Compile with Performance Optimizations:
 # https://bevyengine.org/learn/quick-start/getting-started/setup/#compile-with-performance-optimizations
