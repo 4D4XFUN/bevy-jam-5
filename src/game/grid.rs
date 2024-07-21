@@ -156,7 +156,7 @@ fn update_transform_for_entities_on_grid(
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
 enum DebugOverlays {
-    Disabled,
+    _Disabled,
     #[default] // change this to disable all the debug grid drawing
     Enabled,
 }
