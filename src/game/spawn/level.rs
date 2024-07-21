@@ -1,7 +1,6 @@
 //! Spawn the main level by triggering other observers.
 
 use super::player::SpawnPlayer;
-use crate::game::grid::{GridLayout, GridPosition};
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::LdtkProject;
@@ -17,7 +16,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, cache_wall_locations);
 
     // reflection
-    app.register_type::<(LevelWalls)>();
+    app.register_type::<LevelWalls>();
 }
 
 const GRID_SIZE: i32 = 16;

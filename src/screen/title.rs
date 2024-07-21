@@ -1,7 +1,6 @@
 //! The title screen that appears when the game starts.
 
 use super::Screen;
-use crate::screen::ai_proving_grounds::transition_to_ai_proving_grounds;
 use crate::ui::prelude::*;
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;

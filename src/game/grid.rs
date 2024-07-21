@@ -3,9 +3,6 @@ use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
-use log::log;
-use std::fmt::format;
 use std::ops::Sub;
 
 pub fn plugin(app: &mut App) {
@@ -68,7 +65,7 @@ impl Default for GridLayout {
     }
 }
 
-fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, mut level_walls: Res<LevelWalls>) {
+fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res<LevelWalls>) {
     if !level_walls.is_changed() {
         return;
     }
@@ -95,7 +92,7 @@ struct GridOverlay;
 fn update_grid_debug_overlay(
     mut commands: Commands,
     grid: Res<GridLayout>,
-    mut existing_overlays: Query<(Entity), (With<GridOverlay>)>,
+    existing_overlays: Query<Entity, With<GridOverlay>>,
 ) {
     if !grid.is_changed() {
         return;
