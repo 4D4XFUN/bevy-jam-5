@@ -1,6 +1,7 @@
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod game;
+mod postprocessing;
 mod screen;
 mod ui;
 
@@ -10,6 +11,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
+use postprocessing::{PostProcessSettings, PostProcessing};
 
 pub struct AppPlugin;
 
@@ -66,6 +68,8 @@ impl Plugin for AppPlugin {
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
 
+        app.add_plugins(PostProcessing);
+
         #[cfg(feature = "dev")]
         app.add_plugins(game::ai::proving_grounds_plugin);
     }
@@ -89,7 +93,12 @@ fn spawn_camera(mut commands: Commands) {
     camera.projection.scale = 1.8;
     camera.transform.translation.x += 1280.0 / 2.2;
     camera.transform.translation.y += 720.0 / 1.3;
-    commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
+    commands.spawn((
+        Name::new("Camera"),
+        camera,
+        IsDefaultUiCamera,
+        PostProcessSettings { intensity: 0.0005 },
+    ));
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
