@@ -5,11 +5,18 @@ use crate::game::movement::{Movement, MovementController, WrapWithinWindow};
 use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_ai_proving_grounds);
+    app.observe(spawn_ai_proving_grounds)
+        .add_systems(Update, update_detection_arc);
 }
 
 #[derive(Event, Debug)]
 pub struct SpawnAiProvingGrounds;
+
+#[derive(Component)]
+pub struct Fov {
+    pub(crate) angle: f32,
+    pub(crate) radius: f32,
+}
 
 fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
                             mut commands: Commands,
@@ -17,7 +24,6 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
                             mut meshes: ResMut<Assets<Mesh>>,
                             mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-
     let scale = 4.0;
 
     // spawn player
@@ -37,7 +43,7 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
     // spawn robot
     let mut t = Transform::from_scale(Vec2::splat(scale).extend(1.0));
     t.translation = Vec2::splat(100.).extend(1.);
-    t.rotate_z(-1.0 * std::f32::consts::FRAC_PI_2);
+    t.rotate_z(1.0 * std::f32::consts::FRAC_PI_2);
     let robocrab = commands.spawn((
         Name::new("Robot"),
         SpriteBundle {
@@ -45,7 +51,7 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
             transform: t,
             ..Default::default()
         },
-        crate::game::ai::fov::Fov {
+        Fov {
             angle: std::f32::consts::PI / 2.0, // 90 degrees
             radius: 200.0,
         },
@@ -63,5 +69,38 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
             transform: t,
             ..default()
         },
+        DetectionArc,
     )).set_parent(robocrab);
+}
+
+#[derive(Component)]
+struct DetectionArc;
+
+// TODO this seems to have tanked framerate on my machine - might want to rethink how we do detection arcs
+fn update_detection_arc(
+    mut arc_query: Query<(&Parent, &mut Handle<ColorMaterial>), With<DetectionArc>>,
+    player_query: Query<&Transform, (With<MovementController>, Without<DetectionArc>)>,
+    robot_query: Query<(&Transform, &Fov)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for (arc_parent, mut arc_material) in arc_query.iter_mut() {
+        if let Ok((robot_transform, fov)) = robot_query.get(arc_parent.get()) {
+            if let Ok(player_transform) = player_query.get_single() {
+                let to_player = player_transform.translation - robot_transform.translation;
+                let distance = to_player.length();
+                let angle = to_player.y.atan2(to_player.x); //- robot_transform.rotation.to_euler(EulerRot::XYZ).2;
+                let angle = angle.abs().rem_euclid(std::f32::consts::TAU);
+
+                let is_detected = distance <= fov.radius && angle <= fov.angle / 2.0;
+
+                let color = if is_detected {
+                    Color::rgba(0.0, 1.0, 0.0, 0.2)
+                } else {
+                    Color::rgba(1.0, 0.0, 0.0, 0.2)
+                };
+
+                *arc_material = materials.add(ColorMaterial::from(color));
+            }
+        }
+    }
 }
