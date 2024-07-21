@@ -60,6 +60,9 @@ impl Plugin for AppPlugin {
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
+
+        #[cfg(feature = "dev")]
+        app.add_plugins(crate::game::ai::proving_grounds_plugin);
     }
 }
 

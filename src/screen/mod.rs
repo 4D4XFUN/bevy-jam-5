@@ -4,6 +4,7 @@ mod credits;
 mod loading;
 mod playing;
 mod title;
+pub mod ai_proving_grounds;
 
 use bevy::prelude::*;
 
@@ -26,5 +27,6 @@ pub enum Screen {
     Loading,
     Title,
     Credits,
+    AiProvingGrounds,
     Playing,
 }
