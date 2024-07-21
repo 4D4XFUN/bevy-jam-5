@@ -9,6 +9,7 @@ use bevy::{
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
+use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
 
 pub struct AppPlugin;
 
@@ -21,7 +22,8 @@ impl Plugin for AppPlugin {
         );
 
         // Spawn the main camera.
-        app.add_systems(Startup, spawn_camera);
+        app.add_systems(Startup, (spawn_camera, spawn_ldtk_world_bundle).chain());
+        app.insert_resource(LevelSelection::index(0));
 
         // Add Bevy plugins.
         app.add_plugins(
@@ -54,6 +56,8 @@ impl Plugin for AppPlugin {
                 .set(ImagePlugin::default_nearest()),
         );
 
+        app.add_plugins(LdtkPlugin);
+
         // Add other plugins.
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
         app.add_plugins(game::ai::plugin);
@@ -81,9 +85,16 @@ enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((
-        Name::new("Camera"),
-        Camera2dBundle::default(),
-        IsDefaultUiCamera,
-    ));
+    let mut camera = Camera2dBundle::default();
+    camera.projection.scale = 1.8;
+    camera.transform.translation.x += 1280.0 / 2.2;
+    camera.transform.translation.y += 720.0 / 1.3;
+    commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
+}
+
+fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(LdtkWorldBundle {
+        ldtk_handle: asset_server.load("tile-based-game.ldtk"),
+        ..Default::default()
+    });
 }

@@ -1,11 +1,13 @@
 //! Spawn the main level by triggering other observers.
 
-use bevy::prelude::*;
-
 use super::player::SpawnPlayer;
+use crate::game::spawn::ldtk::LdtkEntityBundle;
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
+    app.register_ldtk_entity::<LdtkEntityBundle>("Goal");
 }
 
 #[derive(Event, Debug)]

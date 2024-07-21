@@ -4,6 +4,7 @@
 
 use bevy::prelude::*;
 
+mod ldtk;
 pub mod level;
 pub mod player;
 

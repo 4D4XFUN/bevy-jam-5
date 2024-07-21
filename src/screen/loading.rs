@@ -40,6 +40,6 @@ fn check_all_loaded(
         && sfxs.all_loaded(&audio_assets)
         && soundtracks.all_loaded(&audio_assets);
     if all_loaded {
-        next_screen.set(Screen::Title);
+        next_screen.set(Screen::Playing);
     }
 }
