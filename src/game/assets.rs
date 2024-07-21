@@ -18,7 +18,7 @@ impl ImageAssets {
     pub fn new(asset_server: &AssetServer) -> Self {
         let mut assets = HashMap::new();
 
-        for (path, image_asset_tag) in vec![
+        for (path, image_asset_tag) in [
             ("images/ducky.png", ImageAsset::Ducky),
             ("images/crab.png", ImageAsset::Crab),
             ("images/robo_crab.png", ImageAsset::RoboCrab),
