@@ -11,8 +11,6 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{LdtkEntity, LdtkSpriteSheetBundle};
-
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
     app.register_type::<Player>();
