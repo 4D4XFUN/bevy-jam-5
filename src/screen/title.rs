@@ -1,10 +1,10 @@
 //! The title screen that appears when the game starts.
 
+use super::Screen;
+use crate::screen::ai_proving_grounds::transition_to_ai_proving_grounds;
+use crate::ui::prelude::*;
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
-use crate::screen::ai_proving_grounds::transition_to_ai_proving_grounds;
-use super::Screen;
-use crate::ui::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), enter_title);
@@ -64,10 +64,7 @@ fn handle_title_action(
     }
 }
 
-fn exit_on_escape(
-    #[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>,
-) {
-
+fn exit_on_escape(#[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>) {
     #[cfg(not(target_family = "wasm"))]
     app_exit.send(AppExit::Success);
 }

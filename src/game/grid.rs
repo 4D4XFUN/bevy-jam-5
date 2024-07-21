@@ -1,12 +1,12 @@
-use std::fmt::format;
-use std::ops::Sub;
+use crate::game::spawn::level::LevelWalls;
+use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use log::log;
-use crate::game::spawn::level::LevelWalls;
-use crate::screen::Screen;
+use std::fmt::format;
+use std::ops::Sub;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
@@ -68,15 +68,15 @@ impl Default for GridLayout {
     }
 }
 
-fn update_grid_when_level_changes(
-    mut grid: ResMut<GridLayout>,
-    mut level_walls: Res<LevelWalls>,
-) {
+fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, mut level_walls: Res<LevelWalls>) {
     if !level_walls.is_changed() {
         return;
     }
 
-    println!("grid changed, level_walls: ({:?}, {:?})", level_walls.level_width, level_walls.level_height);
+    println!(
+        "grid changed, level_walls: ({:?}, {:?})",
+        level_walls.level_width, level_walls.level_height
+    );
     let square_size = 16.; // we should reconcile this with the LDTK tile size
     grid.padding = square_size / 2.0;
     grid.width = level_walls.level_width as usize;
@@ -92,7 +92,11 @@ fn update_grid_when_level_changes(
 #[reflect(Component)]
 struct GridOverlay;
 
-fn update_grid_debug_overlay(mut commands: Commands, grid: Res<GridLayout>, mut existing_overlays: Query<(Entity), (With<GridOverlay>)>) {
+fn update_grid_debug_overlay(
+    mut commands: Commands,
+    grid: Res<GridLayout>,
+    mut existing_overlays: Query<(Entity), (With<GridOverlay>)>,
+) {
     if !grid.is_changed() {
         return;
     }
@@ -104,18 +108,19 @@ fn update_grid_debug_overlay(mut commands: Commands, grid: Res<GridLayout>, mut 
 
     // spawn a new overlay
     let name = format!("GridOverlay_{}x{}", grid.width, grid.height);
-    let grid_entity = commands.spawn((GridOverlay,
-                                      Name::new(name),
-                                      GridSprite,
-                                      SpatialBundle::default(),
-                                      StateScoped(Screen::Playing),
-    )
-    ).id();
+    let grid_entity = commands
+        .spawn((
+            GridOverlay,
+            Name::new(name),
+            GridSprite,
+            SpatialBundle::default(),
+            StateScoped(Screen::Playing),
+        ))
+        .id();
 
     // Spawn child sprites for each grid cell
     for y in 0..grid.height {
         for x in 0..grid.width {
-
             let position = grid.grid_to_world(Vec2::new(x as f32, y as f32));
 
             let alpha = 0.1;
