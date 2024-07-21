@@ -3,6 +3,7 @@ name = "bevy-jam-5"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0 OR CC0-1.0"
+resolver = "2"
 
 [dependencies]
 bevy = "0.14"
@@ -14,10 +15,11 @@ log = { version = "0.4", features = [
 rand = "0.8"
 
 # debugging ui
-bevy-inspector-egui = "0.25.1"
-bevy_egui = "0.28.0"
+bevy_egui = { version = "0.28.0", default-features = false, features = [
+    "default_fonts",
+    "render",
+] }
 egui = "0.28.1"
-
 
 [dev-dependencies]
 test-case = "3.3.1" # for data oriented unit tests which rust doesn't have built-in
