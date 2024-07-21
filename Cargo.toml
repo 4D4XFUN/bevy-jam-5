@@ -49,6 +49,16 @@ egui = [
     "dep:egui",
 ]
 
+# Idiomatic Bevy code often triggers these lints, and the CI workflow treats them as errors.
+# In some cases they may still signal poor code quality however, so consider commenting out these lines.
+[lints.clippy]
+# Bevy supplies arguments to systems via dependency injection, so it's natural for systems to
+# request more than 7 arguments -- which triggers this lint.
+too_many_arguments = "allow"
+# Queries that access many components may trigger this lint.
+type_complexity = "allow"
+dead_code = "allow"
+
 # Compile with Performance Optimizations:
 # https://bevyengine.org/learn/quick-start/getting-started/setup/#compile-with-performance-optimizations
 
