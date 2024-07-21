@@ -25,12 +25,9 @@ impl ImageAssets {
         ] {
             assets.insert(
                 image_asset_tag,
-                asset_server.load_with_settings(
-                    path,
-                    |settings: &mut ImageLoaderSettings| {
-                        settings.sampler = ImageSampler::nearest();
-                    },
-                ),
+                asset_server.load_with_settings(path, |settings: &mut ImageLoaderSettings| {
+                    settings.sampler = ImageSampler::nearest();
+                }),
             );
         }
 

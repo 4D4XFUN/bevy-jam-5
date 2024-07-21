@@ -12,14 +12,16 @@ pub(crate) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        playing::return_to_title_screen
-            .run_if(in_state(Screen::AiProvingGrounds).and_then(input_just_pressed(KeyCode::Escape))),
+        playing::return_to_title_screen.run_if(
+            in_state(Screen::AiProvingGrounds).and_then(input_just_pressed(KeyCode::Escape)),
+        ),
     );
 
     // add a secret way to get here from the main menu - F2
     app.add_systems(
         Update,
-        transition_to_ai_proving_grounds.run_if(in_state(Screen::Title).and_then(input_just_pressed(KeyCode::F2))),
+        transition_to_ai_proving_grounds
+            .run_if(in_state(Screen::Title).and_then(input_just_pressed(KeyCode::F2))),
     );
 }
 
@@ -31,6 +33,4 @@ fn enter_ai_proving_grounds(mut commands: Commands) {
     commands.trigger(SpawnAiProvingGrounds);
 }
 
-fn exit_ai_proving_grounds(mut commands: Commands) {
-}
-
+fn exit_ai_proving_grounds(mut commands: Commands) {}

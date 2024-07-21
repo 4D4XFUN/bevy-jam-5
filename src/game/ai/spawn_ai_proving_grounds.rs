@@ -1,8 +1,8 @@
-use bevy::prelude::*;
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::movement::{Movement, MovementController, WrapWithinWindow};
 use crate::screen::Screen;
+use bevy::prelude::*;
+use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_ai_proving_grounds)
@@ -18,11 +18,12 @@ pub struct Fov {
     pub(crate) radius: f32,
 }
 
-fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
-                            mut commands: Commands,
-                            images: Res<ImageAssets>,
-                            mut meshes: ResMut<Assets<Mesh>>,
-                            mut materials: ResMut<Assets<ColorMaterial>>,
+fn spawn_ai_proving_grounds(
+    _trigger: Trigger<SpawnAiProvingGrounds>,
+    mut commands: Commands,
+    images: Res<ImageAssets>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let scale = 4.0;
 
@@ -44,33 +45,37 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
     let mut t = Transform::from_scale(Vec2::splat(scale).extend(1.0));
     t.translation = Vec2::splat(100.).extend(1.);
     t.rotate_z(1.0 * std::f32::consts::FRAC_PI_2);
-    let robocrab = commands.spawn((
-        Name::new("Robot"),
-        SpriteBundle {
-            texture: images[&ImageAsset::RoboCrab].clone_weak(),
-            transform: t,
-            ..Default::default()
-        },
-        Fov {
-            angle: std::f32::consts::PI / 2.0, // 90 degrees
-            radius: 200.0,
-        },
-        StateScoped(Screen::AiProvingGrounds),
-    )).id();
+    let robocrab = commands
+        .spawn((
+            Name::new("Robot"),
+            SpriteBundle {
+                texture: images[&ImageAsset::RoboCrab].clone_weak(),
+                transform: t,
+                ..Default::default()
+            },
+            Fov {
+                angle: std::f32::consts::PI / 2.0, // 90 degrees
+                radius: 200.0,
+            },
+            StateScoped(Screen::AiProvingGrounds),
+        ))
+        .id();
 
     // Spawn detection circle
     let mut t = Transform::from_xyz(0.0, 0.0, 0.0);
     t.rotate_z(std::f32::consts::PI);
     let shape = Mesh2dHandle(meshes.add(CircularSector::new(50.0, 1.0)));
-    commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: shape,
-            material: materials.add(ColorMaterial::from(Color::srgba(1.0, 0.0, 0.0, 0.2))),
-            transform: t,
-            ..default()
-        },
-        DetectionArc,
-    )).set_parent(robocrab);
+    commands
+        .spawn((
+            MaterialMesh2dBundle {
+                mesh: shape,
+                material: materials.add(ColorMaterial::from(Color::srgba(1.0, 0.0, 0.0, 0.2))),
+                transform: t,
+                ..default()
+            },
+            DetectionArc,
+        ))
+        .set_parent(robocrab);
 }
 
 #[derive(Component)]

@@ -1,10 +1,10 @@
 //! The game's main screen states and transitions between them.
 
+pub mod ai_proving_grounds;
 mod credits;
 mod loading;
 mod playing;
 mod title;
-pub mod ai_proving_grounds;
 
 use bevy::prelude::*;
 
