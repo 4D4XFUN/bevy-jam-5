@@ -1,8 +1,5 @@
 //! Spawn the player.
 
-use bevy::prelude::*;
-use bevy_ecs_ldtk::{LdtkEntity, LdtkSpriteSheetBundle};
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use crate::{
     game::{
         animation::PlayerAnimation,
@@ -12,6 +9,9 @@ use crate::{
     },
     screen::Screen,
 };
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{LdtkEntity, LdtkSpriteSheetBundle};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);

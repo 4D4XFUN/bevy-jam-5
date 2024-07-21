@@ -4,9 +4,9 @@
 
 use bevy::prelude::*;
 
+mod ldtk;
 pub mod level;
 pub mod player;
-mod ldtk;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((level::plugin, player::plugin));
