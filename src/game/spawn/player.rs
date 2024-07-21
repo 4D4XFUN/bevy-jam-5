@@ -43,7 +43,7 @@ fn spawn_player(
         Player,
         SpriteBundle {
             texture: images[&ImageAsset::Crab].clone_weak(),
-            transform: Transform::from_scale(Vec2::splat(1.5).extend(1.0)),
+            transform: Transform::from_scale(Vec2::splat(1.5).extend(100.0)),
             ..Default::default()
         },
         TextureAtlas {

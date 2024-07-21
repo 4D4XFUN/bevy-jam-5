@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
+use crate::game::grid::{GridLayout, GridPosition};
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 use super::player::SpawnPlayer;
 
@@ -14,6 +15,10 @@ pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_int_cell::<WallBundle>(1);
     app.init_resource::<LevelWalls>();
     app.add_systems(Update, cache_wall_locations);
+
+
+    // reflection
+    app.register_type::<(LevelWalls)>();
 }
 
 const GRID_SIZE: i32 = 16;
@@ -26,11 +31,12 @@ struct WallBundle {
     wall: Wall,
 }
 
-#[derive(Default, Resource)]
-struct LevelWalls {
-    wall_locations: HashSet<GridCoords>,
-    level_width: i32,
-    level_height: i32,
+#[derive(Default, Resource, Reflect)]
+#[reflect(Resource)]
+pub(crate) struct LevelWalls {
+    pub wall_locations: HashSet<GridCoords>,
+    pub level_width: i32, // grid units
+    pub level_height: i32,
 }
 
 impl LevelWalls {

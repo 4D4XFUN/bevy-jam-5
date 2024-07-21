@@ -1,15 +1,17 @@
+use std::fmt::format;
 use std::ops::Sub;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-
+use log::log;
+use crate::game::spawn::level::LevelWalls;
 use crate::screen::Screen;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
-        .add_systems(Startup, init_grid)
-        .add_systems(OnEnter(Screen::Playing), setup_grid)
+        .add_systems(Update, update_grid_when_level_changes)
+        .add_systems(Update, update_grid_debug_overlay)
         .add_systems(Update, update_transform_for_entities_on_grid);
 
     app.register_type::<(GridPosition, GridLayout)>();
@@ -61,26 +63,24 @@ impl Default for GridLayout {
             width: 20,
             height: 10,
             origin: Vec2::ZERO,
-            padding: 20.,
+            padding: 0.,
         }
     }
 }
 
-fn init_grid(mut grid: ResMut<GridLayout>, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window = window_query.single();
+fn update_grid_when_level_changes(
+    mut grid: ResMut<GridLayout>,
+    mut level_walls: Res<LevelWalls>,
+) {
+    if !level_walls.is_changed() {
+        return;
+    }
 
-    let available_width = window.width() - (2.0 * grid.padding);
-    let available_height = window.height() - (2.0 * grid.padding);
-
-    let square_size = 16. * 3.;
-
-    let square_width = (available_width / square_size) as usize;
-    let actual_grid_width = (square_width as f32) * square_size;
-    let square_height = (available_height / square_size) as usize;
-    let actual_grid_height = (square_height as f32) * square_size;
-
-    grid.width = square_width;
-    grid.height = square_height;
+    println!("grid changed, level_walls: ({:?}, {:?})", level_walls.level_width, level_walls.level_height);
+    let square_size = 16.; // todo reconcile this with the LDTK tile size
+    grid.padding = square_size / 2.0;
+    grid.width = level_walls.level_width as usize;
+    grid.height = level_walls.level_height as usize;
     grid.square_size = square_size;
 
     grid.origin = Vec2::new(0., 0.);
@@ -88,25 +88,41 @@ fn init_grid(mut grid: ResMut<GridLayout>, window_query: Query<&Window, With<Pri
     println!("Grid initialized: {:?}", grid);
 }
 
-fn setup_grid(mut commands: Commands, grid: Res<GridLayout>) {
-    let grid_entity = commands
-        .spawn((
-            GridSprite,
-            SpatialBundle::default(),
-            StateScoped(Screen::Playing), // despawn when we stop playing, along with all children
-        ))
-        .id();
+#[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
+#[reflect(Component)]
+struct GridOverlay;
+
+fn update_grid_debug_overlay(mut commands: Commands, grid: Res<GridLayout>, mut existing_overlays: Query<(Entity), (With<GridOverlay>)>) {
+    if !grid.is_changed() {
+        return;
+    }
+
+    // despawn old overlays
+    for e in existing_overlays.into_iter() {
+        commands.entity(e).despawn_recursive()
+    }
+
+    // spawn a new overlay
+    let name = format!("GridOverlay_{}x{}", grid.width, grid.height);
+    let grid_entity = commands.spawn((GridOverlay,
+                                      Name::new(name),
+                                      GridSprite,
+                                      SpatialBundle::default(),
+                                      // StateScoped(Screen::Playing),
+    )
+    ).id();
 
     // Spawn child sprites for each grid cell
     for y in 0..grid.height {
         for x in 0..grid.width {
             let position =
-                grid.origin + Vec2::new(x as f32 * grid.square_size, y as f32 * grid.square_size);
+                grid.origin + Vec2::new(x as f32 * grid.square_size + grid.padding, y as f32 * grid.square_size + grid.padding); // todo use a GridToWorld function for this
 
+            let alpha = 0.1;
             let color = if (x + y) % 2 == 0 {
-                Color::srgb(0.9, 0.9, 0.9)
+                Color::srgba(0.9, 0.9, 0.9, alpha)
             } else {
-                Color::srgb(0.8, 0.8, 0.8)
+                Color::srgba(0.8, 0.8, 0.8, alpha)
             };
 
             // Spawn the child sprite and parent it to the GridSprite
@@ -117,7 +133,7 @@ fn setup_grid(mut commands: Commands, grid: Res<GridLayout>) {
                         custom_size: Some(Vec2::splat(grid.square_size)),
                         ..default()
                     },
-                    transform: Transform::from_translation(position.extend(-100.0)),
+                    transform: Transform::from_translation(position.extend(10.0)),
                     ..default()
                 })
                 .set_parent(grid_entity);
