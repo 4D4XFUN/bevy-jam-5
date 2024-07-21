@@ -86,9 +86,9 @@ enum AppSet {
 
 fn spawn_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
-    // camera.projection.scale = 1.8;
-    // camera.transform.translation.x += 1280.0 / 2.2;
-    // camera.transform.translation.y += 720.0 / 1.3;
+    camera.projection.scale = 1.8;
+    camera.transform.translation.x += 900.;
+    camera.transform.translation.y += 400.;
     commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
 }
 

@@ -83,10 +83,7 @@ fn init_grid(mut grid: ResMut<GridLayout>, window_query: Query<&Window, With<Pri
     grid.height = square_height;
     grid.square_size = square_size;
 
-    grid.origin = Vec2::new(
-        (0. - actual_grid_width + square_size) / 2.,
-        (0. - actual_grid_height + square_size) / 2.,
-    );
+    grid.origin = Vec2::new(0., 0.);
 
     println!("Grid initialized: {:?}", grid);
 }
@@ -139,19 +136,18 @@ fn update_transform_for_entities_on_grid(
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn gridposition_subtraction() {
         let a = GridPosition(Vec2::new(1., 1.));
         let b = GridPosition(Vec2::new(2., 2.));
-        
+
         let aminb = a - b;
         assert_eq!(aminb.0, Vec2::new(-1., -1.));
-        
+
         let bmina = b - a;
         assert_eq!(bmina.0, Vec2::new(1., 1.));
     }
