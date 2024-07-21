@@ -21,8 +21,7 @@ impl Plugin for AppPlugin {
             (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
         );
 
-        // Spawn the main camera.
-        app.add_systems(Startup, (spawn_camera, spawn_ldtk_world_bundle).chain());
+        app.add_systems(Startup, spawn_ldtk_world_bundle);
         app.insert_resource(LevelSelection::index(0));
 
         // Add Bevy plugins.
@@ -82,14 +81,6 @@ enum AppSet {
     RecordInput,
     /// Do everything else (consider splitting this into further variants).
     Update,
-}
-
-fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 1.8;
-    camera.transform.translation.x += 1280.0 / 2.2;
-    camera.transform.translation.y += 720.0 / 1.3;
-    commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
