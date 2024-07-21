@@ -1,25 +1,13 @@
 //! Spawn the main level by triggering other observers.
 
-use bevy::prelude::*;
-use bevy_ecs_ldtk::LdtkIntCell;
-use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt};
-use crate::game::spawn::ldtk::LdtkEntityBundle;
 use super::player::SpawnPlayer;
+use crate::game::spawn::ldtk::LdtkEntityBundle;
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
     app.register_ldtk_entity::<LdtkEntityBundle>("Goal");
-    app.register_ldtk_int_cell::<WallBundle>(1);
-}
-
-const GRID_SIZE: i32 = 16;
-
-#[derive(Default, Component)]
-struct Wall;
-
-#[derive(Default, Bundle, LdtkIntCell)]
-struct WallBundle {
-    wall: Wall,
 }
 
 #[derive(Event, Debug)]
