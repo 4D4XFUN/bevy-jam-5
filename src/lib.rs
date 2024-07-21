@@ -10,6 +10,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
+use crate::game::spawn::player::Player;
 
 pub struct AppPlugin;
 
@@ -23,6 +24,7 @@ impl Plugin for AppPlugin {
 
         // Spawn the main camera.
         app.add_systems(Startup, (spawn_camera, spawn_ldtk_world_bundle).chain());
+        app.add_systems(Update, camera_follows_player); // rudimentary player-following camera
         app.insert_resource(LevelSelection::index(0));
 
         // Add Bevy plugins.
@@ -43,7 +45,7 @@ impl Plugin for AppPlugin {
                         prevent_default_event_handling: true,
                         ..default()
                     }
-                    .into(),
+                        .into(),
                     ..default()
                 })
                 .set(AudioPlugin {
@@ -90,6 +92,14 @@ fn spawn_camera(mut commands: Commands) {
     // camera.transform.translation.x += 900.;
     // camera.transform.translation.y += 400.;
     commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
+}
+
+fn camera_follows_player(mut camera: Query<&mut Transform, (With<Camera>, Without<Player>)>, player: Query<&Transform, (With<Player>, Changed<Transform>, Without<Camera>)>) {
+    if let Ok(player_transform) = player.get_single() {
+        if let Ok(mut camera_transform) = camera.get_single_mut() {
+            camera_transform.translation = player_transform.translation;
+        }
+    }
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
