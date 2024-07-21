@@ -1,7 +1,8 @@
 //! The title screen that appears when the game starts.
 
+use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
-
+use crate::screen::ai_proving_grounds::transition_to_ai_proving_grounds;
 use super::Screen;
 use crate::ui::prelude::*;
 
@@ -10,6 +11,14 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<TitleAction>();
     app.add_systems(Update, handle_title_action.run_if(in_state(Screen::Title)));
+
+    // escape on menu to exit
+    #[cfg(not(target_family = "wasm"))]
+    app.add_systems(
+        Update,
+        exit_on_escape
+            .run_if(in_state(Screen::Title).and_then(input_just_pressed(KeyCode::Escape))),
+    );
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
@@ -53,4 +62,12 @@ fn handle_title_action(
             }
         }
     }
+}
+
+fn exit_on_escape(
+    #[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>,
+) {
+
+    #[cfg(not(target_family = "wasm"))]
+    app_exit.send(AppExit::Success);
 }
