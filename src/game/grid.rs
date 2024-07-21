@@ -30,8 +30,8 @@ pub struct GridLayout {
 impl GridLayout {
     pub fn grid_to_world(&self, grid_pos: Vec2) -> Vec2 {
         Vec2::new(
-            self.origin.x + grid_pos.x * self.square_size,
-            self.origin.y + grid_pos.y * self.square_size,
+            self.origin.x + grid_pos.x * self.square_size + self.padding,
+            self.origin.y + grid_pos.y * self.square_size + self.padding,
         )
     }
 }
@@ -77,7 +77,7 @@ fn update_grid_when_level_changes(
     }
 
     println!("grid changed, level_walls: ({:?}, {:?})", level_walls.level_width, level_walls.level_height);
-    let square_size = 16.; // todo reconcile this with the LDTK tile size
+    let square_size = 16.; // we should reconcile this with the LDTK tile size
     grid.padding = square_size / 2.0;
     grid.width = level_walls.level_width as usize;
     grid.height = level_walls.level_height as usize;
@@ -108,15 +108,15 @@ fn update_grid_debug_overlay(mut commands: Commands, grid: Res<GridLayout>, mut 
                                       Name::new(name),
                                       GridSprite,
                                       SpatialBundle::default(),
-                                      // StateScoped(Screen::Playing),
+                                      StateScoped(Screen::Playing),
     )
     ).id();
 
     // Spawn child sprites for each grid cell
     for y in 0..grid.height {
         for x in 0..grid.width {
-            let position =
-                grid.origin + Vec2::new(x as f32 * grid.square_size + grid.padding, y as f32 * grid.square_size + grid.padding); // todo use a GridToWorld function for this
+
+            let position = grid.grid_to_world(Vec2::new(x as f32, y as f32));
 
             let alpha = 0.1;
             let color = if (x + y) % 2 == 0 {
