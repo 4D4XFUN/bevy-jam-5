@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 
+pub mod ai;
 mod animation;
 pub mod assets;
 pub mod audio;

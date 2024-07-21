@@ -60,10 +60,14 @@ impl Plugin for AppPlugin {
 
         // Add other plugins.
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
+        app.add_plugins(game::ai::plugin);
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
+
+        #[cfg(feature = "dev")]
+        app.add_plugins(game::ai::proving_grounds_plugin);
     }
 }
 

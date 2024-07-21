@@ -26,6 +26,6 @@ fn exit_playing(mut commands: Commands) {
     commands.trigger(Soundtrack::Disable);
 }
 
-fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
+pub(crate) fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Title);
 }
