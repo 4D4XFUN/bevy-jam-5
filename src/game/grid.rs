@@ -11,8 +11,10 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, update_transform_for_entities_on_grid);
 
     // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
-    app.init_state::<DebugOverlays>()
-        .add_systems(Update, update_grid_debug_overlay.run_if(in_state(DebugOverlays::Enabled)));
+    app.init_state::<DebugOverlays>().add_systems(
+        Update,
+        update_grid_debug_overlay.run_if(in_state(DebugOverlays::Enabled)),
+    );
 
     app.register_type::<(GridPosition, GridLayout)>();
 }

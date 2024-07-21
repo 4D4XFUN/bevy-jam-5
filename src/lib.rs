@@ -45,7 +45,7 @@ impl Plugin for AppPlugin {
                         prevent_default_event_handling: true,
                         ..default()
                     }
-                        .into(),
+                    .into(),
                     ..default()
                 })
                 .set(AudioPlugin {
@@ -106,10 +106,11 @@ fn camera_follows_player(
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(
-        (Name::new("LdtkWorld"),
-         LdtkWorldBundle {
-             ldtk_handle: asset_server.load("tile-based-game.ldtk"),
-             ..Default::default()
-         }));
+    commands.spawn((
+        Name::new("LdtkWorld"),
+        LdtkWorldBundle {
+            ldtk_handle: asset_server.load("tile-based-game.ldtk"),
+            ..Default::default()
+        },
+    ));
 }
