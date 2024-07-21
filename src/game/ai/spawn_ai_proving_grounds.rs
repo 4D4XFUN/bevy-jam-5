@@ -65,7 +65,7 @@ fn spawn_ai_proving_grounds(_trigger: Trigger<SpawnAiProvingGrounds>,
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: shape,
-            material: materials.add(ColorMaterial::from(Color::rgba(1.0, 0.0, 0.0, 0.2))),
+            material: materials.add(ColorMaterial::from(Color::srgba(1.0, 0.0, 0.0, 0.2))),
             transform: t,
             ..default()
         },
@@ -94,9 +94,9 @@ fn update_detection_arc(
                 let is_detected = distance <= fov.radius && angle <= fov.angle / 2.0;
 
                 let color = if is_detected {
-                    Color::rgba(0.0, 1.0, 0.0, 0.2)
+                    Color::srgba(0.0, 1.0, 0.0, 0.2)
                 } else {
-                    Color::rgba(1.0, 0.0, 0.0, 0.2)
+                    Color::srgba(1.0, 0.0, 0.0, 0.2)
                 };
 
                 *arc_material = materials.add(ColorMaterial::from(color));
