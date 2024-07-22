@@ -3,8 +3,8 @@
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
-use crate::screen::Screen;
 use crate::game::grid::DebugOverlaysState;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     // Print state transitions in dev builds

@@ -9,8 +9,8 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use super::{audio::sfx::Sfx, movement::MovementController};
-use crate::AppSet;
 use crate::game::grid::movement::GridMovement;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // Animate and play sound effects based on controls.
@@ -122,7 +122,6 @@ impl PlayerAnimation {
         }
     }
 
-
     /// The number of walking frames.
     const WALKING_FRAMES: usize = 4;
     /// The duration of each walking frame.
@@ -172,13 +171,13 @@ impl PlayerAnimation {
         }
         self.frame = (self.frame + 1)
             % match self.state {
-            PlayerAnimationState::Idling => Self::IDLE_FRAMES,
-            PlayerAnimationState::Walking => Self::WALKING_FRAMES,
-            PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
-            PlayerAnimationState::FrontIdling => Self::IDLE_FRAMES,
-            PlayerAnimationState::FrontWalking => Self::WALKING_FRAMES,
-            PlayerAnimationState::FrontRolling => Self::ROLLING_FRAMES,
-        };
+                PlayerAnimationState::Idling => Self::IDLE_FRAMES,
+                PlayerAnimationState::Walking => Self::WALKING_FRAMES,
+                PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
+                PlayerAnimationState::FrontIdling => Self::IDLE_FRAMES,
+                PlayerAnimationState::FrontWalking => Self::WALKING_FRAMES,
+                PlayerAnimationState::FrontRolling => Self::ROLLING_FRAMES,
+            };
     }
 
     /// Update animation state if it changes.
