@@ -8,7 +8,7 @@ use bevy::prelude::*;
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraProperties>();
     app.add_systems(Startup, spawn_camera);
-    app.add_systems(Update, (camera_zoom, camera_follow)); // rudimentary player-following camera
+    app.add_systems(Update, (camera_zoom, camera_follow));
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -35,7 +35,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_buffer: 0.01,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
-        PostProcessSettings { intensity: 0.0005 },
+        PostProcessSettings { intensity: 0.0 /* my head hurts */ },
     ));
 }
 

@@ -88,8 +88,9 @@ pub struct PlayerAnimation {
 
 #[derive(Reflect, PartialEq)]
 pub enum PlayerAnimationState {
-    Idling,
-    Walking,
+    Idling = 0,
+    Walking = 1,
+    Rolling = 2,
 }
 
 impl PlayerAnimation {

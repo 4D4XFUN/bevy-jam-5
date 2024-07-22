@@ -4,10 +4,13 @@ use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use crate::screen::Screen;
+use crate::game::grid::DebugOverlaysState;
 
 pub(super) fn plugin(app: &mut App) {
     // Print state transitions in dev builds
     app.add_systems(Update, log_transitions::<Screen>);
+    app.add_systems(Update, log_transitions::<WorldInspectorState>);
+    app.add_systems(Update, log_transitions::<DebugOverlaysState>);
 
     // press F1 in dev builds to open an entity inspector
     app.init_state::<WorldInspectorState>()
