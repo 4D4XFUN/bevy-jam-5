@@ -28,10 +28,10 @@ fn spawn_camera(mut commands: Commands) {
         IsDefaultUiCamera,
         CameraProperties {
             initial_camera_zoom: INITIAL_CAMERA_ZOOM,
-            camera_zoom_snappiness: 0.025,
-            mouse_wheel_sensitivity: 0.5,
+            camera_zoom_snappiness: 0.2,
+            mouse_wheel_sensitivity: 30.,
             camera_zoom_max: 1.5,
-            camera_zoom_min: 0.3,
+            camera_zoom_min: 0.2,
             camera_zoom_buffer: 0.01,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),

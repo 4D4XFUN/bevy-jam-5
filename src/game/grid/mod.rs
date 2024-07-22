@@ -174,10 +174,10 @@ pub mod movement {
         fn default() -> Self {
             Self {
                 velocity: Vec2::ZERO,
-                friction: 0.9,
+                friction: 0.85,
                 acceleration_player_force: Vec2::ZERO,
                 acceleration_external_force: Vec2::ZERO,
-                acceleration_player_multiplier: 25.,
+                acceleration_player_multiplier: 66.,
             }
         }
     }
