@@ -4,7 +4,6 @@ mod game;
 mod screen;
 mod ui;
 
-use crate::game::spawn::player::Player;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
