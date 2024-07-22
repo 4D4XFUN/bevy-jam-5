@@ -4,7 +4,6 @@ mod game;
 mod screen;
 mod ui;
 
-use crate::game::spawn::player::Player;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
@@ -23,8 +22,7 @@ impl Plugin for AppPlugin {
         );
 
         // Spawn the main camera.
-        app.add_systems(Startup, (spawn_camera, spawn_ldtk_world_bundle).chain());
-        app.add_systems(Update, camera_follows_player); // rudimentary player-following camera
+        app.add_systems(Startup, spawn_ldtk_world_bundle);
         app.insert_resource(LevelSelection::index(0));
 
         // Add Bevy plugins.
@@ -84,25 +82,6 @@ enum AppSet {
     RecordInput,
     /// Do everything else (consider splitting this into further variants).
     Update,
-}
-
-fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 0.5;
-    // camera.transform.translation.x += 900.;
-    // camera.transform.translation.y += 400.;
-    commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera));
-}
-
-fn camera_follows_player(
-    mut camera: Query<&mut Transform, (With<Camera>, Without<Player>)>,
-    player: Query<&Transform, (With<Player>, Changed<Transform>, Without<Camera>)>,
-) {
-    if let Ok(player_transform) = player.get_single() {
-        if let Ok(mut camera_transform) = camera.get_single_mut() {
-            camera_transform.translation = player_transform.translation;
-        }
-    }
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
