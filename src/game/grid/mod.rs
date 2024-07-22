@@ -68,7 +68,7 @@ pub mod collision {
         const COLLIDE_SUBGRID_DIST_NEG: f32 = 0.1; // between 0..1, a fractional piece of the grid that we're allowed to move towards a wall while next to it
 
         let walls = &walls;
-        for (mut player, movement) in query_player.iter_mut() {
+        for (mut player, _movement) in query_player.iter_mut() {
             let (cx, cy) = (player.coordinates.x as i32, player.coordinates.y as i32);
             let (xr, yr) = (player.offset.x, player.offset.y);
 
@@ -484,7 +484,7 @@ fn update_transform_for_entities_on_grid(
     mut query: Query<(Entity, &GridPosition, &mut Transform), Changed<GridPosition>>,
     grid: Res<GridLayout>,
 ) {
-    for (e, grid_pos, mut transform) in query.iter_mut() {
+    for (_e, grid_pos, mut transform) in query.iter_mut() {
         let world_pos: Vec2 = grid.grid_to_world(grid_pos);
         transform.translation.x = world_pos.x - grid.square_size;
         transform.translation.y = world_pos.y - grid.square_size;
