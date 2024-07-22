@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use super::{audio::sfx::Sfx, movement::MovementController};
+use super::audio::sfx::Sfx;
 use crate::game::grid::movement::GridMovement;
 use crate::AppSet;
 
@@ -43,12 +43,10 @@ fn update_animation_movement(
         let ddy = controller.acceleration_player_force.y;
         let animation_state = if controller.acceleration_player_force == Vec2::ZERO {
             PlayerAnimationState::Idling
+        } else if ddy < 0. {
+            PlayerAnimationState::FrontWalking
         } else {
-            if ddy < 0. {
-                PlayerAnimationState::FrontWalking
-            } else {
-                PlayerAnimationState::Walking
-            }
+            PlayerAnimationState::Walking
         };
         animation.update_state(animation_state);
     }
@@ -202,8 +200,8 @@ impl PlayerAnimation {
     /// Return sprite index in the atlas.
     pub fn get_atlas_index(&self) -> usize {
         match self.state {
-            PlayerAnimationState::FrontIdling => 7 * 0 + self.frame,
-            PlayerAnimationState::FrontWalking => 7 * 1 + self.frame,
+            PlayerAnimationState::FrontIdling => self.frame,
+            PlayerAnimationState::FrontWalking => 7 + self.frame,
             PlayerAnimationState::FrontRolling => 7 * 2 + self.frame,
             PlayerAnimationState::Idling => 7 * 3 + self.frame,
             PlayerAnimationState::Walking => 7 * 4 + self.frame,
