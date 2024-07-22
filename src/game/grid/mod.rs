@@ -6,7 +6,6 @@ use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use egui::Grid;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
@@ -29,12 +28,12 @@ pub fn plugin(app: &mut App) {
 /// Grid-based collision
 pub mod collision {
     use bevy::prelude::*;
-    use bevy::utils::HashSet;
-    use bevy_ecs_ldtk::GridCoords;
-    use egui::Grid;
+    
+    
+    
 
     use crate::game::grid::movement::GridMovement;
-    use crate::game::grid::{GridLayout, GridPosition};
+    use crate::game::grid::GridPosition;
     use crate::game::spawn::level::LevelWalls;
     use crate::AppSet;
 
@@ -391,7 +390,7 @@ fn update_player_grid_debug_overlay(
     mut commands: Commands,
     grid: Res<GridLayout>,
     query: Query<
-        (&GridPosition),
+        &GridPosition,
         (
             With<Player>,
             Changed<GridPosition>,
@@ -399,7 +398,7 @@ fn update_player_grid_debug_overlay(
         ),
     >,
     mut overlay_sprite: Query<
-        (&mut GridPosition),
+        &mut GridPosition,
         (With<PlayerGridSquareOverlay>, Without<Player>),
     >,
 ) {
@@ -416,12 +415,12 @@ fn update_player_grid_debug_overlay(
                     transform: Transform::from_translation(Vec3::new(0., 0., 50.)),
                     ..default()
                 },
-                player_pos.clone(),      // grid position
+                *player_pos,      // grid position
                 PlayerGridSquareOverlay, // marker
             ));
         } else {
             for mut gp in overlay_sprite.iter_mut().take(1) {
-                gp.coordinates = player_pos.coordinates.clone();
+                gp.coordinates = player_pos.coordinates;
             }
         }
     }
