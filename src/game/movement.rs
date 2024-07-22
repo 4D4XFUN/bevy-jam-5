@@ -5,6 +5,7 @@
 
 use bevy::prelude::*;
 
+use crate::game::spawn::player::Player;
 use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
@@ -26,7 +27,7 @@ pub struct MovementController(pub Vec2);
 
 fn record_movement_controller(
     input: Res<ButtonInput<KeyCode>>,
-    mut controller_query: Query<&mut MovementController>,
+    mut controller_query: Query<&mut MovementController, With<Player>>,
 ) {
     // Collect directional input.
     let mut intent = Vec2::ZERO;
@@ -53,7 +54,7 @@ fn record_movement_controller(
     }
 }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub struct Movement {
     /// Since Bevy's default 2D camera setup is scaled such that

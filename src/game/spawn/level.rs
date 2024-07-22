@@ -1,6 +1,6 @@
 //! Spawn the main level by triggering other observers.
 
-use super::player::SpawnPlayer;
+use super::player::SpawnPlayerTrigger;
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::LdtkProject;
@@ -53,7 +53,7 @@ pub struct SpawnLevel;
 fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
     // The only thing we have in our level is a player,
     // but add things like walls etc. here.
-    commands.trigger(SpawnPlayer);
+    commands.trigger(SpawnPlayerTrigger);
 }
 
 fn cache_wall_locations(
