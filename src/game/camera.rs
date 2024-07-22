@@ -24,22 +24,21 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 const INITIAL_CAMERA_ZOOM: f32 = 0.3;
-const CAMERA_ZOOM_SPEED: f32 = 10.0;
-const CAMERA_ZOOM_SNAPPINESS: f32 = 0.7;
+const CAMERA_ZOOM_SNAPPINESS: f32 = 0.025;
+const MOUSE_WHEEL_SENSITIVITY: f32 = 0.5;
 const CAMERA_ZOOM_MAX: f32 = 1.5;
 const CAMERA_ZOOM_MIN: f32 = 0.3;
 const CAMERA_ZOOM_BUFFER: f32 = 0.01;
-const CAMERA_FOLLOW_BUFFER: f32 = 0.01;
 
 fn camera_zoom(
     mut evr_scroll: EventReader<MouseWheel>,
-    mut time: Res<Time>,
+    time: Res<Time>,
     mut query: Query<(&mut OrthographicProjection, &mut CanZoomSmoothly), With<Camera>>,
 ) {
     if let Ok ((mut projection, mut zoom_destination)) = query.get_single_mut() {
         // handle scroll wheel input
         for ev in evr_scroll.read() {
-            let dist = CAMERA_ZOOM_SNAPPINESS * time.delta().as_secs_f32();
+            let dist = MOUSE_WHEEL_SENSITIVITY * time.delta().as_secs_f32();
             let mut log_scale = zoom_destination.0.ln();
             match ev.unit {
                 MouseScrollUnit::Line => {
@@ -59,17 +58,11 @@ fn camera_zoom(
         }
 
         // handle smooth zoom over time
-        let dist = CAMERA_ZOOM_SPEED * time.delta().as_secs_f32();
-
         if projection.scale < zoom_destination.0 - CAMERA_ZOOM_BUFFER
             || projection.scale > zoom_destination.0 + CAMERA_ZOOM_BUFFER {
-            projection.scale += (zoom_destination.0 - projection.scale) * 0.05 ;
+            projection.scale += (zoom_destination.0 - projection.scale) * (CAMERA_ZOOM_SNAPPINESS) ;
         }
-        if projection.scale > CAMERA_ZOOM_MAX {
-            projection.scale = CAMERA_ZOOM_MAX;
-        } else if projection.scale < CAMERA_ZOOM_MIN {
-            projection.scale = CAMERA_ZOOM_MIN;
-        }
+        projection.scale = projection.scale.clamp(CAMERA_ZOOM_MIN, CAMERA_ZOOM_MAX);
     }
 }
 
