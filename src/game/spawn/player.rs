@@ -12,6 +12,7 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use crate::game::grid::collision::GridCollider;
 use crate::game::grid::GridPosition;
 use crate::game::grid::movement::GridMovement;
 
@@ -42,6 +43,7 @@ fn spawn_player(
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
 
+    println!("spawn player");
     let mut player_transform = Transform::from_scale(Vec2::splat(0.5).extend(1.0));
     player_transform.translation.z = 10.; // ensure player goes above level
 
@@ -58,11 +60,9 @@ fn spawn_player(
             layout: texture_atlas_layout.clone(),
             index: player_animation.get_atlas_index(),
         },
-        GridPosition::new(0., 0.,),
+        GridPosition::new(45., 24.,),
         GridMovement::default(),
-        // MovementController::default(),
-        // Movement { speed: 420.0 },
-        // player_animation,
+        GridCollider::default(),
         StateScoped(Screen::Playing),
     ));
 }

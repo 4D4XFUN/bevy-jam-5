@@ -38,12 +38,12 @@ pub(crate) struct LevelWalls {
 }
 
 impl LevelWalls {
-    fn _in_wall(&self, grid_coords: &GridCoords) -> bool {
-        grid_coords.x < 0
-            || grid_coords.y < 0
-            || grid_coords.x >= self.level_width
-            || grid_coords.y >= self.level_height
-            || self.wall_locations.contains(grid_coords)
+    pub fn collides(&self, x: i32, y: i32) -> bool {
+        x < 0
+            || y < 0
+            || x >= self.level_width
+            || y >= self.level_height
+            || self.wall_locations.contains(&GridCoords::new(x, y))
     }
 }
 
