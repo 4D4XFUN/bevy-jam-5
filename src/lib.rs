@@ -21,7 +21,14 @@ impl Plugin for AppPlugin {
         // Order new `AppStep` variants by adding them here:
         app.configure_sets(
             Update,
-            (AppSet::TickTimers, AppSet::RecordInput, AppSet::UpdateVirtualGrid, AppSet::Update, AppSet::UpdateWorld).chain(),
+            (
+                AppSet::TickTimers,
+                AppSet::RecordInput,
+                AppSet::UpdateVirtualGrid,
+                AppSet::Update,
+                AppSet::UpdateWorld,
+            )
+                .chain(),
         );
 
         // Spawn the main camera.
@@ -46,7 +53,7 @@ impl Plugin for AppPlugin {
                         prevent_default_event_handling: true,
                         ..default()
                     }
-                        .into(),
+                    .into(),
                     ..default()
                 })
                 .set(AudioPlugin {

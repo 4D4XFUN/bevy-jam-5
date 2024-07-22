@@ -1,12 +1,12 @@
 use std::ops::{Add, Sub};
 
+use crate::game::spawn::level::LevelWalls;
+use crate::game::spawn::player::Player;
+use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use egui::Grid;
-use crate::game::spawn::level::LevelWalls;
-use crate::game::spawn::player::Player;
-use crate::screen::Screen;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
@@ -16,7 +16,8 @@ pub fn plugin(app: &mut App) {
     // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
     app.init_state::<DebugOverlays>().add_systems(
         Update,
-        (update_grid_debug_overlay, update_player_grid_debug_overlay).run_if(in_state(DebugOverlays::Enabled)),
+        (update_grid_debug_overlay, update_player_grid_debug_overlay)
+            .run_if(in_state(DebugOverlays::Enabled)),
     );
 
     app.add_plugins(movement::plugin);
@@ -32,10 +33,10 @@ pub mod collision {
     use bevy_ecs_ldtk::GridCoords;
     use egui::Grid;
 
-    use crate::AppSet;
-    use crate::game::grid::{GridLayout, GridPosition};
     use crate::game::grid::movement::GridMovement;
+    use crate::game::grid::{GridLayout, GridPosition};
     use crate::game::spawn::level::LevelWalls;
+    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
         // app.add_systems(Update, apply_collision_forces.in_set(AppSet::UpdateVirtualGrid));
@@ -55,9 +56,7 @@ pub mod collision {
 
     impl Default for GridCollider {
         fn default() -> Self {
-            Self {
-                radius: 1.,
-            }
+            Self { radius: 1. }
         }
     }
 
@@ -74,11 +73,11 @@ pub mod collision {
             let (cx, cy) = (player.coordinates.x as i32, player.coordinates.y as i32);
             let (xr, yr) = (player.offset.x, player.offset.y);
 
-            if walls.collides(cx-1, cy) && xr < COLLIDE_SUBGRID_DIST_NEG {
+            if walls.collides(cx - 1, cy) && xr < COLLIDE_SUBGRID_DIST_NEG {
                 println!("{cx} {xr} collided in x");
                 player.offset.x = COLLIDE_SUBGRID_DIST_NEG;
             }
-            if walls.collides(cx, cy-1) && yr < COLLIDE_SUBGRID_DIST_NEG {
+            if walls.collides(cx, cy - 1) && yr < COLLIDE_SUBGRID_DIST_NEG {
                 println!("{cy} {yr} collided in y");
                 player.offset.y = COLLIDE_SUBGRID_DIST_NEG;
             }
@@ -97,16 +96,24 @@ pub mod collision {
     /// this didn't end up working as well as the simpler one above. Keeping for ref, we can always delete if we hate it
     pub fn _apply_collision_forces(
         walls: Res<LevelWalls>,
-        mut query_actors: Query<(&GridPosition, &GridCollider, &mut GridMovement), Without<Immovable>>,
+        mut query_actors: Query<
+            (&GridPosition, &GridCollider, &mut GridMovement),
+            Without<Immovable>,
+        >,
     ) {
         const WALL_COLLIDER_RADIUS: f32 = 1.0; // assume walls all have a 1-grid-unit-radius circle around them
         const REPEL_FORCE: f32 = 1.; // grid units per sec squared
 
         for (actor_pos, actor_collider, mut actor_movement) in query_actors.iter_mut() {
             // get any wall within 2 units of us as a fast distance check
-            let nearby_walls: Vec<Vec2> = walls.wall_locations.iter()
+            let nearby_walls: Vec<Vec2> = walls
+                .wall_locations
+                .iter()
                 .map(|&w| GridPosition::new(w.x as f32, w.y as f32).actual_coordinates())
-                .filter(|&w| (w.x - actor_pos.coordinates.x).abs() <= 2. && (w.y - actor_pos.coordinates.y).abs() <= 2.)
+                .filter(|&w| {
+                    (w.x - actor_pos.coordinates.x).abs() <= 2.
+                        && (w.y - actor_pos.coordinates.y).abs() <= 2.
+                })
                 .collect();
 
             for wall in nearby_walls.into_iter() {
@@ -120,7 +127,10 @@ pub mod collision {
                     continue;
                 }
 
-                println!("Player at {},{} Colliding with wall at {},{} - dist {}, max_dist: {}", actor_pos.x, actor_pos.y, wall.x, wall.y, dist, max_collide_dist);
+                println!(
+                    "Player at {},{} Colliding with wall at {},{} - dist {}, max_dist: {}",
+                    actor_pos.x, actor_pos.y, wall.x, wall.y, dist, max_collide_dist
+                );
 
                 let repel_power = (max_collide_dist - dist) / max_collide_dist;
 
@@ -140,13 +150,16 @@ pub mod collision {
 pub mod movement {
     use bevy::prelude::*;
 
-    use crate::AppSet;
     use crate::game::grid::{GridLayout, GridPosition};
+    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
         app.add_systems(Update, apply_movement.in_set(AppSet::Update));
-        app.add_systems(Update, set_real_position_based_on_grid.in_set(AppSet::UpdateWorld));
+        app.add_systems(
+            Update,
+            set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
+        );
 
         app.register_type::<GridMovement>();
     }
@@ -195,13 +208,18 @@ pub mod movement {
         let intent = intent.normalize_or_zero();
 
         for mut controller in &mut controller_query {
-            controller.acceleration_player_force = intent * controller.acceleration_player_multiplier;
+            controller.acceleration_player_force =
+                intent * controller.acceleration_player_multiplier;
         }
     }
-    pub fn apply_movement(mut query: Query<(&mut GridPosition, &mut GridMovement)>, time: Res<Time>) {
+    pub fn apply_movement(
+        mut query: Query<(&mut GridPosition, &mut GridMovement)>,
+        time: Res<Time>,
+    ) {
         let dt = time.delta_seconds();
         for (mut position, mut movement) in query.iter_mut() {
-            let force: Vec2 = movement.acceleration_player_force + movement.acceleration_external_force;
+            let force: Vec2 =
+                movement.acceleration_player_force + movement.acceleration_external_force;
             let force = force * dt; // scale it by time
 
             // apply forces and friction
@@ -245,8 +263,14 @@ pub struct GridLayout {
 impl GridLayout {
     pub fn grid_to_world(&self, grid_pos: &GridPosition) -> Vec2 {
         Vec2::new(
-            self.origin.x + grid_pos.coordinates.x * self.square_size + self.padding + (grid_pos.offset.x * self.square_size),
-            self.origin.y + grid_pos.coordinates.y * self.square_size + self.padding + (grid_pos.offset.y * self.square_size),
+            self.origin.x
+                + grid_pos.coordinates.x * self.square_size
+                + self.padding
+                + (grid_pos.offset.x * self.square_size),
+            self.origin.y
+                + grid_pos.coordinates.y * self.square_size
+                + self.padding
+                + (grid_pos.offset.y * self.square_size),
         )
     }
 }
@@ -366,8 +390,18 @@ struct PlayerGridSquareOverlay;
 fn update_player_grid_debug_overlay(
     mut commands: Commands,
     grid: Res<GridLayout>,
-    query: Query<(&GridPosition), (With<Player>, Changed<GridPosition>, Without<PlayerGridSquareOverlay>)>,
-    mut overlay_sprite: Query<(&mut GridPosition), (With<PlayerGridSquareOverlay>, Without<Player>)>,
+    query: Query<
+        (&GridPosition),
+        (
+            With<Player>,
+            Changed<GridPosition>,
+            Without<PlayerGridSquareOverlay>,
+        ),
+    >,
+    mut overlay_sprite: Query<
+        (&mut GridPosition),
+        (With<PlayerGridSquareOverlay>, Without<Player>),
+    >,
 ) {
     for player_pos in query.iter() {
         if overlay_sprite.is_empty() {
@@ -382,7 +416,7 @@ fn update_player_grid_debug_overlay(
                     transform: Transform::from_translation(Vec3::new(0., 0., 50.)),
                     ..default()
                 },
-                player_pos.clone(), // grid position
+                player_pos.clone(),      // grid position
                 PlayerGridSquareOverlay, // marker
             ));
         } else {
@@ -474,8 +508,14 @@ mod tests {
 
     #[test]
     fn gridposition_subtraction() {
-        let a = GridPosition { coordinates: Vec2::new(1., 1.), offset: Vec2::new(0.3, 0.3) };
-        let b = GridPosition { coordinates: Vec2::new(2., 2.), offset: Vec2::new(0.7, 0.7) };
+        let a = GridPosition {
+            coordinates: Vec2::new(1., 1.),
+            offset: Vec2::new(0.3, 0.3),
+        };
+        let b = GridPosition {
+            coordinates: Vec2::new(2., 2.),
+            offset: Vec2::new(0.7, 0.7),
+        };
 
         let aminb = a - b;
         assert_vec2_close!(aminb.coordinates, Vec2::new(-2., -2.));
