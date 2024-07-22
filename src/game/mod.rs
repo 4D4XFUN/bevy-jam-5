@@ -6,6 +6,8 @@ pub mod ai;
 mod animation;
 pub mod assets;
 pub mod audio;
+mod camera;
+pub mod grid;
 mod movement;
 pub mod spawn;
 
@@ -15,5 +17,7 @@ pub(super) fn plugin(app: &mut App) {
         audio::plugin,
         movement::plugin,
         spawn::plugin,
+        grid::plugin,
+        camera::plugin,
     ));
 }

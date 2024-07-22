@@ -5,6 +5,9 @@ mod postprocessing;
 mod screen;
 mod ui;
 
+#[cfg(test)]
+pub mod testing;
+
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
@@ -20,11 +23,18 @@ impl Plugin for AppPlugin {
         // Order new `AppStep` variants by adding them here:
         app.configure_sets(
             Update,
-            (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
+            (
+                AppSet::TickTimers,
+                AppSet::RecordInput,
+                AppSet::UpdateVirtualGrid,
+                AppSet::Update,
+                AppSet::UpdateWorld,
+            )
+                .chain(),
         );
 
         // Spawn the main camera.
-        app.add_systems(Startup, (spawn_camera, spawn_ldtk_world_bundle).chain());
+        app.add_systems(Startup, spawn_ldtk_world_bundle);
         app.insert_resource(LevelSelection::index(0));
 
         // Add Bevy plugins.
@@ -50,7 +60,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
-                        volume: Volume::new(0.3),
+                        volume: Volume::new(0.0), // mute audio
                     },
                     ..default()
                 })
@@ -84,26 +94,20 @@ enum AppSet {
     TickTimers,
     /// Record player input.
     RecordInput,
+    /// Any operations that happen on grid coordinates should happen before they get translated to pixels
+    UpdateVirtualGrid,
     /// Do everything else (consider splitting this into further variants).
     Update,
-}
-
-fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 1.8;
-    camera.transform.translation.x += 1280.0 / 2.2;
-    camera.transform.translation.y += 720.0 / 1.3;
-    commands.spawn((
-        Name::new("Camera"),
-        camera,
-        IsDefaultUiCamera,
-        PostProcessSettings { intensity: 0.0005 },
-    ));
+    /// After all grid coordinates are settled, we translate them to real pixels in world space
+    UpdateWorld,
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("tile-based-game.ldtk"),
-        ..Default::default()
-    });
+    commands.spawn((
+        Name::new("LdtkWorld"),
+        LdtkWorldBundle {
+            ldtk_handle: asset_server.load("tile-based-game.ldtk"),
+            ..Default::default()
+        },
+    ));
 }

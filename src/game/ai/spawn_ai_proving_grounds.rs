@@ -1,5 +1,5 @@
 use crate::game::assets::{ImageAsset, ImageAssets};
-use crate::game::movement::{Movement, MovementController, WrapWithinWindow};
+use crate::game::movement::{Movement, MovementController};
 use crate::screen::Screen;
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
@@ -37,7 +37,6 @@ fn spawn_ai_proving_grounds(
         },
         MovementController::default(),
         Movement { speed: 420.0 },
-        WrapWithinWindow,
         StateScoped(Screen::AiProvingGrounds),
     ));
 

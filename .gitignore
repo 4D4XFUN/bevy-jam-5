@@ -4,3 +4,6 @@
 
 # This file contains environment-specific configuration like linker settings
 .cargo/config.toml
+/.idea/bevy-jam-5.iml
+/.idea/modules.xml
+/.idea/vcs.xml
