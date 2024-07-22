@@ -28,9 +28,6 @@ pub fn plugin(app: &mut App) {
 /// Grid-based collision
 pub mod collision {
     use bevy::prelude::*;
-    
-    
-    
 
     use crate::game::grid::movement::GridMovement;
     use crate::game::grid::GridPosition;
@@ -397,10 +394,7 @@ fn update_player_grid_debug_overlay(
             Without<PlayerGridSquareOverlay>,
         ),
     >,
-    mut overlay_sprite: Query<
-        &mut GridPosition,
-        (With<PlayerGridSquareOverlay>, Without<Player>),
-    >,
+    mut overlay_sprite: Query<&mut GridPosition, (With<PlayerGridSquareOverlay>, Without<Player>)>,
 ) {
     for player_pos in query.iter() {
         if overlay_sprite.is_empty() {
@@ -415,7 +409,7 @@ fn update_player_grid_debug_overlay(
                     transform: Transform::from_translation(Vec3::new(0., 0., 50.)),
                     ..default()
                 },
-                *player_pos,      // grid position
+                *player_pos,             // grid position
                 PlayerGridSquareOverlay, // marker
             ));
         } else {
