@@ -22,14 +22,14 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Event, Debug)]
-pub struct SpawnPlayer;
+pub struct SpawnPlayerTrigger;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 pub struct Player;
 
 fn spawn_player(
-    _trigger: Trigger<SpawnPlayer>,
+    _trigger: Trigger<SpawnPlayerTrigger>,
     mut commands: Commands,
     images: Res<ImageAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
