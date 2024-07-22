@@ -40,10 +40,15 @@ fn update_animation_movement(
             sprite.flip_x = ddx < 0.0;
         }
 
+        let ddy = controller.acceleration_player_force.y;
         let animation_state = if controller.acceleration_player_force == Vec2::ZERO {
             PlayerAnimationState::Idling
         } else {
-            PlayerAnimationState::Walking
+            if ddy < 0. {
+                PlayerAnimationState::FrontWalking
+            } else {
+                PlayerAnimationState::Walking
+            }
         };
         animation.update_state(animation_state);
     }
@@ -89,9 +94,12 @@ pub struct PlayerAnimation {
 
 #[derive(Reflect, PartialEq, Debug)]
 pub enum PlayerAnimationState {
-    Idling = 0,
-    Walking = 1,
-    Rolling = 2,
+    Idling,
+    Walking,
+    Rolling,
+    FrontIdling,
+    FrontWalking,
+    FrontRolling,
 }
 
 impl PlayerAnimation {
@@ -99,7 +107,6 @@ impl PlayerAnimation {
     const IDLE_FRAMES: usize = 4;
     /// The duration of each idle frame.
     const IDLE_INTERVAL: Duration = Duration::from_millis(500);
-
     fn idling() -> Self {
         Self {
             timer: Timer::new(Self::IDLE_INTERVAL, TimerMode::Repeating),
@@ -107,6 +114,14 @@ impl PlayerAnimation {
             state: PlayerAnimationState::Idling,
         }
     }
+    fn idling_front() -> Self {
+        Self {
+            timer: Timer::new(Self::IDLE_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: PlayerAnimationState::FrontIdling,
+        }
+    }
+
 
     /// The number of walking frames.
     const WALKING_FRAMES: usize = 4;
@@ -120,6 +135,13 @@ impl PlayerAnimation {
             state: PlayerAnimationState::Walking,
         }
     }
+    fn walking_front() -> Self {
+        Self {
+            timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: PlayerAnimationState::FrontWalking,
+        }
+    }
 
     const ROLLING_FRAMES: usize = 7;
     const ROLLING_INTERVAL: Duration = Duration::from_millis(50);
@@ -128,6 +150,13 @@ impl PlayerAnimation {
             timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::Rolling,
+        }
+    }
+    fn rolling_front() -> Self {
+        Self {
+            timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: PlayerAnimationState::FrontRolling,
         }
     }
 
@@ -146,6 +175,9 @@ impl PlayerAnimation {
             PlayerAnimationState::Idling => Self::IDLE_FRAMES,
             PlayerAnimationState::Walking => Self::WALKING_FRAMES,
             PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
+            PlayerAnimationState::FrontIdling => Self::IDLE_FRAMES,
+            PlayerAnimationState::FrontWalking => Self::WALKING_FRAMES,
+            PlayerAnimationState::FrontRolling => Self::ROLLING_FRAMES,
         };
     }
 
@@ -156,6 +188,9 @@ impl PlayerAnimation {
                 PlayerAnimationState::Idling => *self = Self::idling(),
                 PlayerAnimationState::Walking => *self = Self::walking(),
                 PlayerAnimationState::Rolling => *self = Self::rolling(),
+                PlayerAnimationState::FrontIdling => *self = Self::idling_front(),
+                PlayerAnimationState::FrontWalking => *self = Self::walking_front(),
+                PlayerAnimationState::FrontRolling => *self = Self::rolling_front(),
             }
         }
     }
@@ -168,6 +203,9 @@ impl PlayerAnimation {
     /// Return sprite index in the atlas.
     pub fn get_atlas_index(&self) -> usize {
         match self.state {
+            PlayerAnimationState::FrontIdling => 7 * 0 + self.frame,
+            PlayerAnimationState::FrontWalking => 7 * 1 + self.frame,
+            PlayerAnimationState::FrontRolling => 7 * 2 + self.frame,
             PlayerAnimationState::Idling => 7 * 3 + self.frame,
             PlayerAnimationState::Walking => 7 * 4 + self.frame,
             PlayerAnimationState::Rolling => 7 * 5 + self.frame,
