@@ -13,10 +13,10 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, update_transform_for_entities_on_grid);
 
     // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
-    app.init_state::<DebugOverlays>().add_systems(
+    app.init_state::<DebugOverlaysState>().add_systems(
         Update,
         (update_grid_debug_overlay, update_player_grid_debug_overlay)
-            .run_if(in_state(DebugOverlays::Enabled)),
+            .run_if(in_state(DebugOverlaysState::Enabled)),
     );
 
     app.add_plugins(movement::plugin);
@@ -35,9 +35,9 @@ pub mod collision {
     use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
+        app.register_type::<GridCollider>();
         // app.add_systems(Update, apply_collision_forces.in_set(AppSet::UpdateVirtualGrid));
         app.add_systems(Update, simple_wall_collisions.in_set(AppSet::Update));
-        app.register_type::<GridCollider>();
     }
 
     #[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
@@ -488,7 +488,7 @@ fn update_transform_for_entities_on_grid(
 }
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
-enum DebugOverlays {
+pub enum DebugOverlaysState {
     _Disabled,
     #[default] // change this to disable all the debug grid drawing
     Enabled,
