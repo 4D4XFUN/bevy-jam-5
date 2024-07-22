@@ -1,6 +1,7 @@
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod game;
+mod postprocessing;
 mod screen;
 mod ui;
 
@@ -13,6 +14,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
+use postprocessing::PostProcessing;
 
 pub struct AppPlugin;
 
@@ -75,6 +77,8 @@ impl Plugin for AppPlugin {
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
+
+        app.add_plugins(PostProcessing);
 
         #[cfg(feature = "dev")]
         app.add_plugins(game::ai::proving_grounds_plugin);
