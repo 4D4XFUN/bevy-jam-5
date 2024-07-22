@@ -14,7 +14,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
-use postprocessing::{PostProcessSettings, PostProcessing};
+use postprocessing::PostProcessing;
 
 pub struct AppPlugin;
 
