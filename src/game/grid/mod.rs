@@ -61,8 +61,8 @@ pub mod collision {
         walls: Res<LevelWalls>,
         mut query_player: Query<(&mut GridPosition, &mut GridMovement)>,
     ) {
-        const COLLIDE_SUBGRID_DIST_POS: f32 = 0.3; // between 0..1, a fractional piece of the grid that we're allowed to move towards a wall while next to it
-        const COLLIDE_SUBGRID_DIST_NEG: f32 = 0.1; // between 0..1, a fractional piece of the grid that we're allowed to move towards a wall while next to it
+        const COLLIDE_SUBGRID_DIST_POS: f32 = 0.2; // between 0..1, a fractional piece of the grid that we're allowed to move towards a wall while next to it
+        const COLLIDE_SUBGRID_DIST_NEG: f32 = -0.2; // between 0..1, a fractional piece of the grid that we're allowed to move towards a wall while next to it
 
         let walls = &walls;
         for (mut player, _movement) in query_player.iter_mut() {
@@ -208,6 +208,7 @@ pub mod movement {
                 intent * controller.acceleration_player_multiplier;
         }
     }
+
     pub fn apply_movement(
         mut query: Query<(&mut GridPosition, &mut GridMovement)>,
         time: Res<Time>,
@@ -298,19 +299,19 @@ impl GridPosition {
 
     /// If the offset is more than a whole cell, then update the coordinates (and bring the offset back within 0..1)
     pub fn fix_offset_overflow(&mut self) {
-        if self.offset.x >= 1. {
+        if self.offset.x >= 0.5 {
             self.coordinates.x += 1.;
             self.offset.x -= 1.;
         }
-        if self.offset.y >= 1. {
+        if self.offset.y >= 0.5 {
             self.coordinates.y += 1.;
             self.offset.y -= 1.;
         }
-        if self.offset.x < 0. {
+        if self.offset.x < -0.5 {
             self.coordinates.x -= 1.;
             self.offset.x += 1.;
         }
-        if self.offset.y < 0. {
+        if self.offset.y < -0.5 {
             self.coordinates.y -= 1.;
             self.offset.y += 1.;
         }
