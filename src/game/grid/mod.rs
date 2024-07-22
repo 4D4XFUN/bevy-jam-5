@@ -105,7 +105,7 @@ pub mod collision {
             let nearby_walls: Vec<Vec2> = walls
                 .wall_locations
                 .iter()
-                .map(|&w| GridPosition::new(w.x as f32, w.y as f32).actual_coordinates())
+                .map(|&w| GridPosition::new(w.x as f32, w.y as f32)._actual_coordinates())
                 .filter(|&w| {
                     (w.x - actor_pos.coordinates.x).abs() <= 2.
                         && (w.y - actor_pos.coordinates.y).abs() <= 2.
@@ -113,7 +113,7 @@ pub mod collision {
                 .collect();
 
             for wall in nearby_walls.into_iter() {
-                let actor_pos = actor_pos.actual_coordinates();
+                let actor_pos = actor_pos._actual_coordinates();
                 let dx = actor_pos.x - wall.x;
                 let dy = actor_pos.y - wall.y;
                 let dist = ((dx * dx) + (dy * dy)).sqrt();
@@ -289,7 +289,7 @@ impl GridPosition {
         }
     }
 
-    pub fn actual_coordinates(&self) -> Vec2 {
+    pub fn _actual_coordinates(&self) -> Vec2 {
         Vec2::new(
             self.coordinates.x + self.offset.x,
             self.coordinates.y + self.offset.y,
