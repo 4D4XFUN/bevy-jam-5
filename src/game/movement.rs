@@ -5,8 +5,8 @@
 
 use bevy::prelude::*;
 
-use crate::AppSet;
 use crate::game::spawn::player::Player;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.

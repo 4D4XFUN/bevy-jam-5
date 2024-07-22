@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use egui::Grid;
 
 use crate::game::movement::{Movement, MovementController};
