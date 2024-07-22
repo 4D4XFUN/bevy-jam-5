@@ -1,4 +1,5 @@
 use crate::game::spawn::player::Player;
+use crate::postprocessing::PostProcessSettings;
 use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
@@ -34,6 +35,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_buffer: 0.01,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
+        PostProcessSettings { intensity: 0.0005 }
     ));
 }
 
