@@ -43,13 +43,44 @@ pub struct GridSprite;
 
 #[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
 #[reflect(Component)]
-pub struct GridPosition(pub Vec2);
+pub struct GridPosition {
+    pub coordinates: Vec2, // the full-square coordinates on the whole grid
+    pub offset: Vec2,      // the offset within a single grid cell
+}
+
+impl GridPosition {
+
+    /// If the offset is more than a whole cell, then update the coordinates (and bring the offset back within 0..1)
+    pub fn fix_offset_overflow(&mut self) {
+        if self.offset.x > 1. {
+            self.coordinates.x += 1.;
+            self.offset.x -= 1.;
+        }
+        if self.offset.y > 1. {
+            self.coordinates.y += 1.;
+            self.offset.y -= 1.;
+        }
+        if self.offset.x<0. {
+            self.coordinates.x -= 1.;
+            self.offset.x += 1.;
+        }
+        if self.offset.y<0. {
+            self.coordinates.y -= 1.;
+            self.offset.y += 1.;
+        }
+    }
+}
 
 impl Sub for GridPosition {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Self(self.0.sub(rhs.0))
+        let mut res = Self {
+            coordinates: self.coordinates.sub(rhs.coordinates),
+            offset: self.offset.sub(rhs.offset),
+        };
+        res.fix_offset_overflow();
+        res
     }
 }
 
@@ -148,7 +179,7 @@ fn update_transform_for_entities_on_grid(
     grid: Res<GridLayout>,
 ) {
     for (grid_pos, mut transform) in query.iter_mut() {
-        let world_pos: Vec2 = grid.grid_to_world(grid_pos.0);
+        let world_pos: Vec2 = grid.grid_to_world(grid_pos.coordinates);
         transform.translation.x = world_pos.x;
         transform.translation.y = world_pos.y;
     }
@@ -161,19 +192,24 @@ enum DebugOverlays {
     Enabled,
 }
 
+
 #[cfg(test)]
 mod tests {
+    use crate::assert_vec2_close;
     use super::*;
 
     #[test]
     fn gridposition_subtraction() {
-        let a = GridPosition(Vec2::new(1., 1.));
-        let b = GridPosition(Vec2::new(2., 2.));
+        let a = GridPosition { coordinates: Vec2::new(1., 1.), offset: Vec2::new(0.3, 0.3)};
+        let b = GridPosition { coordinates: Vec2::new(2., 2.), offset: Vec2::new(0.7, 0.7)};
 
         let aminb = a - b;
-        assert_eq!(aminb.0, Vec2::new(-1., -1.));
+        assert_vec2_close!(aminb.coordinates, Vec2::new(-2., -2.));
+        assert_vec2_close!(aminb.offset, Vec2::new(0.6, 0.6));
 
         let bmina = b - a;
-        assert_eq!(bmina.0, Vec2::new(1., 1.));
+        assert_vec2_close!(bmina.coordinates, Vec2::new(1., 1.));
+        assert_vec2_close!(bmina.offset, Vec2::new(0.4, 0.4));
     }
+
 }

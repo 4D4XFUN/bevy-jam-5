@@ -4,6 +4,9 @@ mod game;
 mod screen;
 mod ui;
 
+#[cfg(test)]
+pub mod testing;
+
 use crate::game::spawn::player::Player;
 use bevy::{
     asset::AssetMetaCheck,
