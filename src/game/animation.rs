@@ -10,10 +10,10 @@ use bevy::prelude::*;
 
 use super::{audio::sfx::Sfx, movement::MovementController};
 use crate::AppSet;
+use crate::game::grid::movement::GridMovement;
 
 pub(super) fn plugin(app: &mut App) {
     // Animate and play sound effects based on controls.
-    app.register_type::<PlayerAnimation>();
     app.add_systems(
         Update,
         (
@@ -27,19 +27,20 @@ pub(super) fn plugin(app: &mut App) {
                 .in_set(AppSet::Update),
         ),
     );
+    app.register_type::<PlayerAnimation>();
 }
 
 /// Update the sprite direction and animation state (idling/walking).
 fn update_animation_movement(
-    mut player_query: Query<(&MovementController, &mut Sprite, &mut PlayerAnimation)>,
+    mut player_query: Query<(&GridMovement, &mut Sprite, &mut PlayerAnimation)>,
 ) {
     for (controller, mut sprite, mut animation) in &mut player_query {
-        let dx = controller.0.x;
-        if dx != 0.0 {
-            sprite.flip_x = dx < 0.0;
+        let ddx = controller.acceleration_player_force.x;
+        if ddx != 0.0 {
+            sprite.flip_x = ddx < 0.0;
         }
 
-        let animation_state = if controller.0 == Vec2::ZERO {
+        let animation_state = if controller.acceleration_player_force == Vec2::ZERO {
             PlayerAnimationState::Idling
         } else {
             PlayerAnimationState::Walking
@@ -86,7 +87,7 @@ pub struct PlayerAnimation {
     state: PlayerAnimationState,
 }
 
-#[derive(Reflect, PartialEq)]
+#[derive(Reflect, PartialEq, Debug)]
 pub enum PlayerAnimationState {
     Idling = 0,
     Walking = 1,
@@ -95,7 +96,7 @@ pub enum PlayerAnimationState {
 
 impl PlayerAnimation {
     /// The number of idle frames.
-    const IDLE_FRAMES: usize = 2;
+    const IDLE_FRAMES: usize = 4;
     /// The duration of each idle frame.
     const IDLE_INTERVAL: Duration = Duration::from_millis(500);
 
@@ -108,15 +109,25 @@ impl PlayerAnimation {
     }
 
     /// The number of walking frames.
-    const WALKING_FRAMES: usize = 6;
+    const WALKING_FRAMES: usize = 4;
     /// The duration of each walking frame.
-    const WALKING_INTERVAL: Duration = Duration::from_millis(50);
+    const WALKING_INTERVAL: Duration = Duration::from_millis(100);
 
     fn walking() -> Self {
         Self {
             timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::Walking,
+        }
+    }
+
+    const ROLLING_FRAMES: usize = 7;
+    const ROLLING_INTERVAL: Duration = Duration::from_millis(50);
+    fn rolling() -> Self {
+        Self {
+            timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: PlayerAnimationState::Rolling,
         }
     }
 
@@ -132,9 +143,10 @@ impl PlayerAnimation {
         }
         self.frame = (self.frame + 1)
             % match self.state {
-                PlayerAnimationState::Idling => Self::IDLE_FRAMES,
-                PlayerAnimationState::Walking => Self::WALKING_FRAMES,
-            };
+            PlayerAnimationState::Idling => Self::IDLE_FRAMES,
+            PlayerAnimationState::Walking => Self::WALKING_FRAMES,
+            PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
+        };
     }
 
     /// Update animation state if it changes.
@@ -143,6 +155,7 @@ impl PlayerAnimation {
             match state {
                 PlayerAnimationState::Idling => *self = Self::idling(),
                 PlayerAnimationState::Walking => *self = Self::walking(),
+                PlayerAnimationState::Rolling => *self = Self::rolling(),
             }
         }
     }
@@ -155,8 +168,9 @@ impl PlayerAnimation {
     /// Return sprite index in the atlas.
     pub fn get_atlas_index(&self) -> usize {
         match self.state {
-            PlayerAnimationState::Idling => self.frame,
-            PlayerAnimationState::Walking => 6 + self.frame,
+            PlayerAnimationState::Idling => 7 * 3 + self.frame,
+            PlayerAnimationState::Walking => 7 * 4 + self.frame,
+            PlayerAnimationState::Rolling => 7 * 5 + self.frame,
         }
     }
 }

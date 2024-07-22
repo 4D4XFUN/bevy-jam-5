@@ -9,6 +9,7 @@ pub enum ImageAsset {
     Ducky,
     Crab,
     RoboCrab,
+    Player,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -22,6 +23,7 @@ impl ImageAssets {
             ("images/ducky.png", ImageAsset::Ducky),
             ("images/crab.png", ImageAsset::Crab),
             ("images/robo_crab.png", ImageAsset::RoboCrab),
+            ("images/character_animated.png", ImageAsset::Player),
         ] {
             assets.insert(
                 image_asset_tag,
