@@ -7,7 +7,6 @@ mod ui;
 #[cfg(test)]
 pub mod testing;
 
-use crate::game::spawn::player::Player;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
@@ -22,7 +21,7 @@ impl Plugin for AppPlugin {
         // Order new `AppStep` variants by adding them here:
         app.configure_sets(
             Update,
-            (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
+            (AppSet::TickTimers, AppSet::RecordInput, AppSet::UpdateVirtualGrid, AppSet::Update, AppSet::UpdateWorld).chain(),
         );
 
         // Spawn the main camera.
@@ -47,7 +46,7 @@ impl Plugin for AppPlugin {
                         prevent_default_event_handling: true,
                         ..default()
                     }
-                    .into(),
+                        .into(),
                     ..default()
                 })
                 .set(AudioPlugin {
@@ -84,8 +83,12 @@ enum AppSet {
     TickTimers,
     /// Record player input.
     RecordInput,
+    /// Any operations that happen on grid coordinates should happen before they get translated to pixels
+    UpdateVirtualGrid,
     /// Do everything else (consider splitting this into further variants).
     Update,
+    /// After all grid coordinates are settled, we translate them to real pixels in world space
+    UpdateWorld,
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
