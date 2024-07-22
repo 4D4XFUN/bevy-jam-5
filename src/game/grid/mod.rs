@@ -70,19 +70,19 @@ pub mod collision {
             let (xr, yr) = (player.offset.x, player.offset.y);
 
             if walls.collides(cx - 1, cy) && xr < COLLIDE_SUBGRID_DIST_NEG {
-                println!("{cx} {xr} collided in x");
+                // println!("{cx} {xr} collided in x");
                 player.offset.x = COLLIDE_SUBGRID_DIST_NEG;
             }
             if walls.collides(cx, cy - 1) && yr < COLLIDE_SUBGRID_DIST_NEG {
-                println!("{cy} {yr} collided in y");
+                // println!("{cy} {yr} collided in y");
                 player.offset.y = COLLIDE_SUBGRID_DIST_NEG;
             }
             if walls.collides(cx + 1, cy) && xr > COLLIDE_SUBGRID_DIST_POS {
-                println!("{cx} {xr} collided in x");
+                // println!("{cx} {xr} collided in x");
                 player.offset.x = COLLIDE_SUBGRID_DIST_POS;
             }
             if walls.collides(cx, cy + 1) && yr > COLLIDE_SUBGRID_DIST_POS {
-                println!("{cy} {yr} collided in y");
+                // println!("{cy} {yr} collided in y");
                 player.offset.y = COLLIDE_SUBGRID_DIST_POS;
             }
         }
