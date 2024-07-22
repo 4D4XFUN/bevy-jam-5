@@ -6,7 +6,7 @@ use bevy::input::mouse::MouseScrollUnit;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_camera);
-    app.add_systems(Update, (camera_zoom_input, camera_zoom, camera_follow).chain()); // rudimentary player-following camera
+    app.add_systems(Update, (camera_zoom, camera_follow)); // rudimentary player-following camera
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -31,13 +31,14 @@ const CAMERA_ZOOM_MIN: f32 = 0.3;
 const CAMERA_ZOOM_BUFFER: f32 = 0.01;
 const CAMERA_FOLLOW_BUFFER: f32 = 0.01;
 
-fn camera_zoom_input(
+fn camera_zoom(
     mut evr_scroll: EventReader<MouseWheel>,
     mut time: Res<Time>,
-    mut query: Query<&mut CanZoomSmoothly, With<Camera>>,
+    mut query: Query<(&mut OrthographicProjection, &mut CanZoomSmoothly), With<Camera>>,
 ) {
-    for ev in evr_scroll.read() {
-        if let Ok (mut zoom_destination) = query.get_single_mut() {
+    if let Ok ((mut projection, mut zoom_destination)) = query.get_single_mut() {
+        // handle scroll wheel input
+        for ev in evr_scroll.read() {
             let dist = CAMERA_ZOOM_SNAPPINESS * time.delta().as_secs_f32();
             let mut log_scale = zoom_destination.0.ln();
             match ev.unit {
@@ -56,21 +57,14 @@ fn camera_zoom_input(
                 zoom_destination.0 = log_scale.exp();
             }
         }
-    }
-}
 
-fn camera_zoom(
-    mut time: Res<Time>,
-    mut query: Query<(&mut OrthographicProjection, &CanZoomSmoothly), With<Camera>>,
-) {
-    if let Ok ((mut projection, zoom_destination)) = query.get_single_mut() {
+        // handle smooth zoom over time
         let dist = CAMERA_ZOOM_SPEED * time.delta().as_secs_f32();
 
         if projection.scale < zoom_destination.0 - CAMERA_ZOOM_BUFFER
-        || projection.scale > zoom_destination.0 + CAMERA_ZOOM_BUFFER {
+            || projection.scale > zoom_destination.0 + CAMERA_ZOOM_BUFFER {
             projection.scale += (zoom_destination.0 - projection.scale) * 0.05 ;
         }
-
         if projection.scale > CAMERA_ZOOM_MAX {
             projection.scale = CAMERA_ZOOM_MAX;
         } else if projection.scale < CAMERA_ZOOM_MIN {
