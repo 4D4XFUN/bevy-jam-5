@@ -1,17 +1,20 @@
 //! Spawn the player.
 
+use crate::game::grid::collision::GridCollider;
+use crate::game::grid::movement::GridMovement;
+use crate::game::grid::GridPosition;
 use crate::{
     game::{
         animation::PlayerAnimation,
         assets::{ImageAsset, ImageAssets},
         camera::CanBeFollowedByCamera,
-        movement::{Movement, MovementController},
         spawn::ldtk::LdtkEntityBundle,
     },
     screen::Screen,
 };
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
     app.register_type::<Player>();
@@ -39,6 +42,7 @@ fn spawn_player(
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
 
+    println!("spawn player");
     let mut player_transform = Transform::from_scale(Vec2::splat(0.5).extend(1.0));
     player_transform.translation.z = 10.; // ensure player goes above level
 
@@ -55,9 +59,9 @@ fn spawn_player(
             layout: texture_atlas_layout.clone(),
             index: player_animation.get_atlas_index(),
         },
-        MovementController::default(),
-        Movement { speed: 420.0 },
-        player_animation,
+        GridPosition::new(45., 24.),
+        GridMovement::default(),
+        GridCollider::default(),
         StateScoped(Screen::Playing),
     ));
 }

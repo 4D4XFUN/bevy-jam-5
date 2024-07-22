@@ -7,7 +7,7 @@ mod animation;
 pub mod assets;
 pub mod audio;
 mod camera;
-mod grid;
+pub mod grid;
 mod movement;
 pub mod spawn;
 
