@@ -1,8 +1,8 @@
-use bevy::core::Name;
-use bevy::prelude::*;
 use crate::game::spawn::player::Player;
-use bevy::input::mouse::MouseWheel;
+use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
+use bevy::input::mouse::MouseWheel;
+use bevy::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_camera);
@@ -20,7 +20,12 @@ pub struct CanZoomSmoothly(f32);
 fn spawn_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
     camera.projection.scale = INITIAL_CAMERA_ZOOM;
-    commands.spawn((Name::new("Camera"), camera, IsDefaultUiCamera, CanZoomSmoothly(INITIAL_CAMERA_ZOOM)));
+    commands.spawn((
+        Name::new("Camera"),
+        camera,
+        IsDefaultUiCamera,
+        CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
+    ));
 }
 
 const INITIAL_CAMERA_ZOOM: f32 = 0.3;
@@ -35,7 +40,7 @@ fn camera_zoom(
     time: Res<Time>,
     mut query: Query<(&mut OrthographicProjection, &mut CanZoomSmoothly), With<Camera>>,
 ) {
-    if let Ok ((mut projection, mut zoom_destination)) = query.get_single_mut() {
+    if let Ok((mut projection, mut zoom_destination)) = query.get_single_mut() {
         // handle scroll wheel input
         for ev in evr_scroll.read() {
             let dist = MOUSE_WHEEL_SENSITIVITY * time.delta().as_secs_f32();
@@ -59,8 +64,9 @@ fn camera_zoom(
 
         // handle smooth zoom over time
         if projection.scale < zoom_destination.0 - CAMERA_ZOOM_BUFFER
-            || projection.scale > zoom_destination.0 + CAMERA_ZOOM_BUFFER {
-            projection.scale += (zoom_destination.0 - projection.scale) * (CAMERA_ZOOM_SNAPPINESS) ;
+            || projection.scale > zoom_destination.0 + CAMERA_ZOOM_BUFFER
+        {
+            projection.scale += (zoom_destination.0 - projection.scale) * (CAMERA_ZOOM_SNAPPINESS);
         }
         projection.scale = projection.scale.clamp(CAMERA_ZOOM_MIN, CAMERA_ZOOM_MAX);
     }

@@ -4,9 +4,9 @@ use crate::{
     game::{
         animation::PlayerAnimation,
         assets::{ImageAsset, ImageAssets},
+        camera::CanBeFollowedByCamera,
         movement::{Movement, MovementController},
         spawn::ldtk::LdtkEntityBundle,
-        camera::CanBeFollowedByCamera,
     },
     screen::Screen,
 };
