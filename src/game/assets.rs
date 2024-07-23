@@ -93,7 +93,7 @@ impl SoundtrackAssets {
         let mut assets = HashMap::new();
         assets.insert(
             SoundtrackAsset::Credits,
-            asset_server.load("audio/soundtracks/credits_lofi.mp3"),
+            asset_server.load("audio/soundtracks/credits_lofi.ogg"),
         );
         assets.insert(
             SoundtrackAsset::Gameplay,
