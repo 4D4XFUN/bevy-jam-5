@@ -59,8 +59,6 @@ pub mod front_facing_edges {
     use crate::game::spawn::level::LevelWalls;
     use crate::AppSet;
     use bevy::prelude::*;
-    
-    
 
     pub fn plugin(app: &mut App) {
         // Systems
