@@ -1,5 +1,10 @@
+use std::time::Duration;
+use bevy::color::Color::LinearRgba;
 use bevy::prelude::*;
-
+use bevy::render::mesh::{Indices, MeshVertexAttribute, PrimitiveTopology};
+use bevy::render::render_asset::RenderAssetUsages;
+use bevy::render::render_resource::VertexFormat;
+use bevy::sprite::Mesh2dHandle;
 use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
@@ -8,7 +13,10 @@ use crate::geometry_2d::line_segment::LineSegment;
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(front_facing_edges::plugin);
 
-    app.add_systems(Update, calculate_vision_extend_by_sweeping_in_a_circle.in_set(AppSet::Update));
+    app.add_systems(Update, (
+        calculate_vision_extent_by_sweeping_in_a_circle,
+        update_line_of_sight_mesh,
+    ).chain().in_set(AppSet::Update));
 
     #[cfg(feature = "dev")]
     app.add_plugins(debug_overlay::plugin);
@@ -22,6 +30,7 @@ pub struct LineOfSightBundle {
     pub line_of_sight_source: LineOfSightSource,
     pub facing_walls_cache: FacingWallsCache,
     pub calculated_line_of_sight: CalculatedLineOfSight,
+    pub los_mesh_handle: LineOfSightMeshHandle,
 }
 
 impl Default for LineOfSightBundle {
@@ -32,6 +41,7 @@ impl Default for LineOfSightBundle {
             },
             facing_walls_cache: FacingWallsCache::new(),
             calculated_line_of_sight: CalculatedLineOfSight::default(),
+            los_mesh_handle: LineOfSightMeshHandle::new(),
         }
     }
 }
@@ -65,16 +75,19 @@ pub struct CalculatedLineOfSight {
 
     // rays we've cast from player
     rays: Vec<LineSegment>,
+
+    // where all the rays originate from
+    origin: Vec2,
 }
 
-pub fn calculate_vision_extend_by_sweeping_in_a_circle(
+pub fn calculate_vision_extent_by_sweeping_in_a_circle(
     mut query: Query<
         (&GridPosition, &LineOfSightSource, &FacingWallsCache, &mut CalculatedLineOfSight),
     >,
     grid: Res<GridLayout>,
 ) {
     for (grid_pos, los_source, facing_walls, mut calculated_points) in query.iter_mut() {
-        let steps = 100; // how many steps to take around the circle
+        let steps = 50; // how many steps to take around the circle
         let total_angle = std::f32::consts::PI * 2.; // the total angle to sweep
         let step_angle = total_angle / steps as f32;
         let max_range = los_source.max_distance_in_grid_units * grid.square_size;
@@ -83,8 +96,8 @@ pub fn calculate_vision_extend_by_sweeping_in_a_circle(
         let mut rays = vec![];
 
         let ray_start = grid.grid_to_world(grid_pos);
+        calculated_points.origin = ray_start;
         for i in 0..steps {
-
             let theta = step_angle * i as f32;
 
             // construct a segment at the given an
@@ -104,6 +117,99 @@ pub fn calculate_vision_extend_by_sweeping_in_a_circle(
         }
 
         calculated_points.rays = rays;
+    }
+}
+
+#[derive(Component)]
+struct LineOfSightMeshHandle {
+    mesh_handle: Entity,
+    refresh_timer: Timer,
+
+    triangle_vertices: Vec<[f32; 3]>,
+    triangle_indices: Vec<u32>,
+}
+
+impl LineOfSightMeshHandle {
+    pub fn new() -> LineOfSightMeshHandle {
+        Self {
+            mesh_handle: Entity::PLACEHOLDER,
+            refresh_timer: Timer::new(Duration::from_millis(100), TimerMode::Repeating),
+            triangle_vertices: vec![],
+            triangle_indices: vec![],
+        }
+    }
+}
+
+pub fn update_line_of_sight_mesh(
+    mut commands: Commands,
+    mut query: Query<
+        (&mut CalculatedLineOfSight, &mut LineOfSightMeshHandle),
+    >,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    time: Res<Time>,
+) {
+    // raycasting is done and we have a list of points where rays collided with walls, in angle order.
+    // now we construct a mesh from those points, by drawing triangles between the center point and each consecutive ray's intersection with a wall
+    for (mut calculated_points, mut los_mesh_handle) in query.iter_mut() {
+        los_mesh_handle.refresh_timer.tick(time.delta());
+        if !los_mesh_handle.refresh_timer.just_finished() {
+            continue;
+        }
+
+        let z: f32 = 500.; // todo we need a z-layers const somewhere
+        let origin = calculated_points.origin;
+        let mut vertices: Vec<[f32; 3]> = vec![[origin.x, origin.y, z]];
+        for ray in calculated_points.rays.iter() {
+            let pt = ray.end();
+            vertices.push([pt.x, pt.y, 0.0]);
+        }
+
+        // build our triangles
+        let mut triangle_indices: Vec<u32> = vec![0, (calculated_points.rays.len() - 1) as u32, 1]; // this is the last tri that closes the circle
+        for i in 1..calculated_points.rays.len() - 1 {
+            triangle_indices.push(0);
+            triangle_indices.push(i as u32);
+            triangle_indices.push(i as u32 + 1);
+        }
+
+        // todo remove this it's for debugging
+        los_mesh_handle.triangle_vertices = vertices.clone();
+        los_mesh_handle.triangle_indices = triangle_indices.clone();
+        // println!("{:?}", &vertices);
+        // println!("{:?}", &triangle_indices);
+
+        // color on mesh
+        let mut v_color: Vec<[f32; 4]> = vec![];
+        v_color.resize(vertices.len(), [0., 0., 1., 1., ]); // blue?
+
+        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default());
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
+        mesh.insert_indices(Indices::U32(triangle_indices));
+        mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, v_color);
+
+        let mesh_id = commands.spawn((
+            Name::new("LineOfSightMesh"),
+            // ColorMesh2dBundle {
+            //     mesh: Mesh2dHandle(meshes.add(mesh)),
+            //     material: materials.add(ColorMaterial::from(Color::srgba(1., 1., 0., 0.5))),
+            //     transform: Transform::from_xyz(origin.x, origin.y, z),
+            //     ..default()
+            // },
+
+            // The `Handle<Mesh>` needs to be wrapped in a `Mesh2dHandle` to use 2d rendering instead of 3d
+            Mesh2dHandle(meshes.add(mesh)),
+            // This bundle's components are needed for something to be rendered
+            SpatialBundle::INHERITED_IDENTITY,
+        )).id();
+
+        let old_id = los_mesh_handle.mesh_handle;
+        los_mesh_handle.mesh_handle = mesh_id;
+
+        // despawn the old one
+        if old_id != Entity::PLACEHOLDER {
+            commands.entity(old_id).despawn();
+        }
     }
 }
 
@@ -185,15 +291,19 @@ pub mod front_facing_edges {
 
 pub mod debug_overlay {
     use bevy::prelude::*;
-
+    use rand::Rng;
     use crate::AppSet;
     use crate::game::grid::DebugOverlaysState;
-    use crate::game::line_of_sight::{CalculatedLineOfSight, FacingWallsCache};
+    use crate::game::line_of_sight::{CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle};
 
     pub fn plugin(app: &mut App) {
         app.add_systems(
             Update,
-            (redraw_front_facing_edges, draw_rays)
+            (
+                redraw_front_facing_edges,
+                // draw_rays,
+                draw_debug_triangles,
+            )
                 .in_set(AppSet::UpdateWorld)
                 .run_if(in_state(DebugOverlaysState::Enabled)),
         );
@@ -226,6 +336,34 @@ pub mod debug_overlay {
         for ray_cache in query.iter() {
             for ray in ray_cache.rays.iter() {
                 gizmos.line_2d(ray.start(), ray.end(), color);
+            }
+        }
+    }
+
+    pub fn draw_debug_triangles(
+        mut gizmos: Gizmos,
+        query: Query<&LineOfSightMeshHandle>,
+    ) {
+        for mesh in query.iter() {
+            let near_color = Color::srgb(1., 1., 0.);
+            let far_color = Color::srgb(0., 1., 1.);
+            for (i, tri) in mesh.triangle_indices.windows(3).enumerate() {
+                let (a, b, c) = (
+                    mesh.triangle_vertices[tri[0] as usize],
+                    mesh.triangle_vertices[tri[1] as usize],
+                    mesh.triangle_vertices[tri[2] as usize],
+                );
+
+                let prim = Triangle2d {
+                    vertices: [
+                        Vec2::new(a[0], a[1]),
+                        Vec2::new(b[0], b[1]),
+                        Vec2::new(c[0], c[1]),
+                    ]
+                };
+
+                let color = if i % 2 == 0 { near_color } else { far_color };
+                gizmos.primitive_2d(&prim, Vec2::ZERO, 0., color);
             }
         }
     }

@@ -9,12 +9,15 @@ use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
+use leafwing_input_manager::action_state::ActionState;
+use crate::input::DevAction;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
         .add_systems(Update, update_grid_when_level_changes);
 
     // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
+    app.add_systems(Update, toggle_debug_overlays);
     app.init_state::<DebugOverlaysState>().add_systems(
         Update,
         (update_grid_debug_overlay, update_player_grid_debug_overlay)
@@ -455,10 +458,25 @@ fn update_grid_debug_overlay(
     }
 }
 
+pub fn toggle_debug_overlays(
+    current_state: Res<State<DebugOverlaysState>>,
+    query: Query<&ActionState<DevAction>>,
+    mut set_next_state: ResMut<NextState<DebugOverlaysState>>,
+)  {
+    for act in query.iter() {
+        if act.just_pressed(&DevAction::ToggleDebugOverlays) {
+            set_next_state.set(match current_state.get() {
+                DebugOverlaysState::Disabled => DebugOverlaysState::Enabled,
+                DebugOverlaysState::Enabled => DebugOverlaysState::Disabled,
+            });
+        }
+    }
+}
+
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
 pub enum DebugOverlaysState {
-    _Disabled,
     #[default] // change this to disable all the debug grid drawing
+    Disabled,
     Enabled,
 }
 
