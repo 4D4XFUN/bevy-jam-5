@@ -5,6 +5,9 @@ use bevy::prelude::{
 
 use crate::game::grid::GridPosition;
 
+/// Handles all health code.
+///
+/// Triggers OnDeath on death
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CanReceiveDamage>();
     app.register_type::<CanApplyDamage>();
@@ -27,6 +30,9 @@ pub struct SpawnPointGridPosition(pub Vec2);
 
 #[derive(Event)]
 pub struct ReceiveDamage;
+
+#[derive(Event)]
+pub struct OnDeath;
 
 const ENTITY_COLLISION_RADIUS: f32 = 15.0;
 
@@ -54,6 +60,7 @@ fn on_receive_damage(
         (Entity, &mut GridPosition, &SpawnPointGridPosition),
         With<CanReceiveDamage>,
     >,
+    mut commands: Commands,
 ) {
     let id = trigger.entity();
 
@@ -61,6 +68,7 @@ fn on_receive_damage(
         if id == receiver {
             receiver_grid_position.coordinates = spawn_point.0;
             receiver_grid_position.offset = Vec2::ZERO; // reset offset within the tile
+            commands.trigger(OnDeath);
         }
     }
 }

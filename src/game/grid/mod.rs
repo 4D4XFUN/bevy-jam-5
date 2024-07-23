@@ -185,6 +185,12 @@ pub mod movement {
         }
     }
 
+    impl GridMovement {
+        pub fn current_force(&self) -> Vec2 {
+            self.acceleration_player_force + self.acceleration_external_force
+        }
+    }
+
     pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridMovement)>) {
         for (action_state, mut controller) in query.iter_mut() {
             let mut intent = Vec2::ZERO;
@@ -215,9 +221,7 @@ pub mod movement {
     ) {
         let dt = time.delta_seconds();
         for (mut position, mut movement) in query.iter_mut() {
-            let force: Vec2 =
-                movement.acceleration_player_force + movement.acceleration_external_force;
-            let force = force * dt; // scale it by time
+            let force = movement.current_force() * dt; // scale it by time
 
             // apply forces and friction
             let mut velocity = movement.velocity + force;
