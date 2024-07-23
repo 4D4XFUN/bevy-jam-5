@@ -41,7 +41,7 @@ impl Default for LineOfSightBundle {
         Self {
             line_of_sight_source: LineOfSightSource {
                 max_distance_in_grid_units: 20.,
-                max_rays_to_cast: 100,
+                max_rays_to_cast: 60,
             },
             facing_walls_cache: FacingWallsCache::new(),
             calculated_line_of_sight: CalculatedLineOfSight::default(),
@@ -179,8 +179,8 @@ pub fn update_line_of_sight_mesh(
         }
 
         // todo remove this it's for debugging
-        los_mesh_handle.triangle_vertices = vertices.clone();
-        los_mesh_handle.triangle_indices = triangle_indices.clone();
+        los_mesh_handle.triangle_vertices.clone_from(&vertices);
+        los_mesh_handle.triangle_indices.clone_from(&triangle_indices);
         // println!("{:?}", &vertices);
         // println!("{:?}", &triangle_indices);
 
