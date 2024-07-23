@@ -64,7 +64,7 @@ impl SfxAssets {
         );
         assets.insert(
             SfxAsset::ButtonPress,
-            asset_server.load("audio/sfx/click.ogg"),
+            asset_server.load("audio/sfx/button_press.ogg"),
         );
         assets.insert(SfxAsset::Step1, asset_server.load("audio/sfx/toast1.ogg"));
         assets.insert(SfxAsset::Step2, asset_server.load("audio/sfx/toast2.ogg"));
@@ -93,7 +93,7 @@ impl SoundtrackAssets {
         let mut assets = HashMap::new();
         assets.insert(
             SoundtrackAsset::Credits,
-            asset_server.load("audio/soundtracks/credits_lofi.ogg"),
+            asset_server.load("audio/soundtracks/credits_lofi.mp3"),
         );
         assets.insert(
             SoundtrackAsset::Gameplay,
