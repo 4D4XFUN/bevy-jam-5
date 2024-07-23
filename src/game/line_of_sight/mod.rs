@@ -70,19 +70,11 @@ pub mod front_facing_edges {
 
     /// Whenever the player moves a whole tile, we have to recompute which parts of walls are facing them
     pub fn update_front_facing_edges_when_grid_pos_changes(
-        mut query: Query<
-            (
-                Entity,
-                &GridPosition,
-                &mut LineOfSightSource,
-                &mut FacingWallsCache,
-            ),
-            Changed<GridPosition>,
-        >,
+        mut query: Query<(&GridPosition, &mut LineOfSightSource, &mut FacingWallsCache,), Changed<GridPosition>, >,
         walls: Res<LevelWalls>,
         grid: Res<GridLayout>,
     ) {
-        for (e, &player_position, player_los, mut facing_walls_cache) in query.iter_mut() {
+        for (&player_position, player_los, mut facing_walls_cache) in query.iter_mut() {
             // skip if we haven't actually changed tiles
             if player_position.coordinates == facing_walls_cache.last_grid_position {
                 continue;
