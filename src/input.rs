@@ -37,6 +37,9 @@ impl PlayerAction {
         input_map.insert(Self::MoveRight, KeyCode::KeyD);
         input_map.insert(Self::MoveRight, KeyCode::ArrowRight);
 
+        // camera
+        input_map.insert(Self::ZoomToOverview, KeyCode::Space);
+
         input_map
     }
 }
