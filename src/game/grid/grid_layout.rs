@@ -1,9 +1,9 @@
 //! Represents the global grid and provides mapping functions from grid-coordinate space to world space and back
 
-use std::hash::{Hash, Hasher};
+use crate::game::grid::GridPosition;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use crate::game::grid::GridPosition;
+use std::hash::{Hash, Hasher};
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
@@ -32,7 +32,9 @@ impl GridLayout {
     /// Get the positions of the corners of a position on the grid, in world (pixel) coordinates
     pub fn corners(&self, grid_pos: &GridPosition) -> Corners {
         let sw = self.grid_to_world(grid_pos);
-        let ne = sw.with_x(sw.x + self.square_size).with_y(sw.y + self.square_size);
+        let ne = sw
+            .with_x(sw.x + self.square_size)
+            .with_y(sw.y + self.square_size);
         Corners {
             southwest: sw,
             northwest: Vec2::new(sw.x, ne.y),
@@ -67,9 +69,9 @@ impl PartialEq for LineSegment {
             && self.b.x.floor() as i32 == other.b.x.floor() as i32
             && self.b.y.floor() as i32 == other.b.y.floor() as i32)
             || (self.a.x.floor() as i32 == other.b.x.floor() as i32
-            && self.a.y.floor() as i32 == other.b.y.floor() as i32
-            && self.b.x.floor() as i32 == other.a.x.floor() as i32
-            && self.b.y.floor() as i32 == other.a.y.floor() as i32)
+                && self.a.y.floor() as i32 == other.b.y.floor() as i32
+                && self.b.x.floor() as i32 == other.a.x.floor() as i32
+                && self.b.y.floor() as i32 == other.a.y.floor() as i32)
     }
 }
 
@@ -82,8 +84,16 @@ impl LineSegment {
 }
 impl Hash for LineSegment {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let (min_x, max_x) = if self.a.x < self.b.x { (self.a.x, self.b.x) } else { (self.b.x, self.a.x) };
-        let (min_y, max_y) = if self.a.y < self.b.y { (self.a.y, self.b.y) } else { (self.b.y, self.a.y) };
+        let (min_x, max_x) = if self.a.x < self.b.x {
+            (self.a.x, self.b.x)
+        } else {
+            (self.b.x, self.a.x)
+        };
+        let (min_y, max_y) = if self.a.y < self.b.y {
+            (self.a.y, self.b.y)
+        } else {
+            (self.b.y, self.a.y)
+        };
 
         (min_x.floor() as i32).hash(state);
         (min_y.floor() as i32).hash(state);

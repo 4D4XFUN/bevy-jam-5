@@ -21,7 +21,9 @@ pub struct LineOfSightBundle {
 impl Default for LineOfSightBundle {
     fn default() -> Self {
         Self {
-            line_of_sight_source: LineOfSightSource { max_distance_in_grid_units: 10. },
+            line_of_sight_source: LineOfSightSource {
+                max_distance_in_grid_units: 10.,
+            },
             facing_walls_cache: FacingWallsCache::new(),
         }
     }
@@ -51,43 +53,56 @@ impl FacingWallsCache {
 
 /// Finds front facing edges of walls (from player's perspective)
 pub mod front_facing_edges {
-    use std::collections::HashMap;
-    use bevy::prelude::*;
-    use bevy_ecs_ldtk::GridCoords;
-    use crate::AppSet;
     use crate::game::grid::grid_layout::{GridLayout, LineSegment};
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
     use crate::game::spawn::level::LevelWalls;
+    use crate::AppSet;
+    use bevy::prelude::*;
+    use bevy_ecs_ldtk::GridCoords;
+    use std::collections::HashMap;
 
     pub fn plugin(app: &mut App) {
         // Systems
-        app.add_systems(Update, update_front_facing_edges_when_grid_pos_changes.in_set(AppSet::Update));
+        app.add_systems(
+            Update,
+            update_front_facing_edges_when_grid_pos_changes.in_set(AppSet::Update),
+        );
     }
 
     #[derive(Event, Debug, Copy, Clone)]
     pub struct FacingWallsChanged {
         pub previous_source: Vec2, // grid coordinates
-        pub new_source: Vec2, // grid coordinates
+        pub new_source: Vec2,      // grid coordinates
     }
 
     /// Whenever the player moves a whole tile, we have to recompute which parts of walls are facing them
     pub fn update_front_facing_edges_when_grid_pos_changes(
         mut commands: Commands,
         mut query: Query<
-            (Entity, &GridPosition, &mut LineOfSightSource, &mut FacingWallsCache),
+            (
+                Entity,
+                &GridPosition,
+                &mut LineOfSightSource,
+                &mut FacingWallsCache,
+            ),
             (Changed<GridPosition>),
         >,
         walls: Res<LevelWalls>,
         grid: Res<GridLayout>,
     ) {
         for (e, &player_position, mut player_los, mut facing_walls_cache) in query.iter_mut() {
-
             // skip if we haven't actually changed tiles
             if player_position.coordinates == facing_walls_cache.last_grid_position {
                 continue;
             }
-            commands.trigger_targets(FacingWallsChanged { previous_source: facing_walls_cache.last_grid_position, new_source: player_position.coordinates }, e); // notify observers
+            commands.trigger_targets(
+                FacingWallsChanged {
+                    previous_source: facing_walls_cache.last_grid_position,
+                    new_source: player_position.coordinates,
+                },
+                e,
+            ); // notify observers
             facing_walls_cache.last_grid_position = player_position.coordinates;
 
             // compute nearest edges for every wall
@@ -95,10 +110,13 @@ pub mod front_facing_edges {
             let pc = player_position.coordinates;
             for wall in walls.wall_locations.iter() {
                 // for now, stick all edges in for drawing
-                let wall_pos = GridPosition::new(wall.x as f32, wall.y as f32).with_offset(Vec2::new(-0.5, -0.5));
+                let wall_pos = GridPosition::new(wall.x as f32, wall.y as f32)
+                    .with_offset(Vec2::new(-0.5, -0.5));
 
                 // skip walls that are further than our LOS distance
-                if (player_position - wall_pos).coordinates.length() > player_los.max_distance_in_grid_units {
+                if (player_position - wall_pos).coordinates.length()
+                    > player_los.max_distance_in_grid_units
+                {
                     continue;
                 }
 
@@ -124,12 +142,17 @@ pub mod front_facing_edges {
 pub mod debug_overlay {
     use bevy::prelude::*;
 
-    use crate::AppSet;
     use crate::game::grid::DebugOverlaysState;
     use crate::game::line_of_sight::FacingWallsCache;
+    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
-        app.add_systems(Update, redraw_front_facing_edges.in_set(AppSet::UpdateWorld).run_if(in_state(DebugOverlaysState::Enabled)));
+        app.add_systems(
+            Update,
+            redraw_front_facing_edges
+                .in_set(AppSet::UpdateWorld)
+                .run_if(in_state(DebugOverlaysState::Enabled)),
+        );
     }
 
     /// Every update, if the grid coords changed, redraw the overlay of edges facing the player

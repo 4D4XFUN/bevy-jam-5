@@ -2,13 +2,13 @@ pub mod grid_layout;
 
 use std::ops::{Add, Sub};
 
+use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::level::LevelWalls;
 use crate::game::spawn::player::Player;
 use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use crate::game::grid::grid_layout::GridLayout;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
