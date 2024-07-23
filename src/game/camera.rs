@@ -1,10 +1,7 @@
-use std::cmp::min;
-
 use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
-use bevy_egui::systems::InputEvents;
 
 use crate::game::spawn::level::{GRID_SIZE, LevelWalls};
 use crate::game::spawn::player::Player;
