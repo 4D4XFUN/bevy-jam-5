@@ -5,6 +5,8 @@ mod postprocessing;
 mod screen;
 mod ui;
 
+pub mod geometry_2d;
+
 mod input;
 #[cfg(test)]
 pub mod testing;
