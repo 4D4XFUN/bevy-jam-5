@@ -78,7 +78,7 @@ impl Plugin for AppPlugin {
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
 
-        app.add_plugins(PostProcessing);
+        // app.add_plugins(PostProcessing);
 
         #[cfg(feature = "dev")]
         app.add_plugins(game::ai::proving_grounds_plugin);
