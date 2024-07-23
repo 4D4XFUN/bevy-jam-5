@@ -2,9 +2,8 @@ use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
-use egui::debug_text::print;
 
-use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
+use crate::game::spawn::level::{GRID_SIZE, LevelWalls};
 use crate::game::spawn::player::Player;
 use crate::postprocessing::PostProcessSettings;
 
