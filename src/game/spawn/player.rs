@@ -12,7 +12,7 @@ use crate::{
     game::{
         animation::PlayerAnimation,
         assets::{ImageAsset, ImageAssets},
-        camera::CanBeFollowedByCamera,
+        camera::CameraFollowTarget,
         spawn::ldtk::LdtkEntityBundle,
     },
     screen::Screen,
@@ -54,7 +54,7 @@ fn spawn_player(
         Name::new("Player"),
         StateScoped(Screen::Playing),
         Player,
-        CanBeFollowedByCamera,
+        CameraFollowTarget,
         SpriteBundle {
             texture: images[&ImageAsset::Player].clone_weak(),
             transform: player_transform,

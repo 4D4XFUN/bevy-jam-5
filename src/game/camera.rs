@@ -25,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
-pub struct CanBeFollowedByCamera;
+pub struct CameraFollowTarget;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Default, Reflect)]
 #[reflect(Component)]
@@ -144,40 +144,42 @@ fn camera_follow(
         (&mut Transform, &OrthographicProjection, &CameraProperties),
         (With<Camera>, Without<Player>),
     >,
-    target: Query<&Transform, (With<CanBeFollowedByCamera>, Without<Camera>)>,
+    target: Query<&Transform, (With<CameraFollowTarget>, Without<Camera>)>,
     level_walls: Res<LevelWalls>,
     time: Res<Time>,
 ) {
-    if let Ok(target_transform) = target.get_single() {
-        if let Ok((mut camera_transform, orthographic, properties)) = camera.get_single_mut() {
-            //calculate bounds
-            let vertical_bounds = orthographic.area.height();
-            let horizontal_bounds = orthographic.area.width();
-            let level_width = (level_walls.level_width * GRID_SIZE) as f32;
-            let level_height = (level_walls.level_height * GRID_SIZE) as f32;
-            let min_x = (horizontal_bounds / 2.0).min(level_width / 2.0);
-            let max_x = (level_width - horizontal_bounds / 2.0).max(level_width / 2.0);
-            let min_y = (vertical_bounds / 2.0).min(level_height / 2.0);
-            let max_y = (level_height - vertical_bounds / 2.0).max(level_height / 2.0);
+    let Ok(target_transform) = target.get_single() else {
+        return;
+    };
+    let Ok((mut camera_transform, orthographic, properties)) = camera.get_single_mut() else {
+        return;
+    };
+    //calculate bounds
+    let vertical_bounds = orthographic.area.width();
+    let horizontal_bounds = orthographic.area.height();
+    let level_width = (level_walls.level_width * GRID_SIZE) as f32;
+    let level_height = (level_walls.level_height * GRID_SIZE) as f32;
+    let min_x = (horizontal_bounds / 2.0).min(level_width / 2.0);
+    let max_x = (level_width - horizontal_bounds / 2.0).max(level_width / 2.0);
+    let min_y = (vertical_bounds / 2.0).min(level_height / 2.0);
+    let max_y = (level_height - vertical_bounds / 2.0).max(level_height / 2.0);
 
-            let bounded_target_position = Vec3::new(
-                target_transform.translation.x.clamp(min_x, max_x),
-                target_transform.translation.y.clamp(min_y, max_y),
-                target_transform.translation.z,
-            );
+    let bounded_target_position = Vec3::new(
+        target_transform.translation.x.clamp(min_x, max_x),
+        target_transform.translation.y.clamp(min_y, max_y),
+        camera_transform.translation.z,
+    );
 
-            //smoothly interpolate camera position to target position
-            camera_transform.translation = camera_transform.translation.lerp(
-                bounded_target_position,
-                time.delta_seconds() * properties.camera_follow_snappiness,
-            );
+    //smoothly interpolate camera position to target position
+    let translation = camera_transform.translation.lerp(
+        bounded_target_position,
+        time.delta_seconds() * properties.camera_follow_snappiness,
+    );
 
-            //and hard clam that camera's position if it is out of bounds
-            camera_transform.translation = Vec3::new(
-                camera_transform.translation.x.clamp(min_x, max_x),
-                camera_transform.translation.y.clamp(min_y, max_y),
-                camera_transform.translation.z,
-            );
-        }
-    }
+    //and hard clam that camera's position if it is out of bounds
+    camera_transform.translation = Vec3::new(
+        translation.x.clamp(min_x, max_x),
+        translation.y.clamp(min_y, max_y),
+        camera_transform.translation.z,
+    );
 }
