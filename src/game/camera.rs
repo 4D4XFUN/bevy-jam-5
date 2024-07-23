@@ -35,9 +35,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_buffer: 0.01,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
-        PostProcessSettings {
-            intensity: 0.0, /* my head hurts */
-        },
+        PostProcessSettings { intensity: 0.00005 },
     ));
 }
 
