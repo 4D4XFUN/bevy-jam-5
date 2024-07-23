@@ -1,10 +1,10 @@
 //! Represents the global grid and provides mapping functions from grid-coordinate space to world space and back
 
 use crate::game::grid::GridPosition;
+use crate::geometry_2d::line_segment::LineSegment;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use std::hash::{Hash, Hasher};
-use crate::geometry_2d::line_segment::LineSegment;
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
@@ -56,7 +56,6 @@ impl GridLayout {
         }
     }
 }
-
 
 #[derive(Copy, Clone, Debug)]
 pub struct Corners {

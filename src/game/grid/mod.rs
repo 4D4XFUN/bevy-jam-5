@@ -5,12 +5,12 @@ use std::ops::{Add, Sub};
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::level::LevelWalls;
 use crate::game::spawn::player::Player;
+use crate::input::DevAction;
 use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
-use crate::input::DevAction;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
@@ -462,7 +462,7 @@ pub fn toggle_debug_overlays(
     current_state: Res<State<DebugOverlaysState>>,
     query: Query<&ActionState<DevAction>>,
     mut set_next_state: ResMut<NextState<DebugOverlaysState>>,
-)  {
+) {
     for act in query.iter() {
         if act.just_pressed(&DevAction::ToggleDebugOverlays) {
             set_next_state.set(match current_state.get() {

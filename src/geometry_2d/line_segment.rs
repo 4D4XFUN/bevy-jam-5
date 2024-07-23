@@ -11,7 +11,10 @@ pub struct LineSegment {
 impl LineSegment {
     pub fn new(a: Vec2, b: Vec2) -> Self {
         let seg = Segment2d::from_points(a, b);
-        Self { segment2d: seg.0, center: seg.1 }
+        Self {
+            segment2d: seg.0,
+            center: seg.1,
+        }
     }
 
     pub fn start(&self) -> Vec2 {
@@ -22,9 +25,13 @@ impl LineSegment {
         self.segment2d.point2() + self.center
     }
 
-    pub fn do_intersect(&self, other: &LineSegment) -> bool { do_intersect(self, other) }
+    pub fn do_intersect(&self, other: &LineSegment) -> bool {
+        do_intersect(self, other)
+    }
 
-    pub fn intersection_point(&self, other: &LineSegment) -> Option<Vec2> { intersection_point(self, other) }
+    pub fn intersection_point(&self, other: &LineSegment) -> Option<Vec2> {
+        intersection_point(self, other)
+    }
 }
 
 pub fn do_intersect(line1: &LineSegment, line2: &LineSegment) -> bool {
@@ -42,10 +49,18 @@ pub fn do_intersect(line1: &LineSegment, line2: &LineSegment) -> bool {
         return true;
     }
 
-    if o1 == Ordering::Equal && on_segment(p1, p2, q1) { return true; }
-    if o2 == Ordering::Equal && on_segment(p1, q2, q1) { return true; }
-    if o3 == Ordering::Equal && on_segment(p2, p1, q2) { return true; }
-    if o4 == Ordering::Equal && on_segment(p2, q1, q2) { return true; }
+    if o1 == Ordering::Equal && on_segment(p1, p2, q1) {
+        return true;
+    }
+    if o2 == Ordering::Equal && on_segment(p1, q2, q1) {
+        return true;
+    }
+    if o3 == Ordering::Equal && on_segment(p2, p1, q2) {
+        return true;
+    }
+    if o4 == Ordering::Equal && on_segment(p2, q1, q2) {
+        return true;
+    }
 
     false
 }
@@ -84,10 +99,18 @@ pub fn intersection_point(line1: &LineSegment, line2: &LineSegment) -> Option<Ve
     }
 
     // Check for special cases where endpoints lie on the other segment
-    if o1 == Ordering::Equal && on_segment(p1, p2, q1) { return Some(p2); }
-    if o2 == Ordering::Equal && on_segment(p1, q2, q1) { return Some(q2); }
-    if o3 == Ordering::Equal && on_segment(p2, p1, q2) { return Some(p1); }
-    if o4 == Ordering::Equal && on_segment(p2, q1, q2) { return Some(q1); }
+    if o1 == Ordering::Equal && on_segment(p1, p2, q1) {
+        return Some(p2);
+    }
+    if o2 == Ordering::Equal && on_segment(p1, q2, q1) {
+        return Some(q2);
+    }
+    if o3 == Ordering::Equal && on_segment(p2, p1, q2) {
+        return Some(p1);
+    }
+    if o4 == Ordering::Equal && on_segment(p2, q1, q2) {
+        return Some(q1);
+    }
 
     None
 }
@@ -104,8 +127,7 @@ fn orientation(p: Vec2, q: Vec2, r: Vec2) -> Ordering {
 }
 
 fn on_segment(p: Vec2, q: Vec2, r: Vec2) -> bool {
-    q.x <= p.x.max(r.x) && q.x >= p.x.min(r.x) &&
-        q.y <= p.y.max(r.y) && q.y >= p.y.min(r.y)
+    q.x <= p.x.max(r.x) && q.x >= p.x.min(r.x) && q.y <= p.y.max(r.y) && q.y >= p.y.min(r.y)
 }
 
 #[cfg(test)]
@@ -123,8 +145,8 @@ mod tests {
 
         let seg = LineSegment::new(a, b);
 
-        assert_vec2_close!(Vec2::new(0., 50., ), seg.start());
-        assert_vec2_close!(Vec2::new(50., 50., ), seg.end());
+        assert_vec2_close!(Vec2::new(0., 50.,), seg.start());
+        assert_vec2_close!(Vec2::new(50., 50.,), seg.end());
     }
 
     #[test_case(
@@ -182,8 +204,10 @@ mod tests {
         "Collinear non-overlapping segments"
     )]
     fn test_line_intersection(
-        start1: Vec2, end1: Vec2,
-        start2: Vec2, end2: Vec2,
+        start1: Vec2,
+        end1: Vec2,
+        start2: Vec2,
+        end2: Vec2,
         expected: Option<Vec2>,
     ) {
         let line1 = LineSegment::new(start1, end1);
@@ -192,8 +216,12 @@ mod tests {
 
         match (result, expected) {
             (Some(point1), Some(point2)) => {
-                assert!((point1 - point2).length() < f32::EPSILON,
-                        "Expected {:?}, but got {:?}", point2, point1);
+                assert!(
+                    (point1 - point2).length() < f32::EPSILON,
+                    "Expected {:?}, but got {:?}",
+                    point2,
+                    point1
+                );
             }
             (None, None) => {}
             _ => panic!("Expected {:?}, but got {:?}", expected, result),

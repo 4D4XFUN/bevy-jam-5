@@ -11,7 +11,6 @@ mod input;
 #[cfg(test)]
 pub mod testing;
 
-
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},

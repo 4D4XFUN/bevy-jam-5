@@ -1,22 +1,27 @@
-use std::time::Duration;
+use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::GridPosition;
+use crate::geometry_2d::line_segment::LineSegment;
+use crate::AppSet;
 use bevy::color::Color::LinearRgba;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, MeshVertexAttribute, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::VertexFormat;
 use bevy::sprite::Mesh2dHandle;
-use crate::AppSet;
-use crate::game::grid::grid_layout::GridLayout;
-use crate::game::grid::GridPosition;
-use crate::geometry_2d::line_segment::LineSegment;
+use std::time::Duration;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(front_facing_edges::plugin);
 
-    app.add_systems(Update, (
-        calculate_vision_extent_by_sweeping_in_a_circle,
-        update_line_of_sight_mesh,
-    ).chain().in_set(AppSet::Update));
+    app.add_systems(
+        Update,
+        (
+            calculate_vision_extent_by_sweeping_in_a_circle,
+            update_line_of_sight_mesh,
+        )
+            .chain()
+            .in_set(AppSet::Update),
+    );
 
     #[cfg(feature = "dev")]
     app.add_plugins(debug_overlay::plugin);
@@ -81,9 +86,12 @@ pub struct CalculatedLineOfSight {
 }
 
 pub fn calculate_vision_extent_by_sweeping_in_a_circle(
-    mut query: Query<
-        (&GridPosition, &LineOfSightSource, &FacingWallsCache, &mut CalculatedLineOfSight),
-    >,
+    mut query: Query<(
+        &GridPosition,
+        &LineOfSightSource,
+        &FacingWallsCache,
+        &mut CalculatedLineOfSight,
+    )>,
     grid: Res<GridLayout>,
 ) {
     for (grid_pos, los_source, facing_walls, mut calculated_points) in query.iter_mut() {
@@ -101,7 +109,10 @@ pub fn calculate_vision_extent_by_sweeping_in_a_circle(
             let theta = step_angle * i as f32;
 
             // construct a segment at the given an
-            let ray_end = Vec2::new(theta.cos() * max_range + ray_start.x, theta.sin() * max_range + ray_start.y);
+            let ray_end = Vec2::new(
+                theta.cos() * max_range + ray_start.x,
+                theta.sin() * max_range + ray_start.y,
+            );
 
             let mut ray = LineSegment::new(ray_start, ray_end);
 
@@ -142,9 +153,7 @@ impl LineOfSightMeshHandle {
 
 pub fn update_line_of_sight_mesh(
     mut commands: Commands,
-    mut query: Query<
-        (&mut CalculatedLineOfSight, &mut LineOfSightMeshHandle),
-    >,
+    mut query: Query<(&mut CalculatedLineOfSight, &mut LineOfSightMeshHandle)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     time: Res<Time>,
@@ -181,27 +190,32 @@ pub fn update_line_of_sight_mesh(
 
         // color on mesh
         let mut v_color: Vec<[f32; 4]> = vec![];
-        v_color.resize(vertices.len(), [0., 0., 1., 1., ]); // blue?
+        v_color.resize(vertices.len(), [0., 0., 1., 1.]); // blue?
 
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default());
+        let mut mesh = Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::default(),
+        );
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
         mesh.insert_indices(Indices::U32(triangle_indices));
         mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, v_color);
 
-        let mesh_id = commands.spawn((
-            Name::new("LineOfSightMesh"),
-            // ColorMesh2dBundle {
-            //     mesh: Mesh2dHandle(meshes.add(mesh)),
-            //     material: materials.add(ColorMaterial::from(Color::srgba(1., 1., 0., 0.5))),
-            //     transform: Transform::from_xyz(origin.x, origin.y, z),
-            //     ..default()
-            // },
+        let mesh_id = commands
+            .spawn((
+                Name::new("LineOfSightMesh"),
+                // ColorMesh2dBundle {
+                //     mesh: Mesh2dHandle(meshes.add(mesh)),
+                //     material: materials.add(ColorMaterial::from(Color::srgba(1., 1., 0., 0.5))),
+                //     transform: Transform::from_xyz(origin.x, origin.y, z),
+                //     ..default()
+                // },
 
-            // The `Handle<Mesh>` needs to be wrapped in a `Mesh2dHandle` to use 2d rendering instead of 3d
-            Mesh2dHandle(meshes.add(mesh)),
-            // This bundle's components are needed for something to be rendered
-            SpatialBundle::INHERITED_IDENTITY,
-        )).id();
+                // The `Handle<Mesh>` needs to be wrapped in a `Mesh2dHandle` to use 2d rendering instead of 3d
+                Mesh2dHandle(meshes.add(mesh)),
+                // This bundle's components are needed for something to be rendered
+                SpatialBundle::INHERITED_IDENTITY,
+            ))
+            .id();
 
         let old_id = los_mesh_handle.mesh_handle;
         los_mesh_handle.mesh_handle = mesh_id;
@@ -217,12 +231,12 @@ pub fn update_line_of_sight_mesh(
 pub mod front_facing_edges {
     use bevy::prelude::*;
 
-    use crate::AppSet;
     use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
     use crate::game::spawn::level::LevelWalls;
     use crate::geometry_2d::line_segment::LineSegment;
+    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
         // Systems
@@ -290,11 +304,13 @@ pub mod front_facing_edges {
 }
 
 pub mod debug_overlay {
+    use crate::game::grid::DebugOverlaysState;
+    use crate::game::line_of_sight::{
+        CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle,
+    };
+    use crate::AppSet;
     use bevy::prelude::*;
     use rand::Rng;
-    use crate::AppSet;
-    use crate::game::grid::DebugOverlaysState;
-    use crate::game::line_of_sight::{CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle};
 
     pub fn plugin(app: &mut App) {
         app.add_systems(
@@ -328,10 +344,7 @@ pub mod debug_overlay {
         }
     }
 
-    pub fn draw_rays(
-        mut gizmos: Gizmos,
-        query: Query<&CalculatedLineOfSight>,
-    ) {
+    pub fn draw_rays(mut gizmos: Gizmos, query: Query<&CalculatedLineOfSight>) {
         let color = Color::srgb(0., 1., 0.);
         for ray_cache in query.iter() {
             for ray in ray_cache.rays.iter() {
@@ -340,10 +353,7 @@ pub mod debug_overlay {
         }
     }
 
-    pub fn draw_debug_triangles(
-        mut gizmos: Gizmos,
-        query: Query<&LineOfSightMeshHandle>,
-    ) {
+    pub fn draw_debug_triangles(mut gizmos: Gizmos, query: Query<&LineOfSightMeshHandle>) {
         for mesh in query.iter() {
             let near_color = Color::srgb(1., 1., 0.);
             let far_color = Color::srgb(0., 1., 1.);
@@ -359,7 +369,7 @@ pub mod debug_overlay {
                         Vec2::new(a[0], a[1]),
                         Vec2::new(b[0], b[1]),
                         Vec2::new(c[0], c[1]),
-                    ]
+                    ],
                 };
 
                 let color = if i % 2 == 0 { near_color } else { far_color };
