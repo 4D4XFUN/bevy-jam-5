@@ -1,12 +1,15 @@
 //! Spawn the main level by triggering other observers.
 
-use super::player::SpawnPlayerTrigger;
-use crate::game::spawn::ldtk::LdtkEntityBundle;
+use std::collections::HashSet;
+
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
-use std::collections::HashSet;
+
+use crate::game::spawn::ldtk::LdtkEntityBundle;
+
+use super::player::SpawnPlayerTrigger;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
@@ -19,7 +22,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<LevelWalls>();
 }
 
-const GRID_SIZE: i32 = 16;
+pub const GRID_SIZE: i32 = 16;
 
 #[derive(Default, Component)]
 struct Wall;

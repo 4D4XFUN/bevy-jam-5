@@ -5,6 +5,7 @@ mod postprocessing;
 mod screen;
 mod ui;
 
+mod input;
 #[cfg(test)]
 pub mod testing;
 
@@ -14,7 +15,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
-use postprocessing::PostProcessing;
+// use postprocessing::PostProcessing;
 
 pub struct AppPlugin;
 
@@ -60,7 +61,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
-                        volume: Volume::new(0.0), // mute audio
+                        volume: Volume::new(0.3), // quiet audio
                     },
                     ..default()
                 })
@@ -73,12 +74,13 @@ impl Plugin for AppPlugin {
         // Add other plugins.
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
         app.add_plugins(game::ai::plugin);
+        app.add_plugins(input::plugin);
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
 
-        app.add_plugins(PostProcessing);
+        // app.add_plugins(PostProcessing);
 
         #[cfg(feature = "dev")]
         app.add_plugins(game::ai::proving_grounds_plugin);
