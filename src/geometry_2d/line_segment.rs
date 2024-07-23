@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+
 use bevy::prelude::*;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -109,8 +110,22 @@ fn on_segment(p: Vec2, q: Vec2, r: Vec2) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use test_case::test_case;
+
+    use crate::assert_vec2_close;
+
+    use super::*;
+
+    #[test]
+    pub fn test_basic_line_segment_ops() {
+        let a = Vec2::new(0., 50.);
+        let b = Vec2::new(50., 50.);
+
+        let seg = LineSegment::new(a, b);
+
+        assert_vec2_close!(Vec2::new(0., 50., ), seg.start());
+        assert_vec2_close!(Vec2::new(50., 50., ), seg.end());
+    }
 
     #[test_case(
         Vec2::new(1.0, 1.0), Vec2::new(5.0, 5.0),

@@ -1,8 +1,14 @@
 use bevy::prelude::*;
+
+use crate::AppSet;
+use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(front_facing_edges::plugin);
+
+    app.add_systems(Update, calculate_vision_extend_by_sweeping_in_a_circle.in_set(AppSet::Update));
 
     #[cfg(feature = "dev")]
     app.add_plugins(debug_overlay::plugin);
@@ -15,6 +21,7 @@ pub(super) fn plugin(app: &mut App) {
 pub struct LineOfSightBundle {
     pub line_of_sight_source: LineOfSightSource,
     pub facing_walls_cache: FacingWallsCache,
+    pub calculated_line_of_sight: CalculatedLineOfSight,
 }
 
 impl Default for LineOfSightBundle {
@@ -24,6 +31,7 @@ impl Default for LineOfSightBundle {
                 max_distance_in_grid_units: 20.,
             },
             facing_walls_cache: FacingWallsCache::new(),
+            calculated_line_of_sight: CalculatedLineOfSight::default(),
         }
     }
 }
@@ -50,14 +58,64 @@ impl FacingWallsCache {
     }
 }
 
+#[derive(Component, Debug, Clone, Default)]
+pub struct CalculatedLineOfSight {
+    // the points where LOS extends to around the player in a circe/arc, ordered by angle.
+    extent: Vec<Vec2>,
+
+    // rays we've cast from player
+    rays: Vec<LineSegment>,
+}
+
+pub fn calculate_vision_extend_by_sweeping_in_a_circle(
+    mut query: Query<
+        (&GridPosition, &LineOfSightSource, &FacingWallsCache, &mut CalculatedLineOfSight),
+    >,
+    grid: Res<GridLayout>,
+) {
+    for (grid_pos, los_source, facing_walls, mut calculated_points) in query.iter_mut() {
+        let steps = 100; // how many steps to take around the circle
+        let total_angle = std::f32::consts::PI * 2.; // the total angle to sweep
+        let step_angle = total_angle / steps as f32;
+        let max_range = los_source.max_distance_in_grid_units * grid.square_size;
+
+        // let mut points = vec![];
+        let mut rays = vec![];
+
+        let ray_start = grid.grid_to_world(grid_pos);
+        for i in 0..steps {
+
+            let theta = step_angle * i as f32;
+
+            // construct a segment at the given an
+            let ray_end = Vec2::new(theta.cos() * max_range + ray_start.x, theta.sin() * max_range + ray_start.y);
+
+            let mut ray = LineSegment::new(ray_start, ray_end);
+
+            for wall_segment in facing_walls.facing_wall_edges.iter() {
+                if ray.do_intersect(wall_segment) {
+                    let intersection_point = ray.intersection_point(wall_segment).unwrap();
+                    ray = LineSegment::new(ray_start, intersection_point);
+                    break;
+                }
+            }
+
+            rays.push(ray);
+        }
+
+        calculated_points.rays = rays;
+    }
+}
+
 /// Finds front facing edges of walls (from player's perspective)
 pub mod front_facing_edges {
+    use bevy::prelude::*;
+
+    use crate::AppSet;
+    use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
     use crate::game::spawn::level::LevelWalls;
-    use crate::AppSet;
-    use bevy::prelude::*;
-    use crate::game::grid::grid_layout::GridLayout;
     use crate::geometry_2d::line_segment::LineSegment;
 
     pub fn plugin(app: &mut App) {
@@ -128,14 +186,14 @@ pub mod front_facing_edges {
 pub mod debug_overlay {
     use bevy::prelude::*;
 
-    use crate::game::grid::DebugOverlaysState;
-    use crate::game::line_of_sight::FacingWallsCache;
     use crate::AppSet;
+    use crate::game::grid::DebugOverlaysState;
+    use crate::game::line_of_sight::{CalculatedLineOfSight, FacingWallsCache};
 
     pub fn plugin(app: &mut App) {
         app.add_systems(
             Update,
-            redraw_front_facing_edges
+            (redraw_front_facing_edges, draw_rays)
                 .in_set(AppSet::UpdateWorld)
                 .run_if(in_state(DebugOverlaysState::Enabled)),
         );
@@ -156,6 +214,18 @@ pub mod debug_overlay {
                 let a = edge.segment2d.point1() + edge.center;
                 let b = edge.segment2d.point2() + edge.center;
                 gizmos.line_2d(a, b, c);
+            }
+        }
+    }
+
+    pub fn draw_rays(
+        mut gizmos: Gizmos,
+        query: Query<&CalculatedLineOfSight>,
+    ) {
+        let color = Color::srgb(0., 1., 0.);
+        for ray_cache in query.iter() {
+            for ray in ray_cache.rays.iter() {
+                gizmos.line_2d(ray.start(), ray.end(), color);
             }
         }
     }
