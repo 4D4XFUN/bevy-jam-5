@@ -22,7 +22,7 @@ impl Default for LineOfSightBundle {
     fn default() -> Self {
         Self {
             line_of_sight_source: LineOfSightSource {
-                max_distance_in_grid_units: 10.,
+                max_distance_in_grid_units: 20.,
             },
             facing_walls_cache: FacingWallsCache::new(),
         }
@@ -88,7 +88,6 @@ pub mod front_facing_edges {
             let mut edges: Vec<LineSegment> = vec![];
             let pc = player_position.coordinates;
             for wall in walls.wall_locations.iter() {
-                // for now, stick all edges in for drawing
                 let wall_pos = GridPosition::new(wall.x as f32, wall.y as f32)
                     .with_offset(Vec2::new(-0.5, -0.5));
 
@@ -112,6 +111,14 @@ pub mod front_facing_edges {
                     edges.push(sides.south)
                 }
             }
+
+            // sort edges based on distance from player
+            let player_world_pos = grid.grid_to_world(&player_position);
+            edges.sort_by(|a, b| {
+                let dist_to_a = (player_world_pos - a.center).length();
+                let dist_to_b = (player_world_pos - b.center).length();
+                dist_to_a.total_cmp(&dist_to_b)
+            });
 
             facing_walls_cache.facing_wall_edges = edges;
         }
@@ -139,9 +146,16 @@ pub mod debug_overlay {
         mut gizmos: Gizmos,
         front_facing_edges_query: Query<&FacingWallsCache>,
     ) {
+        let near_color = Color::srgb(1., 1., 0.);
+        let far_color = Color::srgb(0., 1., 1.);
         for wall_cache in front_facing_edges_query.iter() {
-            for edge in wall_cache.facing_wall_edges.iter() {
-                gizmos.line_2d(edge.a, edge.b, Color::srgb(0., 1., 0.)); // bright green
+            let steps = wall_cache.facing_wall_edges.len() as f32;
+
+            for (i, edge) in wall_cache.facing_wall_edges.iter().enumerate() {
+                let c = near_color.mix(&far_color, i as f32 / steps);
+                let a = edge.segment2d.point1() + edge.center;
+                let b = edge.segment2d.point2() + edge.center;
+                gizmos.line_2d(a, b, c);
             }
         }
     }
