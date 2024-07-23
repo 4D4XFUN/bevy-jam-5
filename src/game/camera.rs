@@ -98,7 +98,7 @@ fn record_smooth_zoom_input(
 
 fn record_binary_zoom_input(
     // input: Res<ButtonInput<KeyCode>>,
-    action: Query<(&ActionState<PlayerAction>)>,
+    action: Query<&ActionState<PlayerAction>>,
     mut query: Query<(&mut CanZoomSmoothly, &CameraProperties), With<Camera>>,
 ) {
     if let Ok((mut zoom_destination, camera_properties)) = query.get_single_mut() {
