@@ -53,7 +53,7 @@ impl FacingWallsCache {
 pub mod front_facing_edges {
     use std::collections::HashMap;
     use bevy::prelude::*;
-
+    use bevy_ecs_ldtk::GridCoords;
     use crate::AppSet;
     use crate::game::grid::grid_layout::{GridLayout, LineSegment};
     use crate::game::grid::GridPosition;
@@ -104,19 +104,17 @@ pub mod front_facing_edges {
 
                 // add all near-facing edges of walls to a list
                 let sides = grid.sides(&wall_pos);
-                if pc.x > wall_pos.coordinates.x {
+                if pc.x > wall_pos.coordinates.x && !walls.collides(wall.x + 1, wall.y) {
                     edges.push(sides.east)
-                } else if pc.x < wall_pos.coordinates.x {
+                } else if pc.x < wall_pos.coordinates.x && !walls.collides(wall.x - 1, wall.y) {
                     edges.push(sides.west)
                 }
-                if pc.y > wall_pos.coordinates.y {
+                if pc.y > wall_pos.coordinates.y && !walls.collides(wall.x, wall.y + 1) {
                     edges.push(sides.north)
-                } else if pc.y < wall_pos.coordinates.y {
+                } else if pc.y < wall_pos.coordinates.y && !walls.collides(wall.x, wall.y - 1) {
                     edges.push(sides.south)
                 }
             }
-
-            // TODO find duplicate segments - if there are two identical segments that means there's two adjacent walls and we can remove those
 
             facing_walls_cache.facing_wall_edges = edges;
         }
