@@ -127,7 +127,7 @@ pub fn calculate_vision_extent_by_sweeping_in_a_circle(
 }
 
 #[derive(Component)]
-struct LineOfSightMeshHandle {
+pub struct LineOfSightMeshHandle {
     mesh_handle: Entity,
     refresh_timer: Timer,
 
