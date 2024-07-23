@@ -64,12 +64,12 @@ impl SfxAssets {
         );
         assets.insert(
             SfxAsset::ButtonPress,
-            asset_server.load("audio/sfx/button_press.ogg"),
+            asset_server.load("audio/sfx/click.ogg"),
         );
-        assets.insert(SfxAsset::Step1, asset_server.load("audio/sfx/step1.ogg"));
-        assets.insert(SfxAsset::Step2, asset_server.load("audio/sfx/step2.ogg"));
-        assets.insert(SfxAsset::Step3, asset_server.load("audio/sfx/step3.ogg"));
-        assets.insert(SfxAsset::Step4, asset_server.load("audio/sfx/step4.ogg"));
+        assets.insert(SfxAsset::Step1, asset_server.load("audio/sfx/toast1.ogg"));
+        assets.insert(SfxAsset::Step2, asset_server.load("audio/sfx/toast2.ogg"));
+        assets.insert(SfxAsset::Step3, asset_server.load("audio/sfx/toast3.ogg"));
+        assets.insert(SfxAsset::Step4, asset_server.load("audio/sfx/toast4.ogg"));
 
         Self(assets)
     }
@@ -93,11 +93,11 @@ impl SoundtrackAssets {
         let mut assets = HashMap::new();
         assets.insert(
             SoundtrackAsset::Credits,
-            asset_server.load("audio/soundtracks/Monkeys Spinning Monkeys.ogg"),
+            asset_server.load("audio/soundtracks/anti-clicker.ogg"),
         );
         assets.insert(
             SoundtrackAsset::Gameplay,
-            asset_server.load("audio/soundtracks/Fluffing A Duck.ogg"),
+            asset_server.load("audio/soundtracks/anti-clicker.ogg"),
         );
         Self(assets)
     }
