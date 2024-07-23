@@ -73,9 +73,6 @@ impl FacingWallsCache {
 
 #[derive(Component, Debug, Clone, Default)]
 pub struct CalculatedLineOfSight {
-    // the points where LOS extends to around the player in a circe/arc, ordered by angle.
-    extent: Vec<Vec2>,
-
     // rays we've cast from player
     rays: Vec<LineSegment>,
 
@@ -308,7 +305,6 @@ pub mod debug_overlay {
     };
     use crate::AppSet;
     use bevy::prelude::*;
-    
 
     pub fn plugin(app: &mut App) {
         app.add_systems(
@@ -342,7 +338,7 @@ pub mod debug_overlay {
         }
     }
 
-    pub fn draw_rays(mut gizmos: Gizmos, query: Query<&CalculatedLineOfSight>) {
+    pub fn _draw_rays(mut gizmos: Gizmos, query: Query<&CalculatedLineOfSight>) {
         let color = Color::srgb(0., 1., 0.);
         for ray_cache in query.iter() {
             for ray in ray_cache.rays.iter() {
