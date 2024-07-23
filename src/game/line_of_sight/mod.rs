@@ -180,7 +180,9 @@ pub fn update_line_of_sight_mesh(
 
         // todo remove this it's for debugging
         los_mesh_handle.triangle_vertices.clone_from(&vertices);
-        los_mesh_handle.triangle_indices.clone_from(&triangle_indices);
+        los_mesh_handle
+            .triangle_indices
+            .clone_from(&triangle_indices);
         // println!("{:?}", &vertices);
         // println!("{:?}", &triangle_indices);
 
