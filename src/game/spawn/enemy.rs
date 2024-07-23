@@ -3,6 +3,7 @@ use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::movement::{Movement, MovementController};
+use crate::game::spawn::health::CanApplyDamage;
 use crate::game::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
@@ -31,6 +32,7 @@ pub struct SpawnCoords(IVec2);
 #[derive(Default, Bundle, LdtkEntity)]
 struct EnemyBundle {
     enemy: Enemy,
+    can_apply_damage: CanApplyDamage,
     #[sprite_sheet_bundle]
     sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]
