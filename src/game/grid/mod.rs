@@ -12,8 +12,7 @@ use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
-        .add_systems(Update, update_grid_when_level_changes)
-        .add_systems(Update, update_transform_for_entities_on_grid);
+        .add_systems(Update, update_grid_when_level_changes);
 
     // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
     app.init_state::<DebugOverlaysState>().add_systems(
@@ -453,18 +452,6 @@ fn update_grid_debug_overlay(
                 })
                 .set_parent(grid_entity);
         }
-    }
-}
-
-fn update_transform_for_entities_on_grid(
-    mut query: Query<(Entity, &GridPosition, &mut Transform), Changed<GridPosition>>,
-    grid: Res<GridLayout>,
-) {
-    for (_e, grid_pos, mut transform) in query.iter_mut() {
-        let world_pos: Vec2 = grid.grid_to_world(grid_pos);
-        transform.translation.x = world_pos.x - grid.square_size;
-        transform.translation.y = world_pos.y - grid.square_size;
-        // println!("{e} {:?}, {:?}", grid_pos, transform.translation);
     }
 }
 
