@@ -1,11 +1,12 @@
+use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
+use crate::game::spawn::player::Player;
+use crate::input::PlayerAction;
+use crate::postprocessing::PostProcessSettings;
 use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
-
-use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
-use crate::game::spawn::player::Player;
-use crate::postprocessing::PostProcessSettings;
+use leafwing_input_manager::action_state::ActionState;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraProperties>();
@@ -45,7 +46,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_max: 1.1,
             camera_zoom_min: 0.2,
             camera_zoom_buffer: 0.01,
-            camera_follow_snappiness: 10.0,
+            camera_follow_snappiness: 7.0,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
         PostProcessSettings { intensity: 0.00005 },
@@ -96,15 +97,17 @@ fn record_smooth_zoom_input(
 }
 
 fn record_binary_zoom_input(
-    input: Res<ButtonInput<KeyCode>>,
+    // input: Res<ButtonInput<KeyCode>>,
+    action: Query<&ActionState<PlayerAction>>,
     mut query: Query<(&mut CanZoomSmoothly, &CameraProperties), With<Camera>>,
 ) {
     if let Ok((mut zoom_destination, camera_properties)) = query.get_single_mut() {
-        // handle player input
-        if input.pressed(KeyCode::Space) {
-            zoom_destination.0 = camera_properties.camera_zoom_max;
-        } else if input.just_released(KeyCode::Space) {
-            zoom_destination.0 = camera_properties.initial_camera_zoom;
+        for act in action.iter() {
+            if act.pressed(&PlayerAction::ZoomToOverview) {
+                zoom_destination.0 = camera_properties.camera_zoom_max;
+            } else if act.just_released(&PlayerAction::ZoomToOverview) {
+                zoom_destination.0 = camera_properties.initial_camera_zoom;
+            }
         }
     }
 }
@@ -164,10 +167,10 @@ fn camera_follow(
             );
 
             //smoothly interpolate camera position to target position
-            let lerp = (bounded_target_position - camera_transform.translation)
-                * properties.camera_follow_snappiness
-                * time.delta_seconds();
-            camera_transform.translation += lerp;
+            camera_transform.translation = camera_transform.translation.lerp(
+                bounded_target_position,
+                time.delta_seconds() * properties.camera_follow_snappiness,
+            );
 
             //and hard clam that camera's position if it is out of bounds
             camera_transform.translation = Vec3::new(
