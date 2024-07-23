@@ -10,6 +10,7 @@ mod camera;
 pub mod grid;
 mod movement;
 pub mod spawn;
+pub mod stamina;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -19,5 +20,6 @@ pub(super) fn plugin(app: &mut App) {
         spawn::plugin,
         grid::plugin,
         camera::plugin,
+        stamina::plugin,
     ));
 }

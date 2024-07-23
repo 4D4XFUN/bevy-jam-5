@@ -25,6 +25,9 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Component)]
 pub struct MovementController(pub Vec2);
 
+#[derive(Event, Reflect)]
+pub struct UseStamina;
+
 fn record_movement_controller(
     input: Res<ButtonInput<KeyCode>>,
     mut controller_query: Query<&mut MovementController, With<Player>>,
