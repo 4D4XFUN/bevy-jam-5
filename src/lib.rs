@@ -5,10 +5,9 @@ mod postprocessing;
 mod screen;
 mod ui;
 
-
+mod input;
 #[cfg(test)]
 pub mod testing;
-mod input;
 
 use bevy::{
     asset::AssetMetaCheck,

@@ -147,11 +147,11 @@ pub mod collision {
 
 /// Grid-based movement
 pub mod movement {
+    use crate::game::grid::{GridLayout, GridPosition};
+    use crate::input::PlayerAction;
+    use crate::AppSet;
     use bevy::prelude::*;
     use leafwing_input_manager::prelude::ActionState;
-    use crate::game::grid::{GridLayout, GridPosition};
-    use crate::AppSet;
-    use crate::input::PlayerAction;
 
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
@@ -186,9 +186,7 @@ pub mod movement {
         }
     }
 
-    pub fn respond_to_input(
-        mut query: Query<(&ActionState<PlayerAction>, &mut GridMovement)>,
-    ) {
+    pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridMovement)>) {
         for (action_state, mut controller) in query.iter_mut() {
             let mut intent = Vec2::ZERO;
 
@@ -207,7 +205,8 @@ pub mod movement {
             // Normalize so that diagonal movement has the same speed as horizontal and vertical movement.
             let intent = intent.normalize_or_zero();
 
-            controller.acceleration_player_force = intent * controller.acceleration_player_multiplier;
+            controller.acceleration_player_force =
+                intent * controller.acceleration_player_multiplier;
         }
     }
 

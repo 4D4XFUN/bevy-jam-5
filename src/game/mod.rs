@@ -1,7 +1,7 @@
 //! Game mechanics and content.
 
-use bevy::prelude::*;
 use crate::input;
+use bevy::prelude::*;
 
 pub mod ai;
 mod animation;

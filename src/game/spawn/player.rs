@@ -4,6 +4,7 @@ use crate::game::grid::collision::GridCollider;
 use crate::game::grid::movement::GridMovement;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::LineOfSightBundle;
+use crate::input::PlayerAction;
 use crate::{
     game::{
         animation::PlayerAnimation,
@@ -16,7 +17,6 @@ use crate::{
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
-use crate::input::PlayerAction;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);

@@ -23,10 +23,7 @@ pub(super) fn plugin(app: &mut App) {
 
 /// listens for dev-only keybinds
 fn spawn_dev_input_manager(mut commands: Commands) {
-    commands
-        .spawn(InputManagerBundle::with_map(
-            DevAction::default_input_map(),
-        ));
+    commands.spawn(InputManagerBundle::with_map(DevAction::default_input_map()));
 }
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
@@ -42,8 +39,7 @@ fn toggle_world_inspector_state(
     mut set_next_state: ResMut<NextState<WorldInspectorState>>,
 ) {
     for act in query.iter() {
-        if act.just_pressed(&DevAction::ToggleWorldInspector)
-        {
+        if act.just_pressed(&DevAction::ToggleWorldInspector) {
             set_next_state.set(match current_state.get() {
                 WorldInspectorState::Disabled => WorldInspectorState::Enabled,
                 WorldInspectorState::Enabled => WorldInspectorState::Disabled,

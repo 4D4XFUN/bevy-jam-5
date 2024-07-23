@@ -1,12 +1,12 @@
+use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
+use crate::game::spawn::player::Player;
+use crate::input::PlayerAction;
+use crate::postprocessing::PostProcessSettings;
 use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
-use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
-use crate::game::spawn::player::Player;
-use crate::input::PlayerAction;
-use crate::postprocessing::PostProcessSettings;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraProperties>();
@@ -102,12 +102,10 @@ fn record_binary_zoom_input(
     mut query: Query<(&mut CanZoomSmoothly, &CameraProperties), With<Camera>>,
 ) {
     if let Ok((mut zoom_destination, camera_properties)) = query.get_single_mut() {
-
         for act in action.iter() {
             if act.pressed(&PlayerAction::ZoomToOverview) {
                 zoom_destination.0 = camera_properties.camera_zoom_max;
-            }
-            else if act.just_released(&PlayerAction::ZoomToOverview){
+            } else if act.just_released(&PlayerAction::ZoomToOverview) {
                 zoom_destination.0 = camera_properties.initial_camera_zoom;
             }
         }
