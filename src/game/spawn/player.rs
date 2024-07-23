@@ -3,10 +3,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
-use crate::game::grid::collision::GridCollider;
-use crate::game::grid::movement::GridMovement;
-use crate::game::grid::{GridPosition, SpawnPointGridPosition};
-use crate::game::spawn::health::CanReceiveDamage;
 use crate::{
     game::{
         animation::PlayerAnimation,
@@ -16,6 +12,10 @@ use crate::{
     },
     screen::Screen,
 };
+use crate::game::grid::collision::GridCollider;
+use crate::game::grid::GridPosition;
+use crate::game::grid::movement::GridMovement;
+use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
@@ -61,9 +61,7 @@ fn spawn_player(
             layout: texture_atlas_layout.clone(),
             index: player_animation.get_atlas_index(),
         },
-        SpawnPointGridPosition {
-            coordinates: Vec2::new(45., 24.),
-        },
+        SpawnPointGridPosition(Vec2::new(45., 24.)),
         GridPosition::new(45., 24.),
         GridMovement::default(),
         GridCollider::default(),

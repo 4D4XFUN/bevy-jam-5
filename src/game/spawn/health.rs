@@ -1,9 +1,9 @@
 use bevy::app::App;
 use bevy::prelude::{
-    Commands, Component, Entity, Event, Query, Reflect, Transform, Trigger, Update, With,
+    Commands, Component, Entity, Event, Query, Reflect, Transform, Trigger, Update, Vec2, With,
 };
 
-use crate::game::grid::{GridPosition, SpawnPointGridPosition};
+use crate::game::grid::GridPosition;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CanReceiveDamage>();
@@ -21,6 +21,9 @@ pub struct CanApplyDamage;
 
 #[derive(Component, Reflect, Default)]
 pub struct Health(pub f32);
+
+#[derive(Component, Reflect, Default)]
+pub struct SpawnPointGridPosition(pub Vec2);
 
 #[derive(Event)]
 pub struct ReceiveDamage;
@@ -56,7 +59,7 @@ fn on_receive_damage(
 
     for (receiver, mut receiver_grid_position, spawn_point) in &mut receiver_transforms {
         if id == receiver {
-            receiver_grid_position.coordinates = spawn_point.coordinates;
+            receiver_grid_position.coordinates = spawn_point.0;
         }
     }
 }

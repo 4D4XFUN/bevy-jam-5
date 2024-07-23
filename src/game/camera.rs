@@ -2,8 +2,9 @@ use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
+use egui::debug_text::print;
 
-use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
+use crate::game::spawn::level::{GRID_SIZE, LevelWalls};
 use crate::game::spawn::player::Player;
 use crate::postprocessing::PostProcessSettings;
 
@@ -164,10 +165,10 @@ fn camera_follow(
             );
 
             //smoothly interpolate camera position to target position
-            let lerp = (bounded_target_position - camera_transform.translation)
-                * properties.camera_follow_snappiness
-                * time.delta_seconds();
-            camera_transform.translation += lerp;
+            camera_transform.translation = camera_transform.translation.lerp(
+                bounded_target_position,
+                time.delta_seconds() * properties.camera_follow_snappiness,
+            );
 
             //and hard clam that camera's position if it is out of bounds
             camera_transform.translation = Vec3::new(
