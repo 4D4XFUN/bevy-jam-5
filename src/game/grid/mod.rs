@@ -1,12 +1,14 @@
+pub mod grid_layout;
+
 use std::ops::{Add, Sub};
 
-use bevy::app::App;
-use bevy::math::Vec2;
-use bevy::prelude::*;
-
+use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::level::LevelWalls;
 use crate::game::spawn::player::Player;
 use crate::screen::Screen;
+use bevy::app::App;
+use bevy::math::Vec2;
+use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
@@ -248,31 +250,6 @@ pub mod movement {
     }
 }
 
-#[derive(Resource, Debug, Reflect)]
-#[reflect(Resource)]
-pub struct GridLayout {
-    pub square_size: f32,
-    pub width: usize,
-    pub height: usize,
-    pub origin: Vec2,
-    pub padding: f32,
-}
-
-impl GridLayout {
-    pub fn grid_to_world(&self, grid_pos: &GridPosition) -> Vec2 {
-        Vec2::new(
-            self.origin.x
-                + grid_pos.coordinates.x * self.square_size
-                + self.padding
-                + (grid_pos.offset.x * self.square_size),
-            self.origin.y
-                + grid_pos.coordinates.y * self.square_size
-                + self.padding
-                + (grid_pos.offset.y * self.square_size),
-        )
-    }
-}
-
 #[derive(Component)]
 pub struct GridSprite;
 
@@ -283,18 +260,17 @@ pub struct GridPosition {
     pub offset: Vec2,      // the offset within a single grid cell
 }
 
-#[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
-#[reflect(Component)]
-pub struct SpawnPointGridPosition {
-    pub coordinates: Vec2, // the full-square coordinates on the whole grid
-}
-
 impl GridPosition {
     pub fn new(x: f32, y: f32) -> Self {
         Self {
             coordinates: Vec2::new(x, y),
             offset: Vec2::ZERO,
         }
+    }
+
+    pub fn with_offset(mut self, offset: Vec2) -> Self {
+        self.offset = offset;
+        self
     }
 
     pub fn _actual_coordinates(&self) -> Vec2 {
