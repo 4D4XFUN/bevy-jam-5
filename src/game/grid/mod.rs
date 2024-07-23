@@ -1,11 +1,12 @@
 use std::ops::{Add, Sub};
 
-use crate::game::spawn::level::LevelWalls;
-use crate::game::spawn::player::Player;
-use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
+
+use crate::game::spawn::level::LevelWalls;
+use crate::game::spawn::player::Player;
+use crate::screen::Screen;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
@@ -280,6 +281,12 @@ pub struct GridSprite;
 pub struct GridPosition {
     pub coordinates: Vec2, // the full-square coordinates on the whole grid
     pub offset: Vec2,      // the offset within a single grid cell
+}
+
+#[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
+#[reflect(Component)]
+pub struct SpawnPointGridPosition {
+    pub coordinates: Vec2, // the full-square coordinates on the whole grid
 }
 
 impl GridPosition {

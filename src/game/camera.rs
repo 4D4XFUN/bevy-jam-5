@@ -3,7 +3,7 @@ use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 
-use crate::game::spawn::level::{GRID_SIZE, LevelWalls};
+use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
 use crate::game::spawn::player::Player;
 use crate::postprocessing::PostProcessSettings;
 
@@ -45,7 +45,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_max: 1.1,
             camera_zoom_min: 0.2,
             camera_zoom_buffer: 0.01,
-            camera_follow_snappiness: 10.0,
+            camera_follow_snappiness: 7.0,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
         PostProcessSettings { intensity: 0.00005 },
