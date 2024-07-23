@@ -6,6 +6,9 @@ mod screen;
 mod ui;
 
 mod input;
+
+mod visuals;
+
 #[cfg(test)]
 pub mod testing;
 
@@ -75,6 +78,7 @@ impl Plugin for AppPlugin {
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
         app.add_plugins(game::ai::plugin);
         app.add_plugins(input::plugin);
+        app.add_plugins(visuals::plugin);
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]

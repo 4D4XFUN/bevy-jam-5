@@ -374,6 +374,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_ecs_ldtk",
  "bevy_egui",
+ "bevy_magic_light_2d",
  "egui",
  "leafwing-input-manager",
  "log",
@@ -908,6 +909,17 @@ dependencies = [
  "quote",
  "syn 2.0.70",
  "toml_edit 0.22.15",
+]
+
+[[package]]
+name = "bevy_magic_light_2d"
+version = "0.7.0"
+source = "git+https://github.com/tigerplush/bevy-magic-light-2d#56d564408db9c7af34129f8b9bc252cf2357c3b8"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "log",
+ "rand",
 ]
 
 [[package]]

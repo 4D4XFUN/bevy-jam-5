@@ -3,9 +3,11 @@
 use std::collections::HashSet;
 
 use bevy::prelude::*;
+use bevy::render::view::RenderLayers;
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
+use bevy_magic_light_2d::prelude::{LightOccluder2D, CAMERA_LAYER_WALLS};
 
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 
@@ -27,9 +29,23 @@ pub const GRID_SIZE: i32 = 16;
 #[derive(Default, Component)]
 struct Wall;
 
-#[derive(Default, Bundle, LdtkIntCell)]
+#[derive(Bundle, LdtkIntCell)]
 struct WallBundle {
     wall: Wall,
+    light_occluder: LightOccluder2D,
+    render_layer: RenderLayers,
+}
+
+impl Default for WallBundle {
+    fn default() -> Self {
+        WallBundle {
+            wall: Wall,
+            light_occluder: LightOccluder2D {
+                h_size: Vec2::splat(8.0),
+            },
+            render_layer: RenderLayers::from_layers(CAMERA_LAYER_WALLS),
+        }
+    }
 }
 
 #[derive(Default, Resource, Reflect)]

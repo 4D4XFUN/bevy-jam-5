@@ -10,7 +10,7 @@ use leafwing_input_manager::action_state::ActionState;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraProperties>();
-    app.add_systems(Startup, spawn_camera);
+    // app.add_systems(Startup, spawn_camera);
     app.add_systems(
         Update,
         (

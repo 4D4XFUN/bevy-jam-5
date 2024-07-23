@@ -20,6 +20,7 @@ leafwing-input-manager = "0.14.0" # button mapping to logical actions
 bevy-inspector-egui = { version = "0.25.1", optional = true }
 bevy_egui = { version = "0.28.0", optional = true }
 egui = { version = "0.28.1", optional = true }
+bevy_magic_light_2d = { git = "https://github.com/tigerplush/bevy-magic-light-2d" }
 
 [dev-dependencies]
 test-case = "3.3.1" # for data oriented unit tests which rust doesn't have built-in
