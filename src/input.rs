@@ -3,6 +3,9 @@ use leafwing_input_manager::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(InputManagerPlugin::<PlayerAction>::default());
+
+    #[cfg(feature = "dev")]
+    app.add_plugins(InputManagerPlugin::<DevAction>::default());
 }
 
 // This is the list of "things in the game I want to be able to do based on input"
@@ -33,6 +36,25 @@ impl PlayerAction {
 
         input_map.insert(Self::MoveRight, KeyCode::KeyD);
         input_map.insert(Self::MoveRight, KeyCode::ArrowRight);
+
+        input_map
+    }
+}
+
+#[cfg(feature = "dev")]
+#[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
+pub enum DevAction {
+    ToggleWorldInspector,
+    ToggleDebugOverlays,
+}
+
+#[cfg(feature = "dev")]
+impl DevAction {
+    pub fn default_input_map() -> InputMap<Self> {
+        let mut input_map = InputMap::default();
+
+        input_map.insert(Self::ToggleWorldInspector, KeyCode::F1);
+        input_map.insert(Self::ToggleDebugOverlays, KeyCode::F3);
 
         input_map
     }
