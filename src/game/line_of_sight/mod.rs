@@ -2,11 +2,9 @@ use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
-use bevy::color::Color::LinearRgba;
 use bevy::prelude::*;
-use bevy::render::mesh::{Indices, MeshVertexAttribute, PrimitiveTopology};
+use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
-use bevy::render::render_resource::VertexFormat;
 use bevy::sprite::Mesh2dHandle;
 use std::time::Duration;
 
@@ -155,12 +153,12 @@ pub fn update_line_of_sight_mesh(
     mut commands: Commands,
     mut query: Query<(&mut CalculatedLineOfSight, &mut LineOfSightMeshHandle)>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    materials: ResMut<Assets<ColorMaterial>>,
     time: Res<Time>,
 ) {
     // raycasting is done and we have a list of points where rays collided with walls, in angle order.
     // now we construct a mesh from those points, by drawing triangles between the center point and each consecutive ray's intersection with a wall
-    for (mut calculated_points, mut los_mesh_handle) in query.iter_mut() {
+    for (calculated_points, mut los_mesh_handle) in query.iter_mut() {
         los_mesh_handle.refresh_timer.tick(time.delta());
         if !los_mesh_handle.refresh_timer.just_finished() {
             continue;
@@ -310,7 +308,7 @@ pub mod debug_overlay {
     };
     use crate::AppSet;
     use bevy::prelude::*;
-    use rand::Rng;
+    
 
     pub fn plugin(app: &mut App) {
         app.add_systems(

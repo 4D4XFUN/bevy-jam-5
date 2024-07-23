@@ -4,7 +4,6 @@ use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use std::hash::{Hash, Hasher};
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
