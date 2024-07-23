@@ -118,7 +118,7 @@ pub struct Sides {
 }
 
 impl Sides {
-    pub fn all(&self) -> Vec<LineSegment> {
+    pub fn _all(&self) -> Vec<LineSegment> {
         vec![self.north, self.east, self.south, self.west]
     }
 }

@@ -68,12 +68,6 @@ pub mod front_facing_edges {
         );
     }
 
-    #[derive(Event, Debug, Copy, Clone)]
-    pub struct FacingWallsChanged {
-        pub previous_source: Vec2, // grid coordinates
-        pub new_source: Vec2,      // grid coordinates
-    }
-
     /// Whenever the player moves a whole tile, we have to recompute which parts of walls are facing them
     pub fn update_front_facing_edges_when_grid_pos_changes(
         mut commands: Commands,
@@ -94,13 +88,6 @@ pub mod front_facing_edges {
             if player_position.coordinates == facing_walls_cache.last_grid_position {
                 continue;
             }
-            commands.trigger_targets(
-                FacingWallsChanged {
-                    previous_source: facing_walls_cache.last_grid_position,
-                    new_source: player_position.coordinates,
-                },
-                e,
-            ); // notify observers
             facing_walls_cache.last_grid_position = player_position.coordinates;
 
             // compute nearest edges for every wall
