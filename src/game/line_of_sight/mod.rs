@@ -150,7 +150,6 @@ pub fn update_line_of_sight_mesh(
     mut commands: Commands,
     mut query: Query<(&mut CalculatedLineOfSight, &mut LineOfSightMeshHandle)>,
     mut meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
     time: Res<Time>,
 ) {
     // raycasting is done and we have a list of points where rays collided with walls, in angle order.
