@@ -15,7 +15,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
-use postprocessing::PostProcessing;
+// use postprocessing::PostProcessing;
 
 pub struct AppPlugin;
 
@@ -80,7 +80,7 @@ impl Plugin for AppPlugin {
         #[cfg(feature = "dev")]
         app.add_plugins(dev_tools::plugin);
 
-        app.add_plugins(PostProcessing);
+        // app.add_plugins(PostProcessing);
 
         #[cfg(feature = "dev")]
         app.add_plugins(game::ai::proving_grounds_plugin);
