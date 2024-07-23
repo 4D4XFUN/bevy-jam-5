@@ -41,6 +41,7 @@ impl Default for LineOfSightBundle {
         Self {
             line_of_sight_source: LineOfSightSource {
                 max_distance_in_grid_units: 20.,
+                max_rays_to_cast: 100,
             },
             facing_walls_cache: FacingWallsCache::new(),
             calculated_line_of_sight: CalculatedLineOfSight::default(),
@@ -53,6 +54,7 @@ impl Default for LineOfSightBundle {
 #[reflect(Component)]
 pub struct LineOfSightSource {
     pub max_distance_in_grid_units: f32,
+    pub max_rays_to_cast: usize,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -90,7 +92,7 @@ pub fn calculate_vision_extent_by_sweeping_in_a_circle(
     grid: Res<GridLayout>,
 ) {
     for (grid_pos, los_source, facing_walls, mut calculated_points) in query.iter_mut() {
-        let steps = 50; // how many steps to take around the circle
+        let steps = los_source.max_rays_to_cast; // how many steps to take around the circle
         let total_angle = std::f32::consts::PI * 2.; // the total angle to sweep
         let step_angle = total_angle / steps as f32;
         let max_range = los_source.max_distance_in_grid_units * grid.square_size;
@@ -139,7 +141,7 @@ impl LineOfSightMeshHandle {
     pub fn new() -> LineOfSightMeshHandle {
         Self {
             mesh_handle: Entity::PLACEHOLDER,
-            refresh_timer: Timer::new(Duration::from_millis(100), TimerMode::Repeating),
+            refresh_timer: Timer::new(Duration::from_millis(50), TimerMode::Repeating),
             triangle_vertices: vec![],
             triangle_indices: vec![],
         }
