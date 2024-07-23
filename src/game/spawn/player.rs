@@ -14,6 +14,7 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use crate::game::line_of_sight::LineOfSightBundle;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
@@ -63,5 +64,8 @@ fn spawn_player(
         GridMovement::default(),
         GridCollider::default(),
         player_animation,
+        LineOfSightBundle {
+            ..default()
+        }
     ));
 }
