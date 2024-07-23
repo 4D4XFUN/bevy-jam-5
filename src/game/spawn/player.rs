@@ -15,6 +15,8 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use leafwing_input_manager::InputManagerBundle;
+use crate::input::PlayerAction;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
@@ -63,6 +65,7 @@ fn spawn_player(
         GridPosition::new(45., 24.),
         GridMovement::default(),
         GridCollider::default(),
+        InputManagerBundle::with_map(PlayerAction::default_input_map()),
         player_animation,
         LineOfSightBundle { ..default() },
     ));

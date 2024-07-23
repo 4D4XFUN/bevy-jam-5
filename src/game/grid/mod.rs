@@ -148,9 +148,10 @@ pub mod collision {
 /// Grid-based movement
 pub mod movement {
     use bevy::prelude::*;
-
+    use leafwing_input_manager::prelude::ActionState;
     use crate::game::grid::{GridLayout, GridPosition};
     use crate::AppSet;
+    use crate::input::PlayerAction;
 
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
@@ -186,29 +187,27 @@ pub mod movement {
     }
 
     pub fn respond_to_input(
-        input: Res<ButtonInput<KeyCode>>,
-        mut controller_query: Query<&mut GridMovement>,
+        mut query: Query<(&ActionState<PlayerAction>, &mut GridMovement)>,
     ) {
-        let mut intent = Vec2::ZERO;
-        if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
-            intent.y += 1.0;
-        }
-        if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
-            intent.y -= 1.0;
-        }
-        if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
-            intent.x -= 1.0;
-        }
-        if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
-            intent.x += 1.0;
-        }
-        // Normalize so that diagonal movement has the same speed as
-        // horizontal and vertical movement.
-        let intent = intent.normalize_or_zero();
+        for (action_state, mut controller) in query.iter_mut() {
+            let mut intent = Vec2::ZERO;
 
-        for mut controller in &mut controller_query {
-            controller.acceleration_player_force =
-                intent * controller.acceleration_player_multiplier;
+            if action_state.pressed(&PlayerAction::MoveUp) {
+                intent.y += 1.0;
+            }
+            if action_state.pressed(&PlayerAction::MoveDown) {
+                intent.y -= 1.0;
+            }
+            if action_state.pressed(&PlayerAction::MoveLeft) {
+                intent.x -= 1.0;
+            }
+            if action_state.pressed(&PlayerAction::MoveRight) {
+                intent.x += 1.0;
+            }
+            // Normalize so that diagonal movement has the same speed as horizontal and vertical movement.
+            let intent = intent.normalize_or_zero();
+
+            controller.acceleration_player_force = intent * controller.acceleration_player_multiplier;
         }
     }
 
