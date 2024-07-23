@@ -7,7 +7,9 @@ mod animation;
 pub mod assets;
 pub mod audio;
 mod camera;
+mod ghost;
 pub mod grid;
+pub mod line_of_sight;
 mod movement;
 pub mod spawn;
 pub mod stamina;
@@ -21,5 +23,7 @@ pub(super) fn plugin(app: &mut App) {
         grid::plugin,
         camera::plugin,
         stamina::plugin,
+        line_of_sight::plugin,
+        ghost::plugin,
     ));
 }
