@@ -46,7 +46,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_max: 1.1,
             camera_zoom_min: 0.2,
             camera_zoom_buffer: 0.01,
-            camera_follow_snappiness: 10.0,
+            camera_follow_snappiness: 7.0,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
         PostProcessSettings { intensity: 0.00005 },
@@ -167,10 +167,10 @@ fn camera_follow(
             );
 
             //smoothly interpolate camera position to target position
-            let lerp = (bounded_target_position - camera_transform.translation)
-                * properties.camera_follow_snappiness
-                * time.delta_seconds();
-            camera_transform.translation += lerp;
+            camera_transform.translation = camera_transform.translation.lerp(
+                bounded_target_position,
+                time.delta_seconds() * properties.camera_follow_snappiness,
+            );
 
             //and hard clam that camera's position if it is out of bounds
             camera_transform.translation = Vec3::new(
