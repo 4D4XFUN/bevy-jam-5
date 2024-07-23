@@ -70,7 +70,6 @@ pub mod front_facing_edges {
 
     /// Whenever the player moves a whole tile, we have to recompute which parts of walls are facing them
     pub fn update_front_facing_edges_when_grid_pos_changes(
-        mut commands: Commands,
         mut query: Query<
             (
                 Entity,
