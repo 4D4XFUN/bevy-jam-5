@@ -17,7 +17,6 @@ use crate::{
     },
     screen::Screen,
 };
-use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
 
