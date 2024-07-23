@@ -93,11 +93,11 @@ impl SoundtrackAssets {
         let mut assets = HashMap::new();
         assets.insert(
             SoundtrackAsset::Credits,
-            asset_server.load("audio/soundtracks/anti-clicker.ogg"),
+            asset_server.load("audio/soundtracks/credits_lofi.ogg"),
         );
         assets.insert(
             SoundtrackAsset::Gameplay,
-            asset_server.load("audio/soundtracks/anti-clicker.ogg"),
+            asset_server.load("audio/soundtracks/anti_clicker.ogg"),
         );
         Self(assets)
     }
