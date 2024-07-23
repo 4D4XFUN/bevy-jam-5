@@ -4,6 +4,7 @@ use crate::game::grid::GridPosition;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use std::hash::{Hash, Hasher};
+use crate::geometry_2d::line_segment::LineSegment;
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
@@ -56,18 +57,6 @@ impl GridLayout {
     }
 }
 
-#[derive(PartialEq, Copy, Clone, Debug)]
-pub struct LineSegment {
-    pub segment2d: Segment2d,
-    pub center: Vec2,
-}
-
-impl LineSegment {
-    pub fn new(a: Vec2, b: Vec2) -> Self {
-        let seg = Segment2d::from_points(a, b);
-        Self { segment2d: seg.0, center: seg.1 }
-    }
-}
 
 #[derive(Copy, Clone, Debug)]
 pub struct Corners {

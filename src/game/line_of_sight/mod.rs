@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-
-use crate::game::grid::grid_layout::LineSegment;
+use crate::geometry_2d::line_segment::LineSegment;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(front_facing_edges::plugin);
@@ -53,12 +52,13 @@ impl FacingWallsCache {
 
 /// Finds front facing edges of walls (from player's perspective)
 pub mod front_facing_edges {
-    use crate::game::grid::grid_layout::{GridLayout, LineSegment};
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
     use crate::game::spawn::level::LevelWalls;
     use crate::AppSet;
     use bevy::prelude::*;
+    use crate::game::grid::grid_layout::GridLayout;
+    use crate::geometry_2d::line_segment::LineSegment;
 
     pub fn plugin(app: &mut App) {
         // Systems
