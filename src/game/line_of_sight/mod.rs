@@ -59,8 +59,8 @@ pub mod front_facing_edges {
     use crate::game::spawn::level::LevelWalls;
     use crate::AppSet;
     use bevy::prelude::*;
-    use bevy_ecs_ldtk::GridCoords;
-    use std::collections::HashMap;
+    
+    
 
     pub fn plugin(app: &mut App) {
         // Systems
@@ -86,12 +86,12 @@ pub mod front_facing_edges {
                 &mut LineOfSightSource,
                 &mut FacingWallsCache,
             ),
-            (Changed<GridPosition>),
+            Changed<GridPosition>,
         >,
         walls: Res<LevelWalls>,
         grid: Res<GridLayout>,
     ) {
-        for (e, &player_position, mut player_los, mut facing_walls_cache) in query.iter_mut() {
+        for (e, &player_position, player_los, mut facing_walls_cache) in query.iter_mut() {
             // skip if we haven't actually changed tiles
             if player_position.coordinates == facing_walls_cache.last_grid_position {
                 continue;
@@ -158,7 +158,7 @@ pub mod debug_overlay {
     /// Every update, if the grid coords changed, redraw the overlay of edges facing the player
     pub fn redraw_front_facing_edges(
         mut gizmos: Gizmos,
-        front_facing_edges_query: Query<(&FacingWallsCache)>,
+        front_facing_edges_query: Query<&FacingWallsCache>,
     ) {
         for wall_cache in front_facing_edges_query.iter() {
             for edge in wall_cache.facing_wall_edges.iter() {
