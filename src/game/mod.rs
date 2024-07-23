@@ -8,6 +8,7 @@ pub mod assets;
 pub mod audio;
 mod camera;
 pub mod grid;
+pub mod line_of_sight;
 mod movement;
 pub mod spawn;
 
@@ -19,5 +20,6 @@ pub(super) fn plugin(app: &mut App) {
         spawn::plugin,
         grid::plugin,
         camera::plugin,
+        line_of_sight::plugin,
     ));
 }

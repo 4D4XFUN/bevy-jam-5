@@ -3,6 +3,7 @@
 use crate::game::grid::collision::GridCollider;
 use crate::game::grid::movement::GridMovement;
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::LineOfSightBundle;
 use crate::{
     game::{
         animation::PlayerAnimation,
@@ -63,5 +64,6 @@ fn spawn_player(
         GridMovement::default(),
         GridCollider::default(),
         player_animation,
+        LineOfSightBundle { ..default() },
     ));
 }
