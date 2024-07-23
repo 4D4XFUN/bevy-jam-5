@@ -3,7 +3,7 @@ use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 
-use crate::game::spawn::level::{GRID_SIZE, LevelWalls};
+use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
 use crate::game::spawn::player::Player;
 use crate::postprocessing::PostProcessSettings;
 
