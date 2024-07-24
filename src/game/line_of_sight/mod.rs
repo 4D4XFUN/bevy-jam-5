@@ -11,10 +11,7 @@ use bevy::sprite::Mesh2dHandle;
 use std::time::Duration;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((
-        front_facing_edges::plugin,
-        fog_of_war::plugin,
-    ));
+    app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
 
     // Temporarily disabled since mesh gen wasn't working
     // app.add_systems(

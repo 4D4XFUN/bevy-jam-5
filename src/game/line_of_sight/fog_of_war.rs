@@ -1,17 +1,22 @@
-use bevy::prelude::*;
-use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{FacingWallsCache, front_facing_edges, LineOfSightSource};
+use crate::game::line_of_sight::{front_facing_edges, FacingWallsCache, LineOfSightSource};
 use crate::geometry_2d::line_segment::LineSegment;
+use crate::AppSet;
+use bevy::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
-    app.add_systems(Update, (
-        update_grid_fog_of_war_overlay,
-        recover_fog_of_war,
-        reveal_fog_of_war,
-    ).chain().in_set(AppSet::UpdateFog));
+    app.add_systems(
+        Update,
+        (
+            update_grid_fog_of_war_overlay,
+            recover_fog_of_war,
+            reveal_fog_of_war,
+        )
+            .chain()
+            .in_set(AppSet::UpdateFog),
+    );
 
     // reflection
     app.register_type::<FogOfWarOverlay>();
@@ -81,17 +86,18 @@ fn update_grid_fog_of_war_overlay(
 
             // Spawn the child sprite and parent it to the GridSprite
             let child_id = commands
-                .spawn(
-                    (FogOfWarOverlayVoxel,
-                     SpriteBundle {
-                         sprite: Sprite {
-                             color,
-                             custom_size: Some(Vec2::splat(grid.square_size)), // todo resolution
-                             ..default()
-                         },
-                         transform: Transform::from_translation(position.extend(10.0)),
-                         ..default()
-                     }))
+                .spawn((
+                    FogOfWarOverlayVoxel,
+                    SpriteBundle {
+                        sprite: Sprite {
+                            color,
+                            custom_size: Some(Vec2::splat(grid.square_size)), // todo resolution
+                            ..default()
+                        },
+                        transform: Transform::from_translation(position.extend(10.0)),
+                        ..default()
+                    },
+                ))
                 .id();
 
             overlay.insert_at(x, y, child_id);
@@ -104,7 +110,8 @@ fn update_grid_fog_of_war_overlay(
             Name::new("FogOfWarOverlay"),
             overlay,
             SpatialBundle::default(),
-        )).id();
+        ))
+        .id();
 
     for e in child_ids.iter() {
         commands.entity(*e).set_parent(parent_overlay_entity);
@@ -118,8 +125,9 @@ fn reveal_fog_of_war(
     mut fog_of_war_query: Query<&mut FogOfWarOverlay>,
     mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
 ) {
-    let Ok(mut fog) = fog_of_war_query.get_single_mut()
-    else { return; };
+    let Ok(mut fog) = fog_of_war_query.get_single_mut() else {
+        return;
+    };
 
     // for each LOS source, iterate through the nearest fog of war squares and reduce their alpha
     for (position, source, walls) in line_of_sight_query.iter() {
@@ -134,7 +142,6 @@ fn reveal_fog_of_war(
                         s.color.set_alpha(0.0);
                     }
                     continue;
-
                 }
 
                 // don't look too far
@@ -142,8 +149,9 @@ fn reveal_fog_of_war(
                     continue;
                 }
 
-                let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y))
-                else { continue; };
+                let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y)) else {
+                    continue;
+                };
 
                 let ray_start = grid.grid_to_world(position);
                 let ray_end = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
@@ -156,7 +164,7 @@ fn reveal_fog_of_war(
 
                 let ray = LineSegment::new(ray_start, ray_end);
 
-                let can_see = walls.facing_wall_edges.iter().all(|w|!ray.do_intersect(w));
+                let can_see = walls.facing_wall_edges.iter().all(|w| !ray.do_intersect(w));
 
                 if can_see {
                     s.color.set_alpha(0.0);
@@ -166,13 +174,12 @@ fn reveal_fog_of_war(
     }
 }
 
-fn recover_fog_of_war(
-    mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
-) {
+fn recover_fog_of_war(mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>) {
     let recovery_alpha_change = 1.0 / 600.;
     for mut s in fog_of_war_sprite_query.iter_mut() {
         let alpha = s.color.alpha();
-        if alpha < 0.95 { // it'll never fully recover
+        if alpha < 0.95 {
+            // it'll never fully recover
             s.color.set_alpha(alpha + recovery_alpha_change);
         }
     }
