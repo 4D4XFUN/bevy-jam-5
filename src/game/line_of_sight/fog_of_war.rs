@@ -3,6 +3,7 @@ use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::{FacingWallsCache, front_facing_edges, LineOfSightSource};
+use crate::geometry_2d::line_segment::LineSegment;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -125,14 +126,41 @@ fn reveal_fog_of_war(
         for x in 0..fog.width {
             for y in 0..fog.height {
                 let fog_coords = Vec2::new(x as f32, y as f32);
-                if (position.coordinates.distance(fog_coords) > source.max_distance_in_grid_units) {
+                let dist = position.coordinates.distance(fog_coords);
+
+                // special case for the square we're standing on
+                if dist <= 2.0 {
+                    if let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y)) {
+                        s.color.set_alpha(0.0);
+                    }
+                    continue;
+
+                }
+
+                // don't look too far
+                if dist > source.max_distance_in_grid_units {
                     continue;
                 }
 
                 let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y))
                 else { continue; };
 
-                s.color.set_alpha(0.0);
+                let ray_start = grid.grid_to_world(position);
+                let ray_end = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
+
+                // shorten the ray slightly so we can "see into" walls
+                let penetration_factor = 1.0;
+                let direction = (ray_end - ray_start).normalize();
+                // println!("{} {} {} {} {slope}", ray_start.x, ray_start.y, ray_end.x, ray_end.y);
+                let ray_end = ray_end - direction * penetration_factor;
+
+                let ray = LineSegment::new(ray_start, ray_end);
+
+                let can_see = walls.facing_wall_edges.iter().all(|w|!ray.do_intersect(w));
+
+                if can_see {
+                    s.color.set_alpha(0.0);
+                }
             }
         }
     }
