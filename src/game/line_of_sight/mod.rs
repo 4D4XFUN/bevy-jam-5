@@ -3,7 +3,7 @@ pub mod fog_of_war;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
-use crate::AppSet;
+// use crate::AppSet;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
@@ -85,6 +85,7 @@ pub struct CalculatedLineOfSight {
     origin: Vec2,
 }
 
+#[allow(dead_code)]
 pub fn calculate_vision_extent_by_sweeping_in_a_circle(
     mut query: Query<(
         &GridPosition,
@@ -131,6 +132,7 @@ pub fn calculate_vision_extent_by_sweeping_in_a_circle(
     }
 }
 
+#[allow(dead_code)]
 #[derive(Component)]
 pub struct LineOfSightMeshHandle {
     mesh_handle: Entity,
@@ -151,6 +153,7 @@ impl LineOfSightMeshHandle {
     }
 }
 
+#[allow(dead_code)]
 pub fn update_line_of_sight_mesh(
     mut commands: Commands,
     mut query: Query<(&mut CalculatedLineOfSight, &mut LineOfSightMeshHandle)>,

@@ -1,6 +1,6 @@
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{front_facing_edges, FacingWallsCache, LineOfSightSource};
+use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
 use bevy::prelude::*;
@@ -119,13 +119,12 @@ fn update_grid_fog_of_war_overlay(
 }
 
 fn reveal_fog_of_war(
-    mut commands: Commands,
     grid: Res<GridLayout>,
     line_of_sight_query: Query<(&GridPosition, &LineOfSightSource, &FacingWallsCache)>,
-    mut fog_of_war_query: Query<&mut FogOfWarOverlay>,
+    fog_of_war_query: Query<&FogOfWarOverlay>,
     mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
 ) {
-    let Ok(mut fog) = fog_of_war_query.get_single_mut() else {
+    let Ok(fog) = fog_of_war_query.get_single() else {
         return;
     };
 
