@@ -1,3 +1,5 @@
+pub mod fog_of_war;
+
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
@@ -9,17 +11,21 @@ use bevy::sprite::Mesh2dHandle;
 use std::time::Duration;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins(front_facing_edges::plugin);
+    app.add_plugins((
+        front_facing_edges::plugin,
+        fog_of_war::plugin,
+    ));
 
-    app.add_systems(
-        Update,
-        (
-            calculate_vision_extent_by_sweeping_in_a_circle,
-            update_line_of_sight_mesh,
-        )
-            .chain()
-            .in_set(AppSet::Update),
-    );
+    // Temporarily disabled since mesh gen wasn't working
+    // app.add_systems(
+    //     Update,
+    //     (
+    //         calculate_vision_extent_by_sweeping_in_a_circle,
+    //         update_line_of_sight_mesh,
+    //     )
+    //         .chain()
+    //         .in_set(AppSet::Update),
+    // );
 
     #[cfg(feature = "dev")]
     app.add_plugins(debug_overlay::plugin);
@@ -40,7 +46,7 @@ impl Default for LineOfSightBundle {
     fn default() -> Self {
         Self {
             line_of_sight_source: LineOfSightSource {
-                max_distance_in_grid_units: 20.,
+                max_distance_in_grid_units: 7.,
                 max_rays_to_cast: 60,
             },
             facing_walls_cache: FacingWallsCache::new(),
