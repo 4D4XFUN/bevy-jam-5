@@ -7,7 +7,7 @@ use crate::{
 
 use super::{
     assets::ImageAssets,
-    grid::{movement::GridMovement, GridPosition},
+    grid::{movement::{GridMovement, Roll}, GridPosition},
     line_of_sight::LineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},
@@ -84,6 +84,7 @@ fn spawn_ghost(
         },
         GridPosition::new(spawn_point.0.x, spawn_point.0.y),
         GridMovement::default(),
+        Roll::default(),
         Velocities {
             velocities: current_velocities.0.clone(),
             current_velocity: 0,

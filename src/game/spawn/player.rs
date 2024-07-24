@@ -70,10 +70,7 @@ fn spawn_player(
         GridPosition::new(45., 24.),
         GridMovement::default(),
         GridCollider::default(),
-        Roll {
-            timer: Timer::from_seconds(0.0, TimerMode::Once),
-            total_time: 10.0,
-        },
+        Roll::default(),
         InputManagerBundle::with_map(PlayerAction::default_input_map()),
         player_animation,
         LineOfSightBundle { ..default() },

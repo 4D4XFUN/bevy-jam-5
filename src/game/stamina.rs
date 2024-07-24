@@ -34,7 +34,6 @@ fn use_stamina(
     for mut stamina in query.iter_mut() {
         if stamina.current > stamina.max/3.0 {
             stamina.current -= 1.0;
-            event.send(UseStamina);
         }
     }
     

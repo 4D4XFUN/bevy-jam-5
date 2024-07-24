@@ -158,11 +158,11 @@ pub mod movement {
 
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
-        app.add_systems(Update, (apply_movement, apply_roll).in_set(AppSet::Update));
+        app.add_systems(Update, apply_movement.in_set(AppSet::Update));
+        app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
         app.add_systems(
             Update,
-            set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
-        );
+            set_real_position_based_on_grid.in_set(AppSet::UpdateWorld));
 
         app.register_type::<GridMovement>();
     }
@@ -208,7 +208,7 @@ pub mod movement {
         fn default() -> Self {
             Self {
                 timer: Timer::from_seconds(0.0, TimerMode::Once),
-                total_time: 2.0,
+                total_time: 2.0,            
             }
         }
     
@@ -237,17 +237,17 @@ pub mod movement {
                 intent * controller.acceleration_player_multiplier;
 
             if action_state.pressed(&PlayerAction::Roll) {
-                controller.is_rolling = true; // this does get set to true, but not in apply_roll
+                controller.is_rolling = true; 
             }
         }
     }
 
     pub fn apply_movement(
-        mut query: Query<(&mut GridPosition, &mut GridMovement)>,
+        mut query: Query<(&mut GridPosition, &mut GridMovement, &mut Roll)>,
         time: Res<Time>,
     ) {
         let dt = time.delta_seconds();
-        for (mut position, mut movement) in query.iter_mut() {
+        for (mut position, mut movement, mut roll) in query.iter_mut() {
             let force = movement.current_force() * dt; // scale it by time
 
             // apply forces and friction
@@ -258,31 +258,29 @@ pub mod movement {
             }
             movement.velocity = velocity;
 
+            // checks and applies rolling
+            if movement.is_rolling {
+                movement.acceleration_player_multiplier = 132.0;
+            } else {
+                movement.acceleration_player_multiplier = 66.0;
+            }
+
             // move the player
             position.offset += movement.velocity * dt;
             position.fix_offset_overflow();
         }
     }
 
-    pub fn apply_roll(
-        mut query: Query<(&mut GridMovement, &mut Roll)>,
-        time: Res<Time>,
-    ) {
+    fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement)>) {
         let dt = time.delta_seconds();
-        for (mut movement, mut roll) in query.iter_mut() {
-            print!("movement.is_rolling == {:?} \n", movement.is_rolling);
-            if movement.is_rolling { // this is never true???
-                roll.timer.unpause();
-                if roll.timer.elapsed_secs() >= roll.total_time {
-                    movement.is_rolling = false;
-                } else {
-                    movement.acceleration_player_force = movement.current_force() * 2.0 * dt;
-                    roll.timer.tick(Duration::from_secs_f32(dt));
-                    print!("rolling");
-                }
+        for (mut roll, mut movement) in query.iter_mut() {
+            roll.timer.tick(Duration::from_secs_f32(dt));
+
+            if roll.timer.elapsed_secs() == roll.total_time {
+                roll.timer.pause();
+                roll.timer.reset();
+                movement.is_rolling = false;
             }
-            roll.timer.pause();
-            print!("stop rolling")
         }
     }
 
