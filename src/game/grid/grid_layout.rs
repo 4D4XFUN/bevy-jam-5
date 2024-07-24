@@ -1,9 +1,9 @@
 //! Represents the global grid and provides mapping functions from grid-coordinate space to world space and back
 
 use crate::game::grid::GridPosition;
+use crate::geometry_2d::line_segment::LineSegment;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use std::hash::{Hash, Hasher};
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
@@ -56,51 +56,6 @@ impl GridLayout {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct LineSegment {
-    pub a: Vec2,
-    pub b: Vec2,
-}
-
-impl PartialEq for LineSegment {
-    fn eq(&self, other: &Self) -> bool {
-        (self.a.x.floor() as i32 == other.a.x.floor() as i32
-            && self.a.y.floor() as i32 == other.a.y.floor() as i32
-            && self.b.x.floor() as i32 == other.b.x.floor() as i32
-            && self.b.y.floor() as i32 == other.b.y.floor() as i32)
-            || (self.a.x.floor() as i32 == other.b.x.floor() as i32
-                && self.a.y.floor() as i32 == other.b.y.floor() as i32
-                && self.b.x.floor() as i32 == other.a.x.floor() as i32
-                && self.b.y.floor() as i32 == other.a.y.floor() as i32)
-    }
-}
-
-impl Eq for LineSegment {}
-
-impl LineSegment {
-    pub fn new(a: Vec2, b: Vec2) -> Self {
-        Self { a, b }
-    }
-}
-impl Hash for LineSegment {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        let (min_x, max_x) = if self.a.x < self.b.x {
-            (self.a.x, self.b.x)
-        } else {
-            (self.b.x, self.a.x)
-        };
-        let (min_y, max_y) = if self.a.y < self.b.y {
-            (self.a.y, self.b.y)
-        } else {
-            (self.b.y, self.a.y)
-        };
-
-        (min_x.floor() as i32).hash(state);
-        (min_y.floor() as i32).hash(state);
-        (max_x.floor() as i32).hash(state);
-        (max_y.floor() as i32).hash(state);
-    }
-}
 #[derive(Copy, Clone, Debug)]
 pub struct Corners {
     pub southwest: Vec2,

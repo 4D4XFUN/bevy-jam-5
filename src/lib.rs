@@ -5,6 +5,8 @@ mod postprocessing;
 mod screen;
 mod ui;
 
+pub mod geometry_2d;
+
 mod input;
 #[cfg(test)]
 pub mod testing;
@@ -30,6 +32,7 @@ impl Plugin for AppPlugin {
                 AppSet::UpdateVirtualGrid,
                 AppSet::Update,
                 AppSet::UpdateWorld,
+                AppSet::UpdateFog,
             )
                 .chain(),
         );
@@ -102,6 +105,8 @@ enum AppSet {
     Update,
     /// After all grid coordinates are settled, we translate them to real pixels in world space
     UpdateWorld,
+    /// Fog updates happen last
+    UpdateFog,
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {

@@ -8,6 +8,7 @@ use crate::{
 use super::{
     assets::ImageAssets,
     grid::{movement::GridMovement, GridPosition},
+    line_of_sight::LineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},
         player::Player,
@@ -87,6 +88,7 @@ fn spawn_ghost(
             velocities: current_velocities.0.clone(),
             current_velocity: 0,
         },
+        LineOfSightBundle::default(),
         player_animation,
     ));
 
