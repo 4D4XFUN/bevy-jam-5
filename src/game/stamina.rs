@@ -6,7 +6,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, recharge_stamina);
 }
 
-#[derive(Event, Debug)]
+#[derive(Event, Default, Debug)]
 pub struct UseStamina;
 
 #[derive(Component, Reflect)]
@@ -29,11 +29,12 @@ pub struct GridCollider;
 fn use_stamina(
     _trigger: Trigger<UseStamina>,
     mut query: Query<&mut Stamina>,
-    key: Res<ButtonInput<KeyCode>>,
+    mut event: EventWriter<UseStamina>,
 ) {
     for mut stamina in query.iter_mut() {
         if stamina.current > stamina.max/3.0 {
             stamina.current -= 1.0;
+            event.send(UseStamina);
         }
     }
     

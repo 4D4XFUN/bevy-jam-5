@@ -178,6 +178,13 @@ pub mod movement {
         pub is_rolling: bool,
     }
 
+    #[derive(Component, Reflect, Debug, PartialEq)]
+    #[reflect(Component)]
+    pub struct Roll {
+        timer: Timer,
+        total_time: f32,
+    }
+
     impl Default for GridMovement {
         fn default() -> Self {
             Self {
@@ -195,6 +202,16 @@ pub mod movement {
         pub fn current_force(&self) -> Vec2 {
             self.acceleration_player_force + self.acceleration_external_force
         }
+    }
+
+    impl Default for Roll{
+        fn default() -> Self {
+            Self {
+                timer: Timer::from_seconds(0.0, TimerMode::Once),
+                total_time: 2.0,
+            }
+        }
+    
     }
 
     pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridMovement)>) {
@@ -221,8 +238,6 @@ pub mod movement {
 
             if action_state.pressed(&PlayerAction::Roll) {
                 controller.is_rolling = true;
-            } else {
-                controller.is_rolling = false;
             }
         }
     }
@@ -250,22 +265,23 @@ pub mod movement {
     }
 
     pub fn apply_roll(
-        mut query: Query<(&mut GridPosition, &mut GridMovement)>,
+        mut query: Query<(&mut GridMovement, &mut Roll)>,
         time: Res<Time>,
     ) {
         let dt = time.delta_seconds();
-        let mut roll_force = 1.0;
-        for (mut position, mut movement) in query.iter_mut() {
-            if !movement.is_rolling {
-                roll_force = 1.0;
-                continue;
+        for (mut movement, mut roll) in query.iter_mut() {
+            if movement.is_rolling {
+                print!("roll? {:?}", movement.is_rolling);
+                roll.timer.reset();
+                if roll.timer.elapsed_secs() >= 2.0 {
+                    movement.is_rolling = false;
+                } else {
+                    movement.acceleration_player_force = movement.current_force() * 2.0 * dt;
+                    print!("rolling");
+                }
             }
-            roll_force *= 2.0;
-            movement.acceleration_player_force = movement.current_force() * roll_force * dt;
-
-            // move the player
-            position.offset += movement.velocity * dt;
-            position.fix_offset_overflow();
+            roll.timer.pause();
+            print!("stop rolling")
         }
     }
 

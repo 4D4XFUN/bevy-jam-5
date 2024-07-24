@@ -47,6 +47,7 @@ fn record_movement_controller(
         intent.x += 1.0;
     }
 
+    
     // Normalize so that diagonal movement has the same speed as
     // horizontal and vertical movement.
     let intent = intent.normalize_or_zero();
