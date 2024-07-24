@@ -158,8 +158,7 @@ pub mod movement {
 
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
-        app.add_systems(Update, apply_movement.in_set(AppSet::Update));
-        app.add_systems(Update, apply_roll.in_set(AppSet::Update));
+        app.add_systems(Update, (apply_movement, apply_roll).in_set(AppSet::Update));
         app.add_systems(
             Update,
             set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
@@ -271,8 +270,8 @@ pub mod movement {
     ) {
         let dt = time.delta_seconds();
         for (mut movement, mut roll) in query.iter_mut() {
+            print!("movement.is_rolling == {:?} \n", movement.is_rolling);
             if movement.is_rolling { // this is never true???
-                print!("how about in apply_roll? {:?}", movement.is_rolling);
                 roll.timer.unpause();
                 if roll.timer.elapsed_secs() >= roll.total_time {
                     movement.is_rolling = false;
