@@ -181,8 +181,8 @@ pub mod movement {
     #[derive(Component, Reflect, Debug, PartialEq)]
     #[reflect(Component)]
     pub struct Roll {
-        timer: Timer,
-        total_time: f32,
+        pub timer: Timer,
+        pub total_time: f32,
     }
 
     impl Default for GridMovement {
