@@ -155,6 +155,7 @@ pub mod movement {
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
         app.add_systems(Update, apply_movement.in_set(AppSet::Update));
+        app.add_systems(Update, apply_roll.in_set(AppSet::Update));
         app.add_systems(
             Update,
             set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
@@ -171,6 +172,7 @@ pub mod movement {
         pub acceleration_player_force: Vec2,
         pub acceleration_external_force: Vec2,
         pub acceleration_player_multiplier: f32,
+        pub is_rolling: bool,
     }
 
     impl Default for GridMovement {
@@ -181,6 +183,7 @@ pub mod movement {
                 acceleration_player_force: Vec2::ZERO,
                 acceleration_external_force: Vec2::ZERO,
                 acceleration_player_multiplier: 66.,
+                is_rolling: false,
             }
         }
     }
@@ -212,6 +215,12 @@ pub mod movement {
 
             controller.acceleration_player_force =
                 intent * controller.acceleration_player_multiplier;
+
+            if action_state.pressed(&PlayerAction::Roll) {
+                controller.is_rolling = true;
+            } else {
+                controller.is_rolling = false;
+            }
         }
     }
 
@@ -230,6 +239,26 @@ pub mod movement {
                 velocity = Vec2::ZERO;
             }
             movement.velocity = velocity;
+
+            // move the player
+            position.offset += movement.velocity * dt;
+            position.fix_offset_overflow();
+        }
+    }
+
+    pub fn apply_roll(
+        mut query: Query<(&mut GridPosition, &mut GridMovement)>,
+        time: Res<Time>,
+    ) {
+        let dt = time.delta_seconds();
+        let mut roll_force = 1.0;
+        for (mut position, mut movement) in query.iter_mut() {
+            if !movement.is_rolling {
+                roll_force = 1.0;
+                continue;
+            }
+            roll_force *= 2.0;
+            movement.acceleration_player_force = movement.current_force() * roll_force * dt;
 
             // move the player
             position.offset += movement.velocity * dt;

@@ -32,10 +32,8 @@ fn use_stamina(
     key: Res<ButtonInput<KeyCode>>,
 ) {
     for mut stamina in query.iter_mut() {
-        if key.pressed(KeyCode::ShiftLeft) {
-            if stamina.current > stamina.max/3.0 {
-                stamina.current -= 1.0;
-            }
+        if stamina.current > stamina.max/3.0 {
+            stamina.current -= 1.0;
         }
     }
     
