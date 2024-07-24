@@ -152,6 +152,7 @@ pub mod movement {
     use crate::game::grid::{GridLayout, GridPosition};
     use crate::input::PlayerAction;
     use crate::AppSet;
+    use std::time::Duration;
     use bevy::prelude::*;
     use leafwing_input_manager::prelude::ActionState;
 
@@ -237,7 +238,7 @@ pub mod movement {
                 intent * controller.acceleration_player_multiplier;
 
             if action_state.pressed(&PlayerAction::Roll) {
-                controller.is_rolling = true;
+                controller.is_rolling = true; // this does get set to true, but not in apply_roll
             }
         }
     }
@@ -270,13 +271,14 @@ pub mod movement {
     ) {
         let dt = time.delta_seconds();
         for (mut movement, mut roll) in query.iter_mut() {
-            if movement.is_rolling {
-                print!("roll? {:?}", movement.is_rolling);
-                roll.timer.reset();
-                if roll.timer.elapsed_secs() >= 2.0 {
+            if movement.is_rolling { // this is never true???
+                print!("how about in apply_roll? {:?}", movement.is_rolling);
+                roll.timer.unpause();
+                if roll.timer.elapsed_secs() >= roll.total_time {
                     movement.is_rolling = false;
                 } else {
                     movement.acceleration_player_force = movement.current_force() * 2.0 * dt;
+                    roll.timer.tick(Duration::from_secs_f32(dt));
                     print!("rolling");
                 }
             }
