@@ -26,10 +26,7 @@ pub struct RechargeTimer {
 #[reflect(Component)]
 pub struct GridCollider;
 
-fn use_stamina(
-    _trigger: Trigger<UseStamina>,
-    mut query: Query<&mut Stamina>,
-) {
+fn use_stamina(_trigger: Trigger<UseStamina>, mut query: Query<&mut Stamina>) {
     for mut stamina in query.iter_mut() {
         if stamina.current > stamina.max / 3.0 {
             stamina.current -= 1.0;
