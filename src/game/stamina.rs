@@ -12,49 +12,54 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct Stamina { 
-    total_bars: u8,
-    current_bars: u8,
-    recharge_rate: f32,
-    recharge_delay: f32,
-    recharge_timer: Timer,
-    recharge_delay_timer: Timer,
+    pub total_bars: u8,
+    pub current_bars: u8,
 }
+
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct RechargeTimer {
+    pub timer: Timer,
+};
 
 impl Default for Stamina {
     fn default() -> Self {
         Self {
             total_bars: 3,
             current_bars: 3,
-            recharge_rate: 1.0,
-            recharge_delay: 1.0,            
-            recharge_timer: Timer::from_seconds(10.0, TimerMode::Repeating),
-            recharge_delay_timer: Timer::from_seconds(1.0, TimerMode::Once), //delay before recharging stamina
+        }
+    }
+}
+
+impl Default for RechargeTimer {
+    fn default() -> Self { 
+        Self {
+            timer: Timer::from_seconds(10.0, TimerMode::Once),
         }
     }
 }
 
 pub fn use_stamina(mut stamina: Query<&mut Stamina>) {
     for mut stamina in &mut stamina.iter_mut() {
-        if stamina.recharge_timer.finished() {
-            stamina.current_bars -= 1;
-        }
+        stamina.current_bars -= 1;
     }
 }
 
-pub fn recharge_bar(mut stamina: Query<&mut Stamina>, time: Res<Time>) {
+pub fn recharge_bar(mut stamina: Query<(&mut Stamina, &mut RechargeTimer)>, time: Res<Time>) {
     let dt = Duration::from_secs_f32(time.delta_seconds());
-    for mut stamina in &mut stamina.iter_mut() { 
+    for (mut stamina, mut recharge) in &mut stamina.iter_mut() { 
 
         if stamina.current_bars != stamina.total_bars {
-            stamina.recharge_delay_timer.tick(dt);
+            recharge.timer.unpause();
+            recharge.timer.tick(dt);
 
-            if stamina.recharge_delay_timer.finished() {
-                stamina.recharge_timer.tick(dt);
-
-                if stamina.recharge_timer.finished() {
-                    stamina.current_bars += 1;
-                }
+            if recharge.timer.finished() {
+                stamina.current_bars += 1;
             }
+            
+        } else {
+            recharge.timer.pause();
+            recharge.timer.reset();
         }
     }
 }
