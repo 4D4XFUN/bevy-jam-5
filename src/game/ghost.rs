@@ -1,22 +1,19 @@
 use bevy::prelude::*;
 
-use crate::{
-    game::{animation::PlayerAnimation, assets::ImageAsset},
-    screen::Screen,
-};
-
 use super::{
     assets::ImageAssets,
     end_game::EndGameCondition,
-    grid::{
-        movement::{GridMovement, Roll},
-        GridPosition,
-    },
+    grid::GridPosition,
     line_of_sight::LineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},
         player::Player,
     },
+};
+use crate::game::movement::{GridMovement, Roll};
+use crate::{
+    game::{animation::PlayerAnimation, assets::ImageAsset},
+    screen::Screen,
 };
 
 ///Handles ghosts.

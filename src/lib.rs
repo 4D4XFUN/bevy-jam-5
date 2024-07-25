@@ -84,9 +84,6 @@ impl Plugin for AppPlugin {
         app.add_plugins(dev_tools::plugin);
 
         // app.add_plugins(PostProcessing);
-
-        #[cfg(feature = "dev")]
-        app.add_plugins(game::ai::proving_grounds_plugin);
     }
 }
 
@@ -110,6 +107,7 @@ enum AppSet {
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
+    println!("Loading LDTK assets");
     commands.spawn((
         Name::new("LdtkWorld"),
         LdtkWorldBundle {
