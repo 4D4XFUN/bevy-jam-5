@@ -53,13 +53,6 @@ struct LdtkEnemyBundle {
     grid_coords: GridCoords,
 }
 
-#[derive(Bundle, Default)]
-struct ActiveEnemyBundle {
-    enemy: Enemy,
-    can_apply_damage: CanApplyDamage,
-    can_see_player: CanSeePlayer,
-}
-
 // This is what our game needs to make an enemy work, separate from LDTK
 // Keeping the stuff we need to work separate from LDTK lets us instantiate enemies in code, if we want/need to.
 #[derive(Bundle)]
