@@ -2,12 +2,12 @@
 
 use std::collections::HashSet;
 
+use crate::game::spawn::enemy::SpawnEnemyTrigger;
+use crate::game::spawn::ldtk::LdtkEntityBundle;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
-use crate::game::spawn::enemy::SpawnEnemyTrigger;
-use crate::game::spawn::ldtk::LdtkEntityBundle;
 
 use super::player::SpawnPlayerTrigger;
 

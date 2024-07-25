@@ -1,14 +1,14 @@
-use bevy::ecs::component::{ComponentId, Components};
-use bevy::ecs::storage::Storages;
+use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::CanApplyDamage;
 use crate::game::spawn::player::Player;
+use bevy::ecs::component::{ComponentId, Components};
+use bevy::ecs::storage::Storages;
 use bevy::prelude::*;
 use bevy::ptr::OwningPtr;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
-use crate::game::assets::{ImageAsset, ImageAssets};
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -89,13 +89,18 @@ impl EnemyBundle {
 }
 
 /// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
-fn fix_loaded_ldtk_entities(mut query: Query<(Entity, &GridCoords), (With<LdtkEnemy>)>, mut commands: Commands) {
+fn fix_loaded_ldtk_entities(
+    mut query: Query<(Entity, &GridCoords), (With<LdtkEnemy>)>,
+    mut commands: Commands,
+) {
     for (ldtk_entity, grid_coords) in query.iter() {
-        commands.entity(ldtk_entity)
+        commands
+            .entity(ldtk_entity)
             .remove::<LdtkEnemy>() // we have to remove it because it's used as the query for this function
             .insert((
                 Name::new("LdtkEnemy"),
-                EnemyBundle::new(grid_coords.x, grid_coords.y),));
+                EnemyBundle::new(grid_coords.x, grid_coords.y),
+            ));
     }
 }
 
