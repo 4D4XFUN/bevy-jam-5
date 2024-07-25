@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
-use crate::game::spawn::level::LevelWalls;
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
 
@@ -149,10 +148,6 @@ fn reveal_fog_of_war(
                 if dist > source.max_distance_in_grid_units {
                     continue;
                 }
-
-                let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y)) else {
-                    continue;
-                };
 
                 let ray_start = grid.grid_to_world(position);
                 let ray_end = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
