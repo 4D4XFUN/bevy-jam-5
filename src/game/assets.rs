@@ -11,6 +11,7 @@ pub enum ImageAsset {
     RoboCrab,
     Player,
     Gargoyle,
+    Decoration,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -26,6 +27,10 @@ impl ImageAssets {
             ("images/robo_crab.png", ImageAsset::RoboCrab),
             ("images/character_animated.png", ImageAsset::Player),
             ("images/gargoyle.png", ImageAsset::Gargoyle),
+            (
+                "atlas/SunnyLand_by_Ansimuz-extended.png",
+                ImageAsset::Decoration,
+            ),
         ] {
             assets.insert(
                 image_asset_tag,
