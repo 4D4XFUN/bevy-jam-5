@@ -1,5 +1,4 @@
 /// Grid-based collision
-
 use bevy::prelude::*;
 
 use crate::game::grid::movement::GridMovement;
@@ -65,10 +64,7 @@ pub fn simple_wall_collisions(
 /// this didn't end up working as well as the simpler one above. Keeping for ref, we can always delete if we hate it
 pub fn _apply_collision_forces(
     walls: Res<LevelWalls>,
-    mut query_actors: Query<
-        (&GridPosition, &GridCollider, &mut GridMovement),
-        Without<Immovable>,
-    >,
+    mut query_actors: Query<(&GridPosition, &GridCollider, &mut GridMovement), Without<Immovable>>,
 ) {
     const WALL_COLLIDER_RADIUS: f32 = 1.0; // assume walls all have a 1-grid-unit-radius circle around them
     const REPEL_FORCE: f32 = 1.; // grid units per sec squared

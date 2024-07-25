@@ -3,14 +3,13 @@
 pub mod grid_overlay;
 pub mod line_of_sight_debug;
 
+use crate::input::DevAction;
+use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use leafwing_input_manager::prelude::*;
-use crate::input::DevAction;
-use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
-
     app.init_state::<DebugOverlaysState>();
     app.add_plugins((grid_overlay::plugin, line_of_sight_debug::plugin));
 
@@ -27,7 +26,6 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(Update, toggle_world_inspector_state)
         .add_plugins(WorldInspectorPlugin::new().run_if(in_state(WorldInspectorState::Enabled)));
 }
-
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
 pub enum DebugOverlaysState {

@@ -1,9 +1,7 @@
-use crate::game::line_of_sight::{
-    CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle,
-};
+use crate::dev_tools::DebugOverlaysState;
+use crate::game::line_of_sight::{CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle};
 use crate::AppSet;
 use bevy::prelude::*;
-use crate::dev_tools::DebugOverlaysState;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(

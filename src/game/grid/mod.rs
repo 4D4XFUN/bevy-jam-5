@@ -27,7 +27,6 @@ pub fn plugin(app: &mut App) {
     app.register_type::<(GridPosition, GridLayout)>();
 }
 
-
 #[derive(Component)]
 pub struct GridSprite;
 
@@ -136,7 +135,6 @@ fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res
 
     println!("Grid initialized: {:?}", grid);
 }
-
 
 #[cfg(test)]
 mod tests {

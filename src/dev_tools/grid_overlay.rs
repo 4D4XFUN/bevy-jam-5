@@ -5,14 +5,14 @@ use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
 use crate::dev_tools::DebugOverlaysState;
-use crate::game::grid::{GridPosition, GridSprite};
 use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::{GridPosition, GridSprite};
 use crate::game::spawn::player::Player;
 use crate::input::DevAction;
 use crate::screen::Screen;
 
 pub fn plugin(app: &mut App) {
-        app.add_systems(
+    app.add_systems(
         Update,
         (update_grid_debug_overlay, update_player_grid_debug_overlay)
             .run_if(in_state(DebugOverlaysState::Enabled)),
@@ -117,4 +117,3 @@ fn update_grid_debug_overlay(
         }
     }
 }
-

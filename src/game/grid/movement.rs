@@ -1,5 +1,4 @@
 /// Grid-based movement
-
 use crate::game::grid::{GridLayout, GridPosition};
 use crate::input::PlayerAction;
 use crate::AppSet;

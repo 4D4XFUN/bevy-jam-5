@@ -4,12 +4,12 @@ use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 // use crate::AppSet;
+use crate::dev_tools::line_of_sight_debug;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::sprite::Mesh2dHandle;
 use std::time::Duration;
-use crate::dev_tools::line_of_sight_debug;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
@@ -304,4 +304,3 @@ pub mod front_facing_edges {
         }
     }
 }
-
