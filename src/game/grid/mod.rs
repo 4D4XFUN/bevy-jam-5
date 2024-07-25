@@ -152,17 +152,23 @@ pub mod movement {
     use crate::game::grid::{GridLayout, GridPosition};
     use crate::input::PlayerAction;
     use crate::AppSet;
-    use std::time::Duration;
     use bevy::prelude::*;
     use leafwing_input_manager::prelude::ActionState;
+    use std::time::Duration;
 
     pub fn plugin(app: &mut App) {
         app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
-        app.add_systems(Update, (respond_to_input, apply_movement).chain().in_set(AppSet::UpdateVirtualGrid));
+        app.add_systems(
+            Update,
+            (respond_to_input, apply_movement)
+                .chain()
+                .in_set(AppSet::UpdateVirtualGrid),
+        );
 
         app.add_systems(
             Update,
-            set_real_position_based_on_grid.in_set(AppSet::UpdateWorld));
+            set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
+        );
 
         app.register_type::<GridMovement>();
     }
@@ -236,8 +242,7 @@ pub mod movement {
             // Normalize so that diagonal movement has the same speed as horizontal and vertical movement.
             let intent = intent.normalize_or_zero();
 
-            movement.acceleration_player_force =
-                intent * movement.acceleration_player_multiplier;
+            movement.acceleration_player_force = intent * movement.acceleration_player_multiplier;
 
             if !movement.is_rolling && action_state.pressed(&PlayerAction::Roll) {
                 movement.is_rolling = true;
@@ -262,7 +267,11 @@ pub mod movement {
             movement.velocity = velocity;
 
             // move the player
-            let multiplier = if movement.is_rolling { roll.velocity_multiplier } else { 1.0 };
+            let multiplier = if movement.is_rolling {
+                roll.velocity_multiplier
+            } else {
+                1.0
+            };
             position.offset += movement.velocity * dt * multiplier;
             position.fix_offset_overflow();
         }

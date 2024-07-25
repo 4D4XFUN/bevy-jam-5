@@ -7,7 +7,10 @@ use crate::{
 
 use super::{
     assets::ImageAssets,
-    grid::{movement::{GridMovement, Roll}, GridPosition},
+    grid::{
+        movement::{GridMovement, Roll},
+        GridPosition,
+    },
     line_of_sight::LineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},

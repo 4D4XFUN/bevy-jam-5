@@ -42,14 +42,21 @@ fn update_animation_movement(
 
         let ddy = controller.acceleration_player_force.y;
 
-        let animation_state =
-            if controller.acceleration_player_force == Vec2::ZERO {
-                PlayerAnimationState::Idling
-            } else if ddy < 0. {
-                if controller.is_rolling { PlayerAnimationState::FrontRolling } else { PlayerAnimationState::FrontWalking }
+        let animation_state = if controller.acceleration_player_force == Vec2::ZERO {
+            PlayerAnimationState::Idling
+        } else if ddy < 0. {
+            if controller.is_rolling {
+                PlayerAnimationState::FrontRolling
             } else {
-                if controller.is_rolling { PlayerAnimationState::Rolling } else { PlayerAnimationState::Walking }
-            };
+                PlayerAnimationState::FrontWalking
+            }
+        } else {
+            if controller.is_rolling {
+                PlayerAnimationState::Rolling
+            } else {
+                PlayerAnimationState::Walking
+            }
+        };
 
         animation.update_state(animation_state);
     }
@@ -175,13 +182,13 @@ impl PlayerAnimation {
         }
         self.frame = (self.frame + 1)
             % match self.state {
-            PlayerAnimationState::Idling => Self::IDLE_FRAMES,
-            PlayerAnimationState::Walking => Self::WALKING_FRAMES,
-            PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
-            PlayerAnimationState::FrontIdling => Self::IDLE_FRAMES,
-            PlayerAnimationState::FrontWalking => Self::WALKING_FRAMES,
-            PlayerAnimationState::FrontRolling => Self::ROLLING_FRAMES,
-        };
+                PlayerAnimationState::Idling => Self::IDLE_FRAMES,
+                PlayerAnimationState::Walking => Self::WALKING_FRAMES,
+                PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
+                PlayerAnimationState::FrontIdling => Self::IDLE_FRAMES,
+                PlayerAnimationState::FrontWalking => Self::WALKING_FRAMES,
+                PlayerAnimationState::FrontRolling => Self::ROLLING_FRAMES,
+            };
     }
 
     /// Update animation state if it changes.

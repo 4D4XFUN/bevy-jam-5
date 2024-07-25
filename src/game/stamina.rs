@@ -32,16 +32,13 @@ fn use_stamina(
     mut event: EventWriter<UseStamina>,
 ) {
     for mut stamina in query.iter_mut() {
-        if stamina.current > stamina.max/3.0 {
+        if stamina.current > stamina.max / 3.0 {
             stamina.current -= 1.0;
         }
     }
-    
 }
 
-fn recharge_stamina(
-    mut query: Query<(&mut Stamina, &mut RechargeTimer)>,
-) {
+fn recharge_stamina(mut query: Query<(&mut Stamina, &mut RechargeTimer)>) {
     for (mut stamina, mut timer) in query.iter_mut() {
         if stamina.current < stamina.max {
             timer.current += 1.0;
