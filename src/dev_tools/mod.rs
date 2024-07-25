@@ -79,7 +79,7 @@ pub fn toggle_debug_overlays(
 
 pub fn toggle_fog(
     query: Query<&ActionState<DevAction>>,
-    mut fog_query: Query<(&mut Visibility), With<FogOfWarOverlay>>,
+    mut fog_query: Query<&mut Visibility, With<FogOfWarOverlay>>,
 ) {
     for act in query.iter() {
         if !act.just_pressed(&DevAction::ToggleFogOfWar) {
@@ -87,8 +87,8 @@ pub fn toggle_fog(
         }
         println!("Foggy {:?}", fog_query);
 
-        let mut vis: Mut<Visibility> = fog_query.single_mut();
-        let mut curr = vis.into_inner();
+        let vis: Mut<Visibility> = fog_query.single_mut();
+        let curr = vis.into_inner();
         *curr = match curr {
             Visibility::Inherited => Visibility::Hidden,
             Visibility::Hidden => Visibility::Visible,
