@@ -29,7 +29,6 @@ pub struct GridCollider;
 fn use_stamina(
     _trigger: Trigger<UseStamina>,
     mut query: Query<&mut Stamina>,
-    event: EventWriter<UseStamina>,
 ) {
     for mut stamina in query.iter_mut() {
         if stamina.current > stamina.max / 3.0 {
