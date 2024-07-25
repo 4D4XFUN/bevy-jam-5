@@ -3,8 +3,8 @@
 use bevy::prelude::*;
 
 use crate::game::grid::collision::GridCollider;
-use crate::game::grid::movement::GridMovement;
-use crate::game::grid::movement::Roll;
+use crate::game::movement::GridMovement;
+use crate::game::movement::Roll;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::LineOfSightBundle;
 use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};

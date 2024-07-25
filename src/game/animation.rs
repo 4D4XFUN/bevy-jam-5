@@ -9,7 +9,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use super::audio::sfx::Sfx;
-use crate::game::grid::movement::{GridMovement, Roll};
+use crate::game::movement::{GridMovement, Roll};
 use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {

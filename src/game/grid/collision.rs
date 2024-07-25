@@ -1,7 +1,7 @@
 /// Grid-based collision
 use bevy::prelude::*;
 
-use crate::game::grid::movement::GridMovement;
+use crate::game::movement::GridMovement;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::level::LevelWalls;
 use crate::AppSet;

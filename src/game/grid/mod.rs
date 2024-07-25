@@ -1,5 +1,4 @@
 pub mod grid_layout;
-pub mod movement;
 
 pub mod collision;
 
@@ -11,14 +10,19 @@ use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
+use crate::AppSet;
+use crate::game::movement;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>();
     app.add_systems(Update, update_grid_when_level_changes);
     app.observe(fix_grid_position_system);
 
-    app.add_plugins(movement::plugin);
     app.add_plugins(collision::plugin);
+    app.add_systems(
+        Update,
+        set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
+    );
 
     app.register_type::<(GridPosition, GridLayout)>();
 }
@@ -153,6 +157,20 @@ fn fix_grid_position_system(
 
         // println!("Fixing position {:?}, to have y={}. Current ldtk coords: {:?}", &grid_pos.coordinates, &fixed_y, &ldtk_grid_coords);
         grid_pos.coordinates.y = fixed_y as f32;
+    }
+}
+
+
+/// Any entity that has a GridPosition and a Transform gets put in the world wherever its grid position says.
+/// This does mean that Transform mutations get overwritten by grid position calculated ones.
+pub fn set_real_position_based_on_grid(
+    mut query: Query<(&mut Transform, &GridPosition)>,
+    grid: Res<GridLayout>,
+) {
+    for (mut t, gp) in query.iter_mut() {
+        let pos = grid.grid_to_world(gp);
+        t.translation.x = pos.x;
+        t.translation.y = pos.y;
     }
 }
 
