@@ -112,7 +112,11 @@ impl Default for GridLayout {
     }
 }
 
-fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res<LevelWalls>, mut commands: Commands) {
+fn update_grid_when_level_changes(
+    mut grid: ResMut<GridLayout>,
+    level_walls: Res<LevelWalls>,
+    mut commands: Commands,
+) {
     if !level_walls.is_changed() {
         return;
     }
