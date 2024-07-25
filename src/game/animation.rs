@@ -223,4 +223,11 @@ impl PlayerAnimation {
     pub fn get_current_state(&self) -> PlayerAnimationState {
         self.state
     }
+
+    /// resets the animation component to default
+    pub fn reset(&mut self) {
+        self.update_state(PlayerAnimationState::Idling);
+        self.frame = 0;
+        self.timer.tick(self.timer.duration());
+    }
 }
