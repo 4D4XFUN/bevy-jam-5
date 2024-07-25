@@ -37,7 +37,9 @@ pub enum DebugOverlaysState {
 
 /// listens for dev-only keybinds
 fn spawn_dev_input_manager(mut commands: Commands) {
-    commands.spawn(InputManagerBundle::with_map(DevActionToggles::default_input_map()));
+    commands.spawn(InputManagerBundle::with_map(
+        DevActionToggles::default_input_map(),
+    ));
 }
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
