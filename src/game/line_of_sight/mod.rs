@@ -1,14 +1,16 @@
-pub mod fog_of_war;
+use std::time::Duration;
 
-use crate::game::grid::grid_layout::GridLayout;
-use crate::game::grid::GridPosition;
-use crate::geometry_2d::line_segment::LineSegment;
 // use crate::AppSet;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::sprite::Mesh2dHandle;
-use std::time::Duration;
+
+use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::GridPosition;
+use crate::geometry_2d::line_segment::LineSegment;
+
+pub mod fog_of_war;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
@@ -43,7 +45,7 @@ impl Default for LineOfSightBundle {
     fn default() -> Self {
         Self {
             line_of_sight_source: LineOfSightSource {
-                max_distance_in_grid_units: 7.,
+                max_distance_in_grid_units: 30.,
                 max_rays_to_cast: 60,
             },
             facing_walls_cache: FacingWallsCache::new(),
@@ -235,12 +237,12 @@ pub fn update_line_of_sight_mesh(
 pub mod front_facing_edges {
     use bevy::prelude::*;
 
+    use crate::AppSet;
     use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
     use crate::game::spawn::level::LevelWalls;
     use crate::geometry_2d::line_segment::LineSegment;
-    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
         // Systems
@@ -308,12 +310,13 @@ pub mod front_facing_edges {
 }
 
 pub mod debug_overlay {
+    use bevy::prelude::*;
+
+    use crate::AppSet;
     use crate::game::grid::DebugOverlaysState;
     use crate::game::line_of_sight::{
         CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle,
     };
-    use crate::AppSet;
-    use bevy::prelude::*;
 
     pub fn plugin(app: &mut App) {
         app.add_systems(

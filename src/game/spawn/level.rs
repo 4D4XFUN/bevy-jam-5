@@ -3,9 +3,9 @@
 use std::collections::HashSet;
 
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
-use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 
@@ -25,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
 pub const GRID_SIZE: i32 = 16;
 
 #[derive(Default, Component)]
-struct Wall;
+pub struct Wall;
 
 #[derive(Default, Bundle, LdtkIntCell)]
 struct WallBundle {

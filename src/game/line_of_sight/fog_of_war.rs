@@ -1,9 +1,11 @@
+use bevy::prelude::*;
+
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
+use crate::game::spawn::level::LevelWalls;
 use crate::geometry_2d::line_segment::LineSegment;
-use crate::AppSet;
-use bevy::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -136,7 +138,7 @@ fn reveal_fog_of_war(
                 let dist = position.coordinates.distance(fog_coords);
 
                 // special case for the square we're standing on
-                if dist <= 2.0 {
+                if dist <= 1.0 {
                     if let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y)) {
                         s.color.set_alpha(0.0);
                     }
@@ -166,7 +168,27 @@ fn reveal_fog_of_war(
                 let can_see = walls.facing_wall_edges.iter().all(|w| !ray.do_intersect(w));
 
                 if can_see {
-                    s.color.set_alpha(0.0);
+                    // set surrounding tiles
+                    let max_x = usize::clamp(x.saturating_add(1), 0, fog.width - 1);
+                    let min_x = usize::clamp(x.saturating_sub(1), 0, fog.width - 1);
+                    let max_y = usize::clamp(y.saturating_add(1), 0, fog.height - 1);
+                    let min_y = usize::clamp(y.saturating_sub(1), 0, fog.height - 1);
+
+                    // if level_walls.collides(x as i32, y as i32) {
+                    //
+                    // } else {
+                    //     s.color.set_alpha(0.0);
+                    // }
+                    for x_index in min_x..=max_x {
+                        for y_index in min_y..=max_y {
+                            let Ok(mut adjacent_sprite) =
+                                fog_of_war_sprite_query.get_mut(fog.get_at(x_index, y_index))
+                            else {
+                                continue;
+                            };
+                            adjacent_sprite.color.set_alpha(0.0);
+                        }
+                    }
                 }
             }
         }
@@ -174,12 +196,14 @@ fn reveal_fog_of_war(
 }
 
 fn recover_fog_of_war(mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>) {
-    let recovery_alpha_change = 1.0 / 600.;
+    let recovery_alpha_change = 1.0 / 15.0;
     for mut s in fog_of_war_sprite_query.iter_mut() {
         let alpha = s.color.alpha();
-        if alpha < 0.95 {
+        if alpha < 1.0 - recovery_alpha_change {
             // it'll never fully recover
             s.color.set_alpha(alpha + recovery_alpha_change);
+        } else {
+            s.color.set_alpha(1.0);
         }
     }
 }
