@@ -5,7 +5,7 @@ pub fn plugin(app: &mut App) {
     app.add_plugins(InputManagerPlugin::<PlayerAction>::default());
 
     #[cfg(feature = "dev")]
-    app.add_plugins(InputManagerPlugin::<DevAction>::default());
+    app.add_plugins(InputManagerPlugin::<DevActionToggles>::default());
 }
 
 // This is the list of "things in the game I want to be able to do based on input"
@@ -49,20 +49,20 @@ impl PlayerAction {
 
 #[cfg(feature = "dev")]
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
-pub enum DevAction {
-    ToggleWorldInspector,
-    ToggleFogOfWar,
-    ToggleDebugOverlays,
+pub enum DevActionToggles {
+    WorldInspector,
+    FogOfWar,
+    DebugOverlays,
 }
 
 #[cfg(feature = "dev")]
-impl DevAction {
+impl DevActionToggles {
     pub fn default_input_map() -> InputMap<Self> {
         let mut input_map = InputMap::default();
 
-        input_map.insert(Self::ToggleWorldInspector, KeyCode::F1);
-        input_map.insert(Self::ToggleFogOfWar, KeyCode::F2);
-        input_map.insert(Self::ToggleDebugOverlays, KeyCode::F3);
+        input_map.insert(Self::WorldInspector, KeyCode::F1);
+        input_map.insert(Self::FogOfWar, KeyCode::F2);
+        input_map.insert(Self::DebugOverlays, KeyCode::F3);
 
         input_map
     }

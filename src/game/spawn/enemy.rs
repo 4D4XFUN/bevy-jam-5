@@ -2,7 +2,6 @@ use crate::game::grid::movement::GridMovement;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::health::CanApplyDamage;
 use crate::game::spawn::player::Player;
-use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};

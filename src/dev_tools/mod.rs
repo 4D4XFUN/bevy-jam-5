@@ -4,7 +4,7 @@ pub mod grid_overlay;
 pub mod line_of_sight_debug;
 
 use crate::game::line_of_sight::fog_of_war::FogOfWarOverlay;
-use crate::input::DevAction;
+use crate::input::DevActionToggles;
 use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -37,7 +37,7 @@ pub enum DebugOverlaysState {
 
 /// listens for dev-only keybinds
 fn spawn_dev_input_manager(mut commands: Commands) {
-    commands.spawn(InputManagerBundle::with_map(DevAction::default_input_map()));
+    commands.spawn(InputManagerBundle::with_map(DevActionToggles::default_input_map()));
 }
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
@@ -49,11 +49,11 @@ enum WorldInspectorState {
 
 fn toggle_world_inspector_state(
     current_state: Res<State<WorldInspectorState>>,
-    query: Query<&ActionState<DevAction>>,
+    query: Query<&ActionState<DevActionToggles>>,
     mut set_next_state: ResMut<NextState<WorldInspectorState>>,
 ) {
     for act in query.iter() {
-        if act.just_pressed(&DevAction::ToggleWorldInspector) {
+        if act.just_pressed(&DevActionToggles::WorldInspector) {
             set_next_state.set(match current_state.get() {
                 WorldInspectorState::Disabled => WorldInspectorState::Enabled,
                 WorldInspectorState::Enabled => WorldInspectorState::Disabled,
@@ -64,11 +64,11 @@ fn toggle_world_inspector_state(
 
 pub fn toggle_debug_overlays(
     current_state: Res<State<DebugOverlaysState>>,
-    query: Query<&ActionState<DevAction>>,
+    query: Query<&ActionState<DevActionToggles>>,
     mut set_next_state: ResMut<NextState<DebugOverlaysState>>,
 ) {
     for act in query.iter() {
-        if act.just_pressed(&DevAction::ToggleDebugOverlays) {
+        if act.just_pressed(&DevActionToggles::DebugOverlays) {
             set_next_state.set(match current_state.get() {
                 DebugOverlaysState::Disabled => DebugOverlaysState::Enabled,
                 DebugOverlaysState::Enabled => DebugOverlaysState::Disabled,
@@ -78,11 +78,11 @@ pub fn toggle_debug_overlays(
 }
 
 pub fn toggle_fog(
-    query: Query<&ActionState<DevAction>>,
+    query: Query<&ActionState<DevActionToggles>>,
     mut fog_query: Query<&mut Visibility, With<FogOfWarOverlay>>,
 ) {
     for act in query.iter() {
-        if !act.just_pressed(&DevAction::ToggleFogOfWar) {
+        if !act.just_pressed(&DevActionToggles::FogOfWar) {
             return;
         }
         println!("Foggy {:?}", fog_query);
