@@ -102,11 +102,11 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
 }
 
 pub fn apply_movement(
-    mut query: Query<(&mut GridPosition, &mut GridMovement, &mut Roll)>,
+    mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&mut Roll>)>,
     time: Res<Time>,
 ) {
     let dt = time.delta_seconds();
-    for (mut position, mut movement, roll) in query.iter_mut() {
+    for (mut position, mut movement, maybe_roll) in query.iter_mut() {
         let force = movement.current_force() * dt; // scale it by time
 
         // apply forces and friction
@@ -118,12 +118,12 @@ pub fn apply_movement(
         movement.velocity = velocity;
 
         // move the player
-        let multiplier = if movement.is_rolling {
-            roll.velocity_multiplier
-        } else {
-            1.0
+        let roll_multi = match (maybe_roll, movement.is_rolling) {
+            (Some(roll), true) => roll.velocity_multiplier,
+            _ => 1.0,
         };
-        position.offset += movement.velocity * dt * multiplier;
+
+        position.offset += movement.velocity * dt * roll_multi;
         position.fix_offset_overflow();
     }
 }
