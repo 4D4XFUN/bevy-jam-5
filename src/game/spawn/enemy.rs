@@ -58,7 +58,7 @@ fn enemy_initial_components(instance: &EntityInstance) -> EnemySettingsBundle {
         spawn_coords: SpawnCoords(instance.grid),
 
         grid_position: GridPosition::new(instance.grid.x as f32, instance.grid.y as f32),
-        grid_movement: GridMovement::immobile(), // todo revert to default
+        grid_movement: GridMovement::default(),
     }
 }
 
@@ -94,7 +94,7 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 2.0;
+const ENEMY_CHASE_SPEED: f32 = 10.0;
 const ENEMY_RETURN_TO_POST_SPEED: f32 = 1.0;
 
 fn return_to_post(
