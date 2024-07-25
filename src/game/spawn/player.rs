@@ -9,6 +9,7 @@ use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::LineOfSightBundle;
 use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};
 use crate::input::PlayerAction;
+use crate::game::stamina::*;
 use crate::{
     game::{
         animation::PlayerAnimation,

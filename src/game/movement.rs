@@ -8,6 +8,8 @@ use bevy::prelude::*;
 use crate::game::spawn::player::Player;
 use crate::AppSet;
 
+use super::stamina::*;
+
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
     app.register_type::<MovementController>();
@@ -15,18 +17,23 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         record_movement_controller.in_set(AppSet::RecordInput),
     );
-
     // Apply movement based on controls.
     app.register_type::<Movement>();
     app.add_systems(Update, apply_movement.chain().in_set(AppSet::Update));
+    app.register_type::<Stamina>();
+    app.add_event::<UseStamina>();
+    app.add_systems(Update, send_event.in_set(AppSet::RecordInput));
 }
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub struct MovementController(pub Vec2);
 
-#[derive(Event, Reflect)]
-pub struct UseStamina;
+fn send_event(input: Res<ButtonInput<KeyCode>>, mut event: EventWriter<UseStamina>) {
+    if input.pressed(KeyCode::ShiftLeft) {
+        event.send(UseStamina);
+    }
+}
 
 fn record_movement_controller(
     input: Res<ButtonInput<KeyCode>>,

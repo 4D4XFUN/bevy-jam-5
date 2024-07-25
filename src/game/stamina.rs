@@ -1,9 +1,13 @@
 use bevy::prelude::*;
+use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
-    app.observe(use_stamina)
-        .register_type::<Stamina>()
-        .add_systems(Update, recharge_stamina);
+    app.add_event::<UseStamina>();
+    app.add_systems(Update, handle_event::<UseStamina>);
+    app.register_type::<Stamina>();
+    app.add_systems(Update, use_stamina.in_set(AppSet::Update));
+    app.add_systems(Update, recharge_stamina.in_set(AppSet::TickTimers));
+    app.add_systems(Update, send_event.in_set(AppSet::RecordInput));
 }
 
 #[derive(Event, Default, Debug)]
@@ -22,19 +26,39 @@ pub struct RechargeTimer {
     pub(crate) max: f32,
 }
 
-#[derive(Component, Reflect, Debug, Clone)]
-#[reflect(Component)]
-pub struct GridCollider;
-
-fn use_stamina(_trigger: Trigger<UseStamina>, mut query: Query<&mut Stamina>) {
-    for mut stamina in query.iter_mut() {
-        if stamina.current > stamina.max / 3.0 {
-            stamina.current -= 1.0;
+impl Default for Stamina {
+    fn default() -> Self {
+        Self {
+            current: 100.0,
+            max: 100.0,
+            regen: 1.0,
         }
     }
 }
 
-fn recharge_stamina(mut query: Query<(&mut Stamina, &mut RechargeTimer)>) {
+impl Default for RechargeTimer {
+    fn default() -> Self {
+        Self { current: 0.0, max: 60.0 }
+    }
+}
+
+pub fn send_event(mut event: EventWriter<UseStamina>) {
+    event.send(UseStamina);
+}
+
+pub fn handle_event<T: Event>(mut events: ResMut<Events<T>>) {
+    events.update();
+}
+
+pub fn use_stamina(mut query: Query<&mut Stamina>) {
+    if query.single().current < 1.0 {
+        return;
+    } else {
+        query.single_mut().current -= 1.0;
+    }
+}
+
+pub fn recharge_stamina(mut query: Query<(&mut Stamina, &mut RechargeTimer)>) {
     for (mut stamina, mut timer) in query.iter_mut() {
         if stamina.current < stamina.max {
             timer.current += 1.0;
