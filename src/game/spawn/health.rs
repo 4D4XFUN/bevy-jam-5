@@ -1,7 +1,5 @@
 use bevy::app::App;
-use bevy::prelude::{
-    Commands, Component, Entity, Event, Query, Reflect, Transform, Trigger, Update, Vec2, With,
-};
+use bevy::prelude::*;
 
 use crate::game::animation::PlayerAnimation;
 use crate::game::grid::GridPosition;
