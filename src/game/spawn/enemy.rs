@@ -3,12 +3,9 @@ use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::CanApplyDamage;
 use crate::game::spawn::player::Player;
-use bevy::ecs::component::{ComponentId, Components};
-use bevy::ecs::storage::Storages;
 use bevy::prelude::*;
-use bevy::ptr::OwningPtr;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -90,7 +87,7 @@ impl EnemyBundle {
 
 /// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
 fn fix_loaded_ldtk_entities(
-    mut query: Query<(Entity, &GridCoords), (With<LdtkEnemy>)>,
+    query: Query<(Entity, &GridCoords), With<LdtkEnemy>>,
     mut commands: Commands,
 ) {
     for (ldtk_entity, grid_coords) in query.iter() {

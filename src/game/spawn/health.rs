@@ -2,7 +2,6 @@ use crate::game::grid::GridPosition;
 use bevy::app::App;
 use bevy::log::info;
 use bevy::prelude::*;
-use bevy::utils::info;
 
 /// Handles all health code.
 ///
