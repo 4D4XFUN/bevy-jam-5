@@ -137,6 +137,7 @@ fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res
 struct GridChangedEvent;
 
 /// Reconciles LDTK's y-position (top of screen is 0) with ours/bevy's (bottom of screen is 0)
+/// I'm not sure if this fits better in grid/ or ldtk/ module
 fn fix_grid_position_system(
     _trigger: Trigger<GridChangedEvent>,
     mut query: Query<(&mut GridPosition, &GridCoords)>,
