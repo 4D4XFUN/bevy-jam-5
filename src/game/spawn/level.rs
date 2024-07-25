@@ -9,6 +9,7 @@ use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
+use super::exit::SpawnExitTrigger;
 use super::player::SpawnPlayerTrigger;
 
 pub(super) fn plugin(app: &mut App) {
@@ -58,6 +59,7 @@ fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
     // but add things like walls etc. here.
     commands.trigger(SpawnPlayerTrigger);
     commands.trigger(SpawnEnemyTrigger);
+    commands.trigger(SpawnExitTrigger);
 }
 
 fn cache_wall_locations(
