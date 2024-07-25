@@ -26,7 +26,7 @@ pub fn plugin(app: &mut App) {
 #[derive(Component)]
 pub struct GridSprite;
 
-#[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
+#[derive(Component, Reflect, Default, Debug, Copy, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct GridPosition {
     pub coordinates: Vec2, // the full-square coordinates on the whole grid

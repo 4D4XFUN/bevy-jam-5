@@ -51,6 +51,7 @@ impl PlayerAction {
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum DevAction {
     ToggleWorldInspector,
+    ToggleFogOfWar,
     ToggleDebugOverlays,
 }
 
@@ -60,6 +61,7 @@ impl DevAction {
         let mut input_map = InputMap::default();
 
         input_map.insert(Self::ToggleWorldInspector, KeyCode::F1);
+        input_map.insert(Self::ToggleFogOfWar, KeyCode::F2);
         input_map.insert(Self::ToggleDebugOverlays, KeyCode::F3);
 
         input_map

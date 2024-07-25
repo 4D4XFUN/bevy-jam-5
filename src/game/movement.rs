@@ -17,7 +17,6 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     // Apply movement based on controls.
-    app.register_type::<Movement>();
     app.add_systems(Update, apply_movement.chain().in_set(AppSet::Update));
 }
 

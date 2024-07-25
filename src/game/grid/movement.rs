@@ -55,6 +55,7 @@ impl Default for Roll {
 }
 
 impl Default for GridMovement {
+    // todo create "presets" like slow, medium, fast for use by enemies or players
     fn default() -> Self {
         Self {
             velocity: Vec2::ZERO,
