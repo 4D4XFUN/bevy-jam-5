@@ -5,7 +5,6 @@ pub mod collision;
 use std::ops::{Add, Sub};
 
 use crate::game::grid::grid_layout::GridLayout;
-use crate::game::movement;
 use crate::game::spawn::level::LevelWalls;
 use crate::AppSet;
 use bevy::app::App;
