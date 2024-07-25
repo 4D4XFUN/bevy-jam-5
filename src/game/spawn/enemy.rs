@@ -46,9 +46,6 @@ struct EnemyBundle {
     grid_coords: GridCoords,
     #[with(enemy_initial_components)]
     enemy_defaults_bundle: EnemySettingsBundle,
-
-    // grid_position: GridPosition,
-    // movement_controller: GridMovement,
 }
 
 #[derive(Default, Bundle)]
