@@ -3,12 +3,12 @@
 pub mod grid_overlay;
 pub mod line_of_sight_debug;
 
+use crate::game::line_of_sight::fog_of_war::FogOfWarOverlay;
 use crate::input::DevAction;
 use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use leafwing_input_manager::prelude::*;
-use crate::game::line_of_sight::fog_of_war::FogOfWarOverlay;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<DebugOverlaysState>();

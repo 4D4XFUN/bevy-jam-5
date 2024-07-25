@@ -1,12 +1,12 @@
+use crate::game::grid::movement::GridMovement;
+use crate::game::grid::GridPosition;
+use crate::game::spawn::health::CanApplyDamage;
+use crate::game::spawn::player::Player;
 use bevy::ecs::component::{ComponentHooks, ComponentId, StorageType};
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
-use crate::game::grid::GridPosition;
-use crate::game::grid::movement::GridMovement;
-use crate::game::spawn::health::CanApplyDamage;
-use crate::game::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -124,7 +124,8 @@ fn follow_player(
         if let Ok(player_transform) = player.get_single() {
             let direction = player_transform.translation - entity_transform.translation;
 
-            controller.acceleration_player_force = direction.truncate().normalize() * ENEMY_CHASE_SPEED;
+            controller.acceleration_player_force =
+                direction.truncate().normalize() * ENEMY_CHASE_SPEED;
         }
     }
 }
