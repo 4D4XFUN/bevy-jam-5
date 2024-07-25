@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
 use crate::game::spawn::level::LevelWalls;
 use crate::geometry_2d::line_segment::LineSegment;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     //systems

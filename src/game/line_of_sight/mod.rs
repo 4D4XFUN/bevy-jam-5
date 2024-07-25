@@ -237,12 +237,12 @@ pub fn update_line_of_sight_mesh(
 pub mod front_facing_edges {
     use bevy::prelude::*;
 
-    use crate::AppSet;
     use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
     use crate::game::spawn::level::LevelWalls;
     use crate::geometry_2d::line_segment::LineSegment;
+    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
         // Systems
@@ -312,11 +312,11 @@ pub mod front_facing_edges {
 pub mod debug_overlay {
     use bevy::prelude::*;
 
-    use crate::AppSet;
     use crate::game::grid::DebugOverlaysState;
     use crate::game::line_of_sight::{
         CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle,
     };
+    use crate::AppSet;
 
     pub fn plugin(app: &mut App) {
         app.add_systems(
