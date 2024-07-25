@@ -31,6 +31,7 @@ impl Plugin for AppPlugin {
                 AppSet::RecordInput,
                 AppSet::UpdateVirtualGrid,
                 AppSet::Update,
+                AppSet::UpdateStamina,
                 AppSet::UpdateWorld,
                 AppSet::UpdateFog,
             )
@@ -103,6 +104,8 @@ enum AppSet {
     UpdateVirtualGrid,
     /// Do everything else (consider splitting this into further variants).
     Update,
+    // Stamina is used after a movement and is needed by other systems
+    UpdateStamina,
     /// After all grid coordinates are settled, we translate them to real pixels in world space
     UpdateWorld,
     /// Fog updates happen last
