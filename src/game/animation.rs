@@ -98,7 +98,7 @@ pub struct PlayerAnimation {
     state: PlayerAnimationState,
 }
 
-#[derive(Reflect, PartialEq, Debug)]
+#[derive(Clone, Copy, Reflect, PartialEq, Debug)]
 pub enum PlayerAnimationState {
     Idling,
     Walking,
@@ -173,7 +173,7 @@ impl PlayerAnimation {
     }
 
     /// Update animation timers.
-    pub fn update_timer(&mut self, delta: Duration) {
+    fn update_timer(&mut self, delta: Duration) {
         self.timer.tick(delta);
         if !self.timer.finished() {
             return;
@@ -204,7 +204,7 @@ impl PlayerAnimation {
     }
 
     /// Whether animation changed this tick.
-    pub fn changed(&self) -> bool {
+    fn changed(&self) -> bool {
         self.timer.finished()
     }
 
@@ -218,5 +218,9 @@ impl PlayerAnimation {
             PlayerAnimationState::Walking => 7 * 4 + self.frame,
             PlayerAnimationState::Rolling => 7 * 5 + self.frame,
         }
+    }
+
+    pub fn get_current_state(&self) -> PlayerAnimationState {
+        self.state
     }
 }
