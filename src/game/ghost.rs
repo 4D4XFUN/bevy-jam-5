@@ -92,6 +92,7 @@ fn spawn_ghost(
                 color: Color::srgb(0.5, 0.5, 0.5),
                 ..default()
             },
+            transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..Default::default()
         },
         TextureAtlas {
