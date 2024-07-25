@@ -4,7 +4,6 @@ use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 // use crate::AppSet;
-use crate::dev_tools::line_of_sight_debug;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;

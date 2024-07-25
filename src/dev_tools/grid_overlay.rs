@@ -2,13 +2,11 @@ use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
-use leafwing_input_manager::action_state::ActionState;
 
 use crate::dev_tools::DebugOverlaysState;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::{GridPosition, GridSprite};
 use crate::game::spawn::player::Player;
-use crate::input::DevAction;
 use crate::screen::Screen;
 
 pub fn plugin(app: &mut App) {

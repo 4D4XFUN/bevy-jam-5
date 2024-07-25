@@ -7,13 +7,9 @@ use std::ops::{Add, Sub};
 
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::level::LevelWalls;
-use crate::game::spawn::player::Player;
-use crate::input::DevAction;
-use crate::screen::Screen;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use leafwing_input_manager::action_state::ActionState;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>()
