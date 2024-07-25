@@ -60,6 +60,14 @@ impl GridMovement {
             is_rolling: false,
         }
     }
+
+    /// Sets every variable relevant to movement back to default
+    pub fn reset(&mut self) {
+        self.velocity = Vec2::ZERO;
+        self.acceleration_player_force = Vec2::ZERO;
+        self.acceleration_external_force = Vec2::ZERO;
+        self.is_rolling = false;
+    }
 }
 
 impl Default for GridMovement {

@@ -14,7 +14,7 @@ pub mod line_of_sight;
 pub mod movement;
 pub mod spawn;
 pub mod stamina;
-mod threat;
+pub mod threat;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
