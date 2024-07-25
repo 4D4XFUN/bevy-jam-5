@@ -23,9 +23,16 @@ pub fn plugin(app: &mut App) {
         ),
         current_level: 0,
     });
+    app.insert_resource(PlayTimer(Timer::from_seconds(
+        settings.levels as f32 * settings.seconds_between_levels,
+        TimerMode::Once,
+    )));
     app.insert_resource(settings);
     app.add_systems(Update, tick.run_if(in_state(Screen::Playing)));
 }
+
+#[derive(Resource)]
+pub struct PlayTimer(pub Timer);
 
 /// Is triggered when the threat level increases.
 /// Property is the new threat level.
@@ -49,9 +56,11 @@ fn tick(
     time: Res<Time>,
     threat_settings: Res<ThreatTimerSettings>,
     mut threat_timer: ResMut<ThreatTimer>,
+    mut play_timer: ResMut<PlayTimer>,
     mut commands: Commands,
 ) {
     threat_timer.timer.tick(time.delta());
+    play_timer.0.tick(time.delta());
     if threat_timer.timer.finished() {
         threat_timer.current_level += 1;
         commands.trigger(ThreatLevelIncreased(threat_timer.current_level));
@@ -59,6 +68,7 @@ fn tick(
             commands.trigger(EndGameCondition::TimeOut);
             threat_timer.current_level = 0;
             threat_timer.timer.reset();
+            play_timer.0.reset();
         }
     }
 }
