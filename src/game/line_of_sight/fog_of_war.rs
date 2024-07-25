@@ -91,6 +91,7 @@ fn update_grid_fog_of_war_overlay(
                 .spawn((
                     FogOfWarOverlayVoxel,
                     SpriteBundle {
+                        transform: ZLayers::Fog.transform(),
                         sprite: Sprite {
                             color,
                             custom_size: Some(Vec2::splat(grid.square_size)), // todo resolution
@@ -110,7 +111,7 @@ fn update_grid_fog_of_war_overlay(
         .spawn((
             Name::new("FogOfWarOverlay"),
             overlay,
-            SpatialBundle::from_transform(Transform::from_translation(Vec3::default().with_z(ZLayers::Fog.f32()))),
+            SpatialBundle::from_transform(ZLayers::Fog.transform()),
         ))
         .id();
 

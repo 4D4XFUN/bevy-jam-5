@@ -49,7 +49,7 @@ fn update_player_grid_debug_overlay(
                         custom_size: Some(Vec2::splat(grid.square_size)),
                         ..default()
                     },
-                    transform: Transform::from_translation(Vec3::new(0., 0., ZLayers::DebugOverlays.f32())),
+                    transform: ZLayers::DebugOverlays.transform(),
                     ..default()
                 },
                 *player_pos,             // grid position
@@ -109,7 +109,7 @@ fn update_grid_debug_overlay(
                         custom_size: Some(Vec2::splat(grid.square_size)),
                         ..default()
                     },
-                    transform: Transform::from_translation(position.extend(ZLayers::DebugOverlays.f32())),
+                    transform: ZLayers::DebugOverlays.transform(),
                     ..default()
                 })
                 .set_parent(grid_entity);

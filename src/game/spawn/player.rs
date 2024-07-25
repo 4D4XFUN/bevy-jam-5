@@ -49,8 +49,6 @@ fn spawn_player(
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
 
-    let mut player_transform = Transform::from_scale(Vec2::splat(1.).extend(ZLayers::Player.f32()));
-
     commands.spawn((
         Name::new("Player"),
         StateScoped(Screen::Playing),
@@ -58,7 +56,7 @@ fn spawn_player(
         CameraFollowTarget,
         SpriteBundle {
             texture: images[&ImageAsset::Player].clone_weak(),
-            transform: player_transform,
+            transform: ZLayers::Player.transform(),
             ..Default::default()
         },
         TextureAtlas {

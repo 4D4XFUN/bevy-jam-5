@@ -6,6 +6,7 @@ use crate::game::spawn::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use crate::z_layers::ZLayers;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -108,7 +109,7 @@ fn spawn_oneshot_enemy(
         EnemyBundle::new(42, 24), // right next to player
         SpriteBundle {
             texture: images[&ImageAsset::Gargoyle].clone_weak(),
-            transform: Transform::from_translation(Vec3::default().with_z(100.)),
+            transform: ZLayers::Enemy.transform(),
             ..Default::default()
         },
     ));
@@ -136,8 +137,8 @@ fn detect_player(
     for (enemy_entity, enemy_transform) in &unaware_enemies {
         if let Ok(player_transform) = player.get_single() {
             if enemy_transform
-                .translation
-                .distance(player_transform.translation)
+                .translation.xy()
+                .distance(player_transform.translation.xy())
                 <= ENEMY_SIGHT_RANGE
             {
                 commands.entity(enemy_entity).insert(CanSeePlayer);
@@ -158,7 +159,7 @@ fn return_to_post(
     for (mut controller, transform, coords) in &mut unaware_enemies {
         let spawn_translation =
             Vec2::new(coords.0.x as f32 * 16.0, 1024.0 - coords.0.y as f32 * 16.0); // todo remove the hardcoding!
-        let direction = spawn_translation - transform.translation.truncate();
+        let direction = spawn_translation - transform.translation.xy();
 
         controller.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
     }
@@ -173,10 +174,10 @@ fn follow_player(
 ) {
     for (mut controller, entity_transform) in &mut enemy_movement_controllers {
         if let Ok(player_transform) = player.get_single() {
-            let direction = player_transform.translation - entity_transform.translation;
+            let direction = player_transform.translation.xy() - entity_transform.translation.xy();
 
             controller.acceleration_player_force =
-                direction.truncate().normalize() * ENEMY_CHASE_SPEED;
+                direction.normalize() * ENEMY_CHASE_SPEED;
         }
     }
 }

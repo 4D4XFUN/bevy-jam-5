@@ -9,10 +9,10 @@ pub enum ZLayers {
     Level = 1,
     Enemy = 2,
     Ghost = 3,
-    Player = 100,
-    Fog = 110,
-    DebugOverlays = 900,
-    Camera = 999,
+    Player = 5,
+    Fog = 6,
+    DebugOverlays = 7,
+    Camera = 20,
 }
 impl ZLayers {
     pub fn f32(self) -> f32 {
