@@ -40,6 +40,9 @@ impl PlayerAction {
         // camera
         input_map.insert(Self::ZoomToOverview, KeyCode::Space);
 
+        // roll
+        input_map.insert(Self::Roll, KeyCode::ShiftLeft);
+
         input_map
     }
 }
