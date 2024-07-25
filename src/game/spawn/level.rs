@@ -25,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
 pub const GRID_SIZE: i32 = 16;
 
 #[derive(Default, Component)]
-struct Wall;
+pub struct Wall;
 
 #[derive(Default, Bundle, LdtkIntCell)]
 struct WallBundle {
