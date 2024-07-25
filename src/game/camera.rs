@@ -6,7 +6,9 @@ use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
+use bevy::prelude::Keyframes::Translation;
 use leafwing_input_manager::action_state::ActionState;
+use crate::z_layers::ZLayers;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraProperties>();
@@ -32,7 +34,10 @@ pub struct CameraFollowTarget;
 pub struct CanZoomSmoothly(f32);
 
 fn spawn_camera(mut commands: Commands) {
-    let mut camera = Camera2dBundle::default();
+    let mut camera = Camera2dBundle {
+        transform: ZLayers::Camera.transform(),
+        ..default()
+    };
     camera.projection.scale = INITIAL_CAMERA_ZOOM;
     commands.spawn((
         Name::new("Camera"),

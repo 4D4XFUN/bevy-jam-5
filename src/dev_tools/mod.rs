@@ -9,6 +9,7 @@ use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use leafwing_input_manager::prelude::*;
+use crate::z_layers::debug_z_layers;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<DebugOverlaysState>();
@@ -18,6 +19,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, log_transitions::<Screen>);
     app.add_systems(Update, log_transitions::<WorldInspectorState>);
     app.add_systems(Update, log_transitions::<DebugOverlaysState>);
+    app.add_systems(Update, debug_z_layers);
     app.add_systems(Startup, spawn_dev_input_manager);
 
     app.add_systems(Update, (toggle_debug_overlays, toggle_fog));

@@ -20,6 +20,7 @@ use crate::{
 };
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
+use crate::z_layers::ZLayers;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
@@ -48,8 +49,7 @@ fn spawn_player(
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
 
-    let mut player_transform = Transform::from_scale(Vec2::splat(1.).extend(1.0));
-    player_transform.translation.z = 10.; // ensure player goes above level
+    let mut player_transform = Transform::from_scale(Vec2::splat(1.).extend(ZLayers::Player.f32()));
 
     commands.spawn((
         Name::new("Player"),

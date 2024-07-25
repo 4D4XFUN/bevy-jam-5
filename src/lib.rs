@@ -10,6 +10,7 @@ pub mod geometry_2d;
 mod input;
 #[cfg(test)]
 pub mod testing;
+pub mod z_layers;
 
 use bevy::{
     asset::AssetMetaCheck,

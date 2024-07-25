@@ -5,6 +5,7 @@ use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
+use crate::z_layers::ZLayers;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -95,7 +96,6 @@ fn update_grid_fog_of_war_overlay(
                             custom_size: Some(Vec2::splat(grid.square_size)), // todo resolution
                             ..default()
                         },
-                        transform: Transform::from_translation(position.extend(10.0)),
                         ..default()
                     },
                 ))
@@ -110,7 +110,7 @@ fn update_grid_fog_of_war_overlay(
         .spawn((
             Name::new("FogOfWarOverlay"),
             overlay,
-            SpatialBundle::default(),
+            SpatialBundle::from_transform(Transform::from_translation(Vec3::default().with_z(ZLayers::Fog.f32()))),
         ))
         .id();
 

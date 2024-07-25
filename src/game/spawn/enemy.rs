@@ -105,7 +105,7 @@ fn return_to_post(
 ) {
     for (mut controller, transform, coords) in &mut unaware_enemies {
         let spawn_translation =
-            Vec2::new(coords.0.x as f32 * 16.0, 1024.0 - coords.0.y as f32 * 16.0);
+            Vec2::new(coords.0.x as f32 * 16.0, 1024.0 - coords.0.y as f32 * 16.0); // todo remove the hardcoding!
         let direction = spawn_translation - transform.translation.truncate();
 
         controller.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;

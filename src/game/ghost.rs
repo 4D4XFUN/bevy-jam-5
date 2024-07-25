@@ -15,6 +15,7 @@ use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
 };
+use crate::z_layers::ZLayers;
 
 ///Handles ghosts.
 ///
@@ -78,6 +79,7 @@ fn spawn_ghost(
                 color: Color::srgb(0.5, 0.5, 0.5),
                 ..default()
             },
+            transform: Transform::default().with_translation(Vec3::default().with_z(ZLayers::Ghost.f32())),
             ..Default::default()
         },
         TextureAtlas {

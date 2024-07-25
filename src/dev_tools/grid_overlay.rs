@@ -2,12 +2,13 @@ use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
-
+use bevy::prelude::Keyframes::Translation;
 use crate::dev_tools::DebugOverlaysState;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::{GridPosition, GridSprite};
 use crate::game::spawn::player::Player;
 use crate::screen::Screen;
+use crate::z_layers::ZLayers;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(
@@ -48,7 +49,7 @@ fn update_player_grid_debug_overlay(
                         custom_size: Some(Vec2::splat(grid.square_size)),
                         ..default()
                     },
-                    transform: Transform::from_translation(Vec3::new(0., 0., 50.)),
+                    transform: Transform::from_translation(Vec3::new(0., 0., ZLayers::DebugOverlays.f32())),
                     ..default()
                 },
                 *player_pos,             // grid position
@@ -83,7 +84,7 @@ fn update_grid_debug_overlay(
             GridOverlay,
             Name::new(name),
             GridSprite,
-            SpatialBundle::default(),
+            SpatialBundle::from_transform(ZLayers::DebugOverlays.transform()),
             StateScoped(Screen::Playing),
         ))
         .id();
@@ -108,7 +109,7 @@ fn update_grid_debug_overlay(
                         custom_size: Some(Vec2::splat(grid.square_size)),
                         ..default()
                     },
-                    transform: Transform::from_translation(position.extend(10.0)),
+                    transform: Transform::from_translation(position.extend(ZLayers::DebugOverlays.f32())),
                     ..default()
                 })
                 .set_parent(grid_entity);

@@ -53,6 +53,7 @@ pub enum DevActionToggles {
     WorldInspector,
     FogOfWar,
     DebugOverlays,
+    ZLayerDump,
 }
 
 #[cfg(feature = "dev")]
@@ -63,6 +64,7 @@ impl DevActionToggles {
         input_map.insert(Self::WorldInspector, KeyCode::F1);
         input_map.insert(Self::FogOfWar, KeyCode::F2);
         input_map.insert(Self::DebugOverlays, KeyCode::F3);
+        input_map.insert(Self::ZLayerDump, KeyCode::F4);
 
         input_map
     }
