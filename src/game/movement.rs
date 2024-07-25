@@ -50,7 +50,7 @@ impl Default for Roll {
 }
 
 impl GridMovement {
-    pub fn immobile() -> Self {
+    pub fn _immobile() -> Self {
         Self {
             velocity: Vec2::ZERO,
             friction: 0.0,
