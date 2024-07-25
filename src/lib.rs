@@ -107,7 +107,7 @@ enum AppSet {
 }
 
 fn spawn_ldtk_world_bundle(mut commands: Commands, asset_server: Res<AssetServer>) {
-    println!("Loading LDTK assets");
+    info!("Loading LDTK assets");
     commands.spawn((
         Name::new("LdtkWorld"),
         LdtkWorldBundle {

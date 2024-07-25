@@ -87,7 +87,7 @@ pub fn toggle_fog(
         if !act.just_pressed(&DevActionToggles::FogOfWar) {
             return;
         }
-        println!("Foggy {:?}", fog_query);
+        info!("Foggy {:?}", fog_query);
 
         let vis: Mut<Visibility> = fog_query.single_mut();
         let curr = vis.into_inner();
