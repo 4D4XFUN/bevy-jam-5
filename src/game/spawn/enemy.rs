@@ -1,16 +1,24 @@
+use bevy::ecs::component::{ComponentId, Components};
+use bevy::ecs::storage::Storages;
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::CanApplyDamage;
 use crate::game::spawn::player::Player;
 use bevy::prelude::*;
+use bevy::ptr::OwningPtr;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use crate::game::assets::{ImageAsset, ImageAssets};
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
-    app.register_ldtk_entity::<EnemyBundle>("Enemy");
+    app.register_ldtk_entity::<LdtkEnemyBundle>("Enemy");
+
+    #[cfg(feature = "dev")]
+    app.observe(spawn_oneshot_enemy);
 
     // systems
+    app.add_systems(Update, fix_loaded_ldtk_entities);
     app.add_systems(
         Update,
         (return_to_post, detect_player, follow_player).chain(),
@@ -34,32 +42,81 @@ pub struct CanSeePlayer;
 #[reflect(Component)]
 pub struct SpawnCoords(IVec2);
 
+#[derive(Component, Default, Copy, Clone)]
+pub struct LdtkEnemy;
+
+// This is ldtk-specific stuff for loading enemy assets.
+// These should be transformed into an enemy type internal to our app
 #[derive(Default, Bundle, LdtkEntity)]
-struct EnemyBundle {
-    enemy: Enemy,
-    can_apply_damage: CanApplyDamage,
+struct LdtkEnemyBundle {
+    tag: LdtkEnemy,
     #[sprite_sheet_bundle]
     sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]
     grid_coords: GridCoords,
-    #[with(enemy_initial_components)]
-    enemy_defaults_bundle: EnemySettingsBundle,
 }
 
-#[derive(Default, Bundle)]
-struct EnemySettingsBundle {
+#[derive(Bundle, Default)]
+struct ActiveEnemyBundle {
+    enemy: Enemy,
+    can_apply_damage: CanApplyDamage,
+    can_see_player: CanSeePlayer,
+}
+
+// This is what our game needs to make an enemy work, separate from LDTK
+// Keeping the stuff we need to work separate from LDTK lets us instantiate enemies in code, if we want/need to.
+#[derive(Bundle)]
+struct EnemyBundle {
     spawn_coords: SpawnCoords,
     grid_position: GridPosition,
     grid_movement: GridMovement,
+    can_damage: CanApplyDamage,
+    can_see: CanSeePlayer,
+    marker: Enemy,
 }
 
-fn enemy_initial_components(instance: &EntityInstance) -> EnemySettingsBundle {
-    EnemySettingsBundle {
-        spawn_coords: SpawnCoords(instance.grid),
-
-        grid_position: GridPosition::new(instance.grid.x as f32, instance.grid.y as f32),
-        grid_movement: GridMovement::default(),
+impl EnemyBundle {
+    pub fn new(x: i32, y: i32) -> Self {
+        Self {
+            marker: Enemy,
+            can_see: CanSeePlayer,
+            can_damage: CanApplyDamage,
+            spawn_coords: SpawnCoords(IVec2::new(x, y)),
+            grid_position: GridPosition::new(x as f32, y as f32),
+            grid_movement: GridMovement::default(),
+        }
     }
+}
+
+/// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
+fn fix_loaded_ldtk_entities(mut query: Query<(Entity, &GridCoords), (With<LdtkEnemy>)>, mut commands: Commands) {
+    for (ldtk_entity, grid_coords) in query.iter() {
+        commands.entity(ldtk_entity)
+            .remove::<LdtkEnemy>() // we have to remove it because it's used as the query for this function
+            .insert((
+                Name::new("LdtkEnemy"),
+                EnemyBundle::new(grid_coords.x, grid_coords.y),));
+    }
+}
+
+#[derive(Event, Debug)]
+pub struct SpawnEnemyTrigger;
+#[cfg(feature = "dev")]
+fn spawn_oneshot_enemy(
+    _trigger: Trigger<SpawnEnemyTrigger>,
+    mut commands: Commands,
+    images: Res<ImageAssets>,
+) {
+    info!("Spawning a dev-only gargoyle next to player to test non-ldtk enemy functionality");
+    commands.spawn((
+        Name::new("custom_gargoyle"),
+        EnemyBundle::new(42, 24), // right next to player
+        SpriteBundle {
+            texture: images[&ImageAsset::Gargoyle].clone_weak(),
+            transform: Transform::from_translation(Vec3::default().with_z(100.)),
+            ..Default::default()
+        },
+    ));
 }
 
 const ENEMY_SIGHT_RANGE: f32 = 100.0;
@@ -95,7 +152,7 @@ fn detect_player(
 }
 
 const ENEMY_CHASE_SPEED: f32 = 10.0;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 1.0;
+const ENEMY_RETURN_TO_POST_SPEED: f32 = 30.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
