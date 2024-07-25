@@ -49,7 +49,7 @@ fn spawn_camera(mut commands: Commands) {
             camera_follow_snappiness: 7.0,
         },
         CanZoomSmoothly(INITIAL_CAMERA_ZOOM),
-        PostProcessSettings { intensity: 0.00005 },
+        // PostProcessSettings { intensity: 0.00005 },
     ));
 }
 
