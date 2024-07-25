@@ -7,7 +7,11 @@ use crate::{
 
 use super::{
     assets::ImageAssets,
-    grid::{movement::GridMovement, GridPosition},
+    end_game::EndGameCondition,
+    grid::{
+        movement::{GridMovement, Roll},
+        GridPosition,
+    },
     line_of_sight::LineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},
@@ -27,6 +31,7 @@ pub fn plugin(app: &mut App) {
     );
     app.observe(spawn_ghost);
     app.observe(reset_ghosts);
+    app.observe(clean_up);
 }
 
 #[derive(Resource)]
@@ -84,6 +89,7 @@ fn spawn_ghost(
         },
         GridPosition::new(spawn_point.0.x, spawn_point.0.y),
         GridMovement::default(),
+        Roll::default(),
         Velocities {
             velocities: current_velocities.0.clone(),
             current_velocity: 0,
@@ -116,5 +122,15 @@ fn replay_ghost(mut query: Query<(&mut Velocities, &mut GridMovement)>) {
             movement.velocity = velocities.velocities[velocities.current_velocity];
             velocities.current_velocity += 1;
         }
+    }
+}
+
+fn clean_up(
+    _trigger: Trigger<EndGameCondition>,
+    query: Query<Entity, With<Ghost>>,
+    mut commands: Commands,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn_recursive();
     }
 }

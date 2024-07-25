@@ -9,7 +9,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use super::audio::sfx::Sfx;
-use crate::game::grid::movement::GridMovement;
+use crate::game::grid::movement::{GridMovement, Roll};
 use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
@@ -41,13 +41,21 @@ fn update_animation_movement(
         }
 
         let ddy = controller.acceleration_player_force.y;
+
         let animation_state = if controller.acceleration_player_force == Vec2::ZERO {
             PlayerAnimationState::Idling
         } else if ddy < 0. {
-            PlayerAnimationState::FrontWalking
+            if controller.is_rolling {
+                PlayerAnimationState::FrontRolling
+            } else {
+                PlayerAnimationState::FrontWalking
+            }
+        } else if controller.is_rolling {
+            PlayerAnimationState::Rolling
         } else {
             PlayerAnimationState::Walking
         };
+
         animation.update_state(animation_state);
     }
 }
@@ -141,17 +149,20 @@ impl PlayerAnimation {
     }
 
     const ROLLING_FRAMES: usize = 7;
-    const ROLLING_INTERVAL: Duration = Duration::from_millis(50);
+    fn rolling_interval() -> Duration {
+        Roll::ROLL_TIME / Self::ROLLING_FRAMES as u32
+    }
+
     fn rolling() -> Self {
         Self {
-            timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(Self::rolling_interval(), TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::Rolling,
         }
     }
     fn rolling_front() -> Self {
         Self {
-            timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(Self::rolling_interval(), TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::FrontRolling,
         }

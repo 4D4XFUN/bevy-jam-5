@@ -2,6 +2,7 @@
 
 pub mod ai_proving_grounds;
 mod credits;
+mod game_over;
 mod loading;
 mod playing;
 mod title;
@@ -17,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         title::plugin,
         credits::plugin,
         playing::plugin,
+        game_over::plugin,
     ));
 }
 
@@ -29,4 +31,5 @@ pub enum Screen {
     Credits,
     AiProvingGrounds,
     Playing,
+    GameOver,
 }
