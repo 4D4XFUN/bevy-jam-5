@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
 use super::{
@@ -21,7 +23,12 @@ use crate::{
 /// Records ghost data (player movement intent) during FixedUpdate.
 /// Replays
 pub fn plugin(app: &mut App) {
-    app.insert_resource(CurrentVelocities(Vec::new()));
+    app.insert_resource(Time::<Fixed>::from_hz(30.0));
+    app.insert_resource(CurrentGridPosition(Vec::new()));
+    app.insert_resource(GhostQueue {
+        ghosts: VecDeque::new(),
+        max_ghosts: 3,
+    });
     app.add_systems(
         FixedUpdate,
         (record_intent, replay_ghost).run_if(in_state(Screen::Playing)),
@@ -32,30 +39,37 @@ pub fn plugin(app: &mut App) {
 }
 
 #[derive(Resource)]
-struct CurrentVelocities(Vec<Vec2>);
+struct GhostQueue {
+    ghosts: VecDeque<Entity>,
+    max_ghosts: usize,
+}
+
+#[derive(Resource)]
+struct CurrentGridPosition(Vec<(Vec2, Vec2)>);
 
 #[derive(Component)]
 struct Ghost;
 
 fn record_intent(
-    mut current_velocities: ResMut<CurrentVelocities>,
-    query: Query<&GridMovement, With<Player>>,
+    mut current_velocities: ResMut<CurrentGridPosition>,
+    query: Query<&GridPosition, With<Player>>,
 ) {
-    let Ok(movement) = query.get_single() else {
+    let Ok(position) = query.get_single() else {
         return;
     };
-    current_velocities.0.push(movement.velocity);
+    current_velocities.0.push(position.get_values());
 }
 
 #[derive(Component)]
-struct Velocities {
-    velocities: Vec<Vec2>,
-    current_velocity: usize,
+struct PositionRecord {
+    positions: Vec<(Vec2, Vec2)>,
+    current_record: usize,
 }
 
 fn spawn_ghost(
     _trigger: Trigger<OnDeath>,
-    mut current_velocities: ResMut<CurrentVelocities>,
+    mut ghost_queue: ResMut<GhostQueue>,
+    mut current_velocities: ResMut<CurrentGridPosition>,
     spawn_points: Query<&SpawnPointGridPosition>,
     images: Res<ImageAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
@@ -69,7 +83,7 @@ fn spawn_ghost(
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
 
-    commands.spawn((
+    let new_ghost = commands.spawn((
         Name::new("Ghost"),
         Ghost,
         SpriteBundle {
@@ -87,13 +101,20 @@ fn spawn_ghost(
         GridPosition::new(spawn_point.0.x, spawn_point.0.y),
         GridMovement::default(),
         Roll::default(),
-        Velocities {
-            velocities: current_velocities.0.clone(),
-            current_velocity: 0,
+        PositionRecord {
+            positions: current_velocities.0.clone(),
+            current_record: 0,
         },
         LineOfSightBundle::default(),
         player_animation,
-    ));
+    )).id();
+
+    ghost_queue.ghosts.push_back(new_ghost);
+    if ghost_queue.ghosts.len() > ghost_queue.max_ghosts {
+        if let Some(old_ghost) = ghost_queue.ghosts.pop_front() {
+            commands.entity(old_ghost).despawn_recursive();
+        }
+    }
 
     current_velocities.0.clear();
 }
@@ -101,23 +122,24 @@ fn spawn_ghost(
 fn reset_ghosts(
     _trigger: Trigger<OnDeath>,
     spawn_points: Query<&SpawnPointGridPosition>,
-    mut query: Query<(&mut GridPosition, &mut Velocities), With<Ghost>>,
+    mut query: Query<(&mut GridPosition, &mut PositionRecord), With<Ghost>>,
 ) {
     let Ok(spawn_point) = spawn_points.get_single() else {
         return;
     };
     for (mut pos, mut velocities) in &mut query {
-        velocities.current_velocity = 0;
+        velocities.current_record = 0;
         pos.coordinates.x = spawn_point.0.x;
         pos.coordinates.y = spawn_point.0.y;
     }
 }
 
-fn replay_ghost(mut query: Query<(&mut Velocities, &mut GridMovement)>) {
-    for (mut velocities, mut movement) in &mut query {
-        if velocities.current_velocity < velocities.velocities.len() {
-            movement.velocity = velocities.velocities[velocities.current_velocity];
-            velocities.current_velocity += 1;
+fn replay_ghost(mut query: Query<(&mut PositionRecord, &mut GridPosition)>) {
+    for (mut position_record, mut position) in &mut query {
+        if position_record.current_record < position_record.positions.len() {
+            let (coordinates, offset) = position_record.positions[position_record.current_record];
+            position.set(coordinates, offset);
+            position_record.current_record += 1;
         }
     }
 }

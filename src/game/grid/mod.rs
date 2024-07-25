@@ -75,6 +75,17 @@ impl GridPosition {
             self.offset.y += 1.;
         }
     }
+
+    /// retrieves current coordinate and offset
+    pub fn get_values(&self) -> (Vec2, Vec2) {
+        (self.coordinates, self.offset)
+    }
+
+    /// sets the position to a fixed coordinate and offset
+    pub fn set(&mut self, coordinates: Vec2, offset: Vec2) {
+        self.coordinates = coordinates;
+        self.offset = offset;
+    }
 }
 
 impl Sub for GridPosition {
