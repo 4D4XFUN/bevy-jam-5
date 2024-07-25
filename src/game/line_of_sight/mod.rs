@@ -1,14 +1,16 @@
-pub mod fog_of_war;
+use std::time::Duration;
 
-use crate::game::grid::grid_layout::GridLayout;
-use crate::game::grid::GridPosition;
-use crate::geometry_2d::line_segment::LineSegment;
 // use crate::AppSet;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::sprite::Mesh2dHandle;
-use std::time::Duration;
+
+use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::GridPosition;
+use crate::geometry_2d::line_segment::LineSegment;
+
+pub mod fog_of_war;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
@@ -23,9 +25,6 @@ pub(super) fn plugin(app: &mut App) {
     //         .chain()
     //         .in_set(AppSet::Update),
     // );
-
-    #[cfg(feature = "dev")]
-    app.add_plugins(debug_overlay::plugin);
 
     // Reflection registrations
     app.register_type::<LineOfSightSource>();
@@ -43,7 +42,7 @@ impl Default for LineOfSightBundle {
     fn default() -> Self {
         Self {
             line_of_sight_source: LineOfSightSource {
-                max_distance_in_grid_units: 7.,
+                max_distance_in_grid_units: 30.,
                 max_rays_to_cast: 60,
             },
             facing_walls_cache: FacingWallsCache::new(),
@@ -79,10 +78,10 @@ impl FacingWallsCache {
 #[derive(Component, Debug, Clone, Default)]
 pub struct CalculatedLineOfSight {
     // rays we've cast from player
-    rays: Vec<LineSegment>,
+    pub rays: Vec<LineSegment>,
 
     // where all the rays originate from
-    origin: Vec2,
+    pub origin: Vec2,
 }
 
 #[allow(dead_code)]
@@ -135,11 +134,11 @@ pub fn calculate_vision_extent_by_sweeping_in_a_circle(
 #[allow(dead_code)]
 #[derive(Component)]
 pub struct LineOfSightMeshHandle {
-    mesh_handle: Entity,
-    refresh_timer: Timer,
+    pub mesh_handle: Entity,
+    pub refresh_timer: Timer,
 
-    triangle_vertices: Vec<[f32; 3]>,
-    triangle_indices: Vec<u32>,
+    pub triangle_vertices: Vec<[f32; 3]>,
+    pub triangle_indices: Vec<u32>,
 }
 
 impl LineOfSightMeshHandle {
@@ -189,8 +188,8 @@ pub fn update_line_of_sight_mesh(
         los_mesh_handle
             .triangle_indices
             .clone_from(&triangle_indices);
-        // println!("{:?}", &vertices);
-        // println!("{:?}", &triangle_indices);
+        // info!("{:?}", &vertices);
+        // info!("{:?}", &triangle_indices);
 
         // color on mesh
         let mut v_color: Vec<[f32; 4]> = vec![];
@@ -303,81 +302,6 @@ pub mod front_facing_edges {
             });
 
             facing_walls_cache.facing_wall_edges = edges;
-        }
-    }
-}
-
-pub mod debug_overlay {
-    use crate::game::grid::DebugOverlaysState;
-    use crate::game::line_of_sight::{
-        CalculatedLineOfSight, FacingWallsCache, LineOfSightMeshHandle,
-    };
-    use crate::AppSet;
-    use bevy::prelude::*;
-
-    pub fn plugin(app: &mut App) {
-        app.add_systems(
-            Update,
-            (
-                redraw_front_facing_edges,
-                // draw_rays,
-                draw_debug_triangles,
-            )
-                .in_set(AppSet::UpdateWorld)
-                .run_if(in_state(DebugOverlaysState::Enabled)),
-        );
-    }
-
-    /// Every update, if the grid coords changed, redraw the overlay of edges facing the player
-    pub fn redraw_front_facing_edges(
-        mut gizmos: Gizmos,
-        front_facing_edges_query: Query<&FacingWallsCache>,
-    ) {
-        let near_color = Color::srgb(1., 1., 0.);
-        let far_color = Color::srgb(0., 1., 1.);
-        for wall_cache in front_facing_edges_query.iter() {
-            let steps = wall_cache.facing_wall_edges.len() as f32;
-
-            for (i, edge) in wall_cache.facing_wall_edges.iter().enumerate() {
-                let c = near_color.mix(&far_color, i as f32 / steps);
-                let a = edge.segment2d.point1() + edge.center;
-                let b = edge.segment2d.point2() + edge.center;
-                gizmos.line_2d(a, b, c);
-            }
-        }
-    }
-
-    pub fn _draw_rays(mut gizmos: Gizmos, query: Query<&CalculatedLineOfSight>) {
-        let color = Color::srgb(0., 1., 0.);
-        for ray_cache in query.iter() {
-            for ray in ray_cache.rays.iter() {
-                gizmos.line_2d(ray.start(), ray.end(), color);
-            }
-        }
-    }
-
-    pub fn draw_debug_triangles(mut gizmos: Gizmos, query: Query<&LineOfSightMeshHandle>) {
-        for mesh in query.iter() {
-            let near_color = Color::srgb(1., 1., 0.);
-            let far_color = Color::srgb(0., 1., 1.);
-            for (i, tri) in mesh.triangle_indices.windows(3).enumerate() {
-                let (a, b, c) = (
-                    mesh.triangle_vertices[tri[0] as usize],
-                    mesh.triangle_vertices[tri[1] as usize],
-                    mesh.triangle_vertices[tri[2] as usize],
-                );
-
-                let prim = Triangle2d {
-                    vertices: [
-                        Vec2::new(a[0], a[1]),
-                        Vec2::new(b[0], b[1]),
-                        Vec2::new(c[0], c[1]),
-                    ],
-                };
-
-                let color = if i % 2 == 0 { near_color } else { far_color };
-                gizmos.primitive_2d(&prim, Vec2::ZERO, 0., color);
-            }
         }
     }
 }

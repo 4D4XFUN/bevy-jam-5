@@ -5,11 +5,18 @@
 use bevy::prelude::*;
 
 mod enemy;
+mod exit;
 pub mod health;
 mod ldtk;
 pub mod level;
 pub mod player;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((health::plugin, level::plugin, player::plugin, enemy::plugin));
+    app.add_plugins((
+        health::plugin,
+        level::plugin,
+        player::plugin,
+        enemy::plugin,
+        exit::plugin,
+    ));
 }

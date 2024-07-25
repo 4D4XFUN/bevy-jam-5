@@ -7,12 +7,14 @@ mod animation;
 pub mod assets;
 pub mod audio;
 mod camera;
+pub mod end_game;
 mod ghost;
 pub mod grid;
 pub mod line_of_sight;
-mod movement;
+pub mod movement;
 pub mod spawn;
 pub mod stamina;
+pub mod threat;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -25,5 +27,6 @@ pub(super) fn plugin(app: &mut App) {
         stamina::plugin,
         line_of_sight::plugin,
         ghost::plugin,
+        threat::plugin,
     ));
 }

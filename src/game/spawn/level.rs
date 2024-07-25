@@ -2,13 +2,14 @@
 
 use std::collections::HashSet;
 
+use crate::game::spawn::enemy::SpawnEnemyTrigger;
+use crate::game::spawn::ldtk::LdtkEntityBundle;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
-use crate::game::spawn::ldtk::LdtkEntityBundle;
-
+use super::exit::SpawnExitTrigger;
 use super::player::SpawnPlayerTrigger;
 
 pub(super) fn plugin(app: &mut App) {
@@ -25,7 +26,7 @@ pub(super) fn plugin(app: &mut App) {
 pub const GRID_SIZE: i32 = 16;
 
 #[derive(Default, Component)]
-struct Wall;
+pub struct Wall;
 
 #[derive(Default, Bundle, LdtkIntCell)]
 struct WallBundle {
@@ -57,6 +58,8 @@ fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
     // The only thing we have in our level is a player,
     // but add things like walls etc. here.
     commands.trigger(SpawnPlayerTrigger);
+    commands.trigger(SpawnEnemyTrigger);
+    commands.trigger(SpawnExitTrigger);
 }
 
 fn cache_wall_locations(
