@@ -9,7 +9,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use super::audio::sfx::Sfx;
-use crate::game::grid::movement::GridMovement;
+use crate::game::grid::movement::{GridMovement, Roll};
 use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
@@ -144,17 +144,20 @@ impl PlayerAnimation {
     }
 
     const ROLLING_FRAMES: usize = 7;
-    const ROLLING_INTERVAL: Duration = Duration::from_millis(50);
+    fn rolling_interval() -> Duration {
+        Roll::ROLL_TIME / Self::ROLLING_FRAMES as u32
+    }
+
     fn rolling() -> Self {
         Self {
-            timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(Self::rolling_interval(), TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::Rolling,
         }
     }
     fn rolling_front() -> Self {
         Self {
-            timer: Timer::new(Self::ROLLING_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(Self::rolling_interval(), TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::FrontRolling,
         }
