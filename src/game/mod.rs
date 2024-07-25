@@ -13,6 +13,7 @@ pub mod grid;
 pub mod line_of_sight;
 mod movement;
 pub mod spawn;
+pub mod stamina;
 mod threat;
 
 pub(super) fn plugin(app: &mut App) {
@@ -23,6 +24,7 @@ pub(super) fn plugin(app: &mut App) {
         spawn::plugin,
         grid::plugin,
         camera::plugin,
+        stamina::plugin,
         line_of_sight::plugin,
         ghost::plugin,
         threat::plugin,

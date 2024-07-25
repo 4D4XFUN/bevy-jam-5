@@ -154,10 +154,17 @@ pub mod movement {
     use crate::AppSet;
     use bevy::prelude::*;
     use leafwing_input_manager::prelude::ActionState;
+    use std::time::Duration;
 
     pub fn plugin(app: &mut App) {
-        app.add_systems(Update, respond_to_input.in_set(AppSet::UpdateVirtualGrid));
-        app.add_systems(Update, apply_movement.in_set(AppSet::Update));
+        app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
+        app.add_systems(
+            Update,
+            (respond_to_input, apply_movement)
+                .chain()
+                .in_set(AppSet::UpdateVirtualGrid),
+        );
+
         app.add_systems(
             Update,
             set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
@@ -174,6 +181,27 @@ pub mod movement {
         pub acceleration_player_force: Vec2,
         pub acceleration_external_force: Vec2,
         pub acceleration_player_multiplier: f32,
+        pub is_rolling: bool,
+    }
+
+    #[derive(Component, Reflect, Debug, PartialEq)]
+    #[reflect(Component)]
+    pub struct Roll {
+        pub timer: Timer,
+        pub velocity_multiplier: f32,
+    }
+
+    impl Roll {
+        pub const ROLL_TIME: Duration = Duration::from_millis(300);
+    }
+
+    impl Default for Roll {
+        fn default() -> Self {
+            Self {
+                timer: Timer::from_seconds(0.5, TimerMode::Once),
+                velocity_multiplier: 3.0,
+            }
+        }
     }
 
     impl Default for GridMovement {
@@ -184,6 +212,7 @@ pub mod movement {
                 acceleration_player_force: Vec2::ZERO,
                 acceleration_external_force: Vec2::ZERO,
                 acceleration_player_multiplier: 66.,
+                is_rolling: false,
             }
         }
     }
@@ -195,7 +224,7 @@ pub mod movement {
     }
 
     pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridMovement)>) {
-        for (action_state, mut controller) in query.iter_mut() {
+        for (action_state, mut movement) in query.iter_mut() {
             let mut intent = Vec2::ZERO;
 
             if action_state.pressed(&PlayerAction::MoveUp) {
@@ -213,17 +242,20 @@ pub mod movement {
             // Normalize so that diagonal movement has the same speed as horizontal and vertical movement.
             let intent = intent.normalize_or_zero();
 
-            controller.acceleration_player_force =
-                intent * controller.acceleration_player_multiplier;
+            movement.acceleration_player_force = intent * movement.acceleration_player_multiplier;
+
+            if !movement.is_rolling && action_state.pressed(&PlayerAction::Roll) {
+                movement.is_rolling = true;
+            }
         }
     }
 
     pub fn apply_movement(
-        mut query: Query<(&mut GridPosition, &mut GridMovement)>,
+        mut query: Query<(&mut GridPosition, &mut GridMovement, &mut Roll)>,
         time: Res<Time>,
     ) {
         let dt = time.delta_seconds();
-        for (mut position, mut movement) in query.iter_mut() {
+        for (mut position, mut movement, roll) in query.iter_mut() {
             let force = movement.current_force() * dt; // scale it by time
 
             // apply forces and friction
@@ -235,8 +267,24 @@ pub mod movement {
             movement.velocity = velocity;
 
             // move the player
-            position.offset += movement.velocity * dt;
+            let multiplier = if movement.is_rolling {
+                roll.velocity_multiplier
+            } else {
+                1.0
+            };
+            position.offset += movement.velocity * dt * multiplier;
             position.fix_offset_overflow();
+        }
+    }
+
+    fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement)>) {
+        let dt = time.delta_seconds();
+        for (mut roll, mut movement) in query.iter_mut() {
+            roll.timer.tick(Duration::from_secs_f32(dt));
+            if roll.timer.finished() {
+                movement.is_rolling = false;
+                roll.timer.reset();
+            }
         }
     }
 
