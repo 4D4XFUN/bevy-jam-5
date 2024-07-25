@@ -3,9 +3,9 @@ use std::time::Duration;
 use bevy::prelude::*;
 use crate::AppSet;
 
-pub(super) fn plugin(app: &mut App) {
+pub fn plugin(app: &mut App) {
     app.add_systems(Update, recharge_bar.in_set(AppSet::TickTimers));
-    app.add_systems(Update, use_stamina.in_set(AppSet::UpdateStamina)); //added a UpdateStamina set in AppSet
+    app.add_systems(Update, use_stamina.in_set(AppSet::Update)); //added a UpdateStamina set in AppSet
     app.register_type::<Stamina>();
 }
 
@@ -20,7 +20,7 @@ pub struct Stamina {
 #[reflect(Component)]
 pub struct RechargeTimer {
     pub timer: Timer,
-};
+}
 
 impl Default for Stamina {
     fn default() -> Self {
@@ -56,7 +56,7 @@ pub fn recharge_bar(mut stamina: Query<(&mut Stamina, &mut RechargeTimer)>, time
             if recharge.timer.finished() {
                 stamina.current_bars += 1;
             }
-            
+
         } else {
             recharge.timer.pause();
             recharge.timer.reset();

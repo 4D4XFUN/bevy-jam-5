@@ -9,7 +9,7 @@ use crate::game::movement::GridMovement;
 use crate::game::movement::Roll;
 use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};
 use crate::input::PlayerAction;
-use crate::game::stamina::*;
+use crate::game::stamina::Stamina;
 use crate::{
     game::{
         animation::PlayerAnimation,
