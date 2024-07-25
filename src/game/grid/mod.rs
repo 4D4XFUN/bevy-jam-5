@@ -10,7 +10,7 @@ use crate::game::spawn::level::LevelWalls;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords};
+use bevy_ecs_ldtk::GridCoords;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>();
