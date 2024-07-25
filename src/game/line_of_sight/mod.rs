@@ -188,8 +188,8 @@ pub fn update_line_of_sight_mesh(
         los_mesh_handle
             .triangle_indices
             .clone_from(&triangle_indices);
-        // println!("{:?}", &vertices);
-        // println!("{:?}", &triangle_indices);
+        // info!("{:?}", &vertices);
+        // info!("{:?}", &triangle_indices);
 
         // color on mesh
         let mut v_color: Vec<[f32; 4]> = vec![];

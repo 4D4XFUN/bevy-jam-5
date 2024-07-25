@@ -155,7 +155,7 @@ fn reveal_fog_of_war(
                 // shorten the ray slightly so we can "see into" walls
                 let penetration_factor = 1.0;
                 let direction = (ray_end - ray_start).normalize();
-                // println!("{} {} {} {} {slope}", ray_start.x, ray_start.y, ray_end.x, ray_end.y);
+                // info!("{} {} {} {} {slope}", ray_start.x, ray_start.y, ray_end.x, ray_end.y);
                 let ray_end = ray_end - direction * penetration_factor;
 
                 let ray = LineSegment::new(ray_start, ray_end);
