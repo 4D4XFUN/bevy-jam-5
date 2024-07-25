@@ -42,19 +42,19 @@ pub fn simple_wall_collisions(
         let (xr, yr) = (player.offset.x, player.offset.y);
 
         if walls.collides(cx - 1, cy) && xr < COLLIDE_SUBGRID_DIST_NEG {
-            // println!("{cx} {xr} collided in x");
+            // info!("{cx} {xr} collided in x");
             player.offset.x = COLLIDE_SUBGRID_DIST_NEG;
         }
         if walls.collides(cx, cy - 1) && yr < COLLIDE_SUBGRID_DIST_NEG {
-            // println!("{cy} {yr} collided in y");
+            // info!("{cy} {yr} collided in y");
             player.offset.y = COLLIDE_SUBGRID_DIST_NEG;
         }
         if walls.collides(cx + 1, cy) && xr > COLLIDE_SUBGRID_DIST_POS {
-            // println!("{cx} {xr} collided in x");
+            // info!("{cx} {xr} collided in x");
             player.offset.x = COLLIDE_SUBGRID_DIST_POS;
         }
         if walls.collides(cx, cy + 1) && yr > COLLIDE_SUBGRID_DIST_POS {
-            // println!("{cy} {yr} collided in y");
+            // info!("{cy} {yr} collided in y");
             player.offset.y = COLLIDE_SUBGRID_DIST_POS;
         }
     }
@@ -92,7 +92,7 @@ pub fn _apply_collision_forces(
                 continue;
             }
 
-            println!(
+            info!(
                 "Player at {},{} Colliding with wall at {},{} - dist {}, max_dist: {}",
                 actor_pos.x, actor_pos.y, wall.x, wall.y, dist, max_collide_dist
             );
@@ -105,7 +105,7 @@ pub fn _apply_collision_forces(
             actor_movement.velocity.x += ddx;
             actor_movement.velocity.y += ddy;
 
-            println!("Applied collision force of {}, {} to player", ddx, ddy);
+            info!("Applied collision force of {}, {} to player", ddx, ddy);
         }
     }
 }
