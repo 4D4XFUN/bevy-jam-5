@@ -1,10 +1,10 @@
+use crate::game::grid::GridPosition;
 /// Grid-based movement
 use crate::input::PlayerAction;
 use crate::AppSet;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 use std::time::Duration;
-use crate::game::grid::GridPosition;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -14,7 +14,6 @@ pub fn plugin(app: &mut App) {
             .chain()
             .in_set(AppSet::UpdateVirtualGrid),
     );
-
 
     app.register_type::<GridMovement>();
 }
@@ -147,4 +146,3 @@ fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMove
         }
     }
 }
-

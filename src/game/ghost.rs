@@ -1,10 +1,5 @@
 use bevy::prelude::*;
 
-use crate::{
-    game::{animation::PlayerAnimation, assets::ImageAsset},
-    screen::Screen,
-};
-use crate::game::movement::{GridMovement, Roll};
 use super::{
     assets::ImageAssets,
     end_game::EndGameCondition,
@@ -14,6 +9,11 @@ use super::{
         health::{OnDeath, SpawnPointGridPosition},
         player::Player,
     },
+};
+use crate::game::movement::{GridMovement, Roll};
+use crate::{
+    game::{animation::PlayerAnimation, assets::ImageAsset},
+    screen::Screen,
 };
 
 ///Handles ghosts.

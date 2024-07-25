@@ -5,13 +5,13 @@ pub mod collision;
 use std::ops::{Add, Sub};
 
 use crate::game::grid::grid_layout::GridLayout;
+use crate::game::movement;
 use crate::game::spawn::level::LevelWalls;
+use crate::AppSet;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
-use crate::AppSet;
-use crate::game::movement;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>();
@@ -159,7 +159,6 @@ fn fix_grid_position_system(
         grid_pos.coordinates.y = fixed_y as f32;
     }
 }
-
 
 /// Any entity that has a GridPosition and a Transform gets put in the world wherever its grid position says.
 /// This does mean that Transform mutations get overwritten by grid position calculated ones.

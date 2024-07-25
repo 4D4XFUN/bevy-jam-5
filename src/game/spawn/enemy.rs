@@ -1,5 +1,5 @@
-use crate::game::movement::GridMovement;
 use crate::game::grid::GridPosition;
+use crate::game::movement::GridMovement;
 use crate::game::spawn::health::CanApplyDamage;
 use crate::game::spawn::player::Player;
 use bevy::prelude::*;
