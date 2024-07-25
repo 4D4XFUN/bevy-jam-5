@@ -255,7 +255,7 @@ pub mod movement {
         time: Res<Time>,
     ) {
         let dt = time.delta_seconds();
-        for (mut position, mut movement, mut roll) in query.iter_mut() {
+        for (mut position, mut movement, roll) in query.iter_mut() {
             let force = movement.current_force() * dt; // scale it by time
 
             // apply forces and friction

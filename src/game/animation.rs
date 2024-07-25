@@ -50,12 +50,10 @@ fn update_animation_movement(
             } else {
                 PlayerAnimationState::FrontWalking
             }
+        } else if controller.is_rolling {
+            PlayerAnimationState::Rolling
         } else {
-            if controller.is_rolling {
-                PlayerAnimationState::Rolling
-            } else {
-                PlayerAnimationState::Walking
-            }
+            PlayerAnimationState::Walking
         };
 
         animation.update_state(animation_state);
