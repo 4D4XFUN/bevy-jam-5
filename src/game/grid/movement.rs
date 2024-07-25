@@ -54,6 +54,19 @@ impl Default for Roll {
     }
 }
 
+impl GridMovement {
+    pub fn immobile() -> Self{
+        Self {
+            velocity: Vec2::ZERO,
+            friction: 0.0,
+            acceleration_player_force: Vec2::ZERO,
+            acceleration_external_force: Vec2::ZERO,
+            acceleration_player_multiplier: 0.,
+            is_rolling: false,
+        }
+    }
+}
+
 impl Default for GridMovement {
     // todo create "presets" like slow, medium, fast for use by enemies or players
     fn default() -> Self {

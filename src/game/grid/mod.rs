@@ -10,12 +10,12 @@ use crate::game::spawn::level::LevelWalls;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords};
 
 pub fn plugin(app: &mut App) {
-    app.init_resource::<GridLayout>()
-        .add_systems(Update, update_grid_when_level_changes);
-
-    // draw a grid overlay for debugging, change DebugOverlays #[default] state to stop doing this
+    app.init_resource::<GridLayout>();
+    app.add_systems(Update, update_grid_when_level_changes);
+    app.observe(fix_grid_position_system);
 
     app.add_plugins(movement::plugin);
     app.add_plugins(collision::plugin);
@@ -112,7 +112,7 @@ impl Default for GridLayout {
     }
 }
 
-fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res<LevelWalls>) {
+fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res<LevelWalls>, mut commands: Commands) {
     if !level_walls.is_changed() {
         return;
     }
@@ -130,6 +130,25 @@ fn update_grid_when_level_changes(mut grid: ResMut<GridLayout>, level_walls: Res
     grid.origin = Vec2::new(0., 0.);
 
     println!("Grid initialized: {:?}", grid);
+    commands.trigger(GridChangedEvent)
+}
+
+#[derive(Event)]
+struct GridChangedEvent;
+
+/// Reconciles LDTK's y-position (top of screen is 0) with ours/bevy's (bottom of screen is 0)
+fn fix_grid_position_system(
+    _trigger: Trigger<GridChangedEvent>,
+    mut query: Query<(&mut GridPosition, &GridCoords)>,
+) {
+    println!("Fixing grid positions");
+    for (mut grid_pos, ldtk_grid_coords) in query.iter_mut() {
+        let ldtk_y = ldtk_grid_coords.y;
+        let fixed_y = ldtk_y;
+
+        // println!("Fixing position {:?}, to have y={}. Current ldtk coords: {:?}", &grid_pos.coordinates, &fixed_y, &ldtk_grid_coords);
+        grid_pos.coordinates.y = fixed_y as f32;
+    }
 }
 
 #[cfg(test)]
