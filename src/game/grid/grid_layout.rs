@@ -13,7 +13,19 @@ pub struct GridLayout {
     pub width: usize,
     pub height: usize,
     pub origin: Vec2,
-    pub padding: f32,
+    pub padding: Vec2,
+}
+
+impl Default for GridLayout {
+    fn default() -> Self {
+        GridLayout {
+            square_size: 32.,
+            width: 20,
+            height: 10,
+            origin: Vec2::ZERO,
+            padding: Vec2::ZERO,
+        }
+    }
 }
 
 impl GridLayout {
@@ -23,21 +35,29 @@ impl GridLayout {
             height,
             square_size: 16.,
             origin: Vec2::default(),
-            padding: 0.0,
+            padding: Vec2::default(),
         }
     }
 
     pub fn grid_to_world(&self, grid_pos: &GridPosition) -> Vec2 {
         Vec2::new(
             self.origin.x
+                + self.padding.x
                 + grid_pos.coordinates.x * self.square_size
-                + self.padding
                 + (grid_pos.offset.x * self.square_size),
             self.origin.y
+                + self.padding.y
                 + grid_pos.coordinates.y * self.square_size
-                + self.padding
                 + (grid_pos.offset.y * self.square_size),
         )
+    }
+    pub fn center_worldpos(&self) -> Vec2 {
+        let half_width_px = self.width as f32 * self.square_size / 2.;
+        let half_height_px = self.height as f32 * self.square_size / 2.;
+
+        let offset = self.origin;
+
+        offset + Vec2::new(half_width_px, half_height_px)
     }
 
     /// Get the positions of the corners of a position on the grid, in world (pixel) coordinates

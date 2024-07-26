@@ -2,7 +2,6 @@
 
 pub mod grid_overlay;
 
-use crate::game::line_of_sight::fog_of_war::FogOfWarOverlay;
 use crate::input::DevActionToggles;
 use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
@@ -19,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, log_transitions::<DebugOverlaysState>);
     app.add_systems(Startup, spawn_dev_input_manager);
 
-    app.add_systems(Update, (toggle_debug_overlays, toggle_fog));
+    app.add_systems(Update, toggle_debug_overlays);
 
     // press F1 in dev builds to open an entity inspector
     app.init_state::<WorldInspectorState>()
@@ -74,26 +73,6 @@ pub fn toggle_debug_overlays(
                 DebugOverlaysState::Disabled => DebugOverlaysState::Enabled,
                 DebugOverlaysState::Enabled => DebugOverlaysState::Disabled,
             });
-        }
-    }
-}
-
-pub fn toggle_fog(
-    query: Query<&ActionState<DevActionToggles>>,
-    mut fog_query: Query<&mut Visibility, With<FogOfWarOverlay>>,
-) {
-    for act in query.iter() {
-        if !act.just_pressed(&DevActionToggles::FogOfWar) {
-            return;
-        }
-        info!("Foggy {:?}", fog_query);
-
-        let vis: Mut<Visibility> = fog_query.single_mut();
-        let curr = vis.into_inner();
-        *curr = match curr {
-            Visibility::Inherited => Visibility::Hidden,
-            Visibility::Hidden => Visibility::Visible,
-            Visibility::Visible => Visibility::Hidden,
         }
     }
 }
