@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use rand::Rng;
 
 use crate::game::ai::Hunter;
 use crate::game::grid::GridPosition;
@@ -10,10 +11,6 @@ use crate::game::line_of_sight::vision::{
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
-use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
-use rand::Rng;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
