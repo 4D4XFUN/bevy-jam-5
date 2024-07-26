@@ -1,16 +1,16 @@
+use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::vision::VisibleSquares;
+use crate::game::line_of_sight::CanRevealFog;
+use crate::AppSet;
 use bevy::prelude::*;
-use std::collections::HashSet;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
 use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle, Mesh2d};
 use bevy::utils::info;
-use crate::game::grid::grid_layout::GridLayout;
-use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::vision::VisibleSquares;
-use crate::game::line_of_sight::CanRevealFog;
-use crate::AppSet;
+use std::collections::HashSet;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -81,7 +81,10 @@ fn setup_fog_of_war(
     let height = grid.height as u32;
 
     if width == 0 || height == 0 {
-        info!("Tried to make grid with dimensions {} x {}, skipping because it's 0 in a dimension.", width, height);
+        info!(
+            "Tried to make grid with dimensions {} x {}, skipping because it's 0 in a dimension.",
+            width, height
+        );
         return;
     }
 
@@ -91,11 +94,13 @@ fn setup_fog_of_war(
     // Create a texture for fog of war data
     let num_grid_squares = width * height;
 
-    let pixels: Vec<u8> = (0..num_grid_squares).map(|i| {
-        let step = 255. / num_grid_squares as f32;
-        let value = step * i as f32;
-        value.floor() as u8
-    }).collect();
+    let pixels: Vec<u8> = (0..num_grid_squares)
+        .map(|i| {
+            let step = 255. / num_grid_squares as f32;
+            let value = step * i as f32;
+            value.floor() as u8
+        })
+        .collect();
 
     let mut fog_texture = Image::new_fill(
         bevy::render::render_resource::Extent3d {
@@ -126,8 +131,12 @@ fn setup_fog_of_war(
         MaterialMesh2dBundle {
             mesh: meshes.add(mesh).into(),
             material,
-            transform: Transform::from_scale(Vec3::new(grid.width as f32 * grid.square_size, grid.height as f32 * grid.square_size, 1.0))
-                .with_translation(mesh_transform_grid_center.extend(10.)),
+            transform: Transform::from_scale(Vec3::new(
+                grid.width as f32 * grid.square_size,
+                grid.height as f32 * grid.square_size,
+                1.0,
+            ))
+            .with_translation(mesh_transform_grid_center.extend(10.)),
             ..default()
         },
         FogOfWar {
@@ -137,7 +146,10 @@ fn setup_fog_of_war(
         },
     ));
 
-    info!("Initialized fog of war with {} grid positions", num_grid_squares);
+    info!(
+        "Initialized fog of war with {} grid positions",
+        num_grid_squares
+    );
 }
 
 fn copy_data_to_texture(
@@ -169,7 +181,8 @@ fn reveal_fog_of_war(
         let without_neighbors = &component.visible_squares;
         let mut with_neighbors = HashSet::<IVec2>::new();
         for coordinate in without_neighbors.iter() {
-            for x in grid.neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32))
+            for x in grid
+                .neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32))
                 .into_iter()
                 .map(|v| IVec2::new(v.x as i32, v.y as i32))
             {
@@ -179,14 +192,17 @@ fn reveal_fog_of_war(
 
         for square in with_neighbors.iter() {
             let index = fog.index(square.x as u32, square.y as u32);
-            fog.data[index as usize] = (if without_neighbors.contains(square) { 0.0f32 } else { 0.2f32 }).min(fog.data[index as usize]);
+            fog.data[index as usize] = (if without_neighbors.contains(square) {
+                0.0f32
+            } else {
+                0.2f32
+            })
+            .min(fog.data[index as usize]);
         }
     }
 }
 
-fn recover_fog_of_war(
-    mut fog_of_war_query: Query<&mut FogOfWar>,
-) {
+fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
     for mut s in fog_of_war_query.iter_mut() {
         let mut data = &mut s.data;
         for i in 0..data.len() {
@@ -194,4 +210,3 @@ fn recover_fog_of_war(
         }
     }
 }
-
