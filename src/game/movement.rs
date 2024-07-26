@@ -155,12 +155,10 @@ fn update_roll_timer(
             roll.cooldown.tick(Duration::from_secs_f32(dt));
         }
 
-        if roll.cooldown.finished() {
-            if action_state.pressed(&PlayerAction::Roll) {
-                movement.is_rolling = true;
-                roll.cooldown.reset();
-                roll.timer.reset();
-            }
+        if roll.cooldown.finished() && action_state.pressed(&PlayerAction::Roll) {
+            movement.is_rolling = true;
+            roll.cooldown.reset();
+            roll.timer.reset();
         }
     }
 }
