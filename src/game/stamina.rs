@@ -1,11 +1,12 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
+use std::time::Duration;
 use crate::AppSet;
+
+use super::movement::GridMovement;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, recharge_bar.in_set(AppSet::TickTimers));
-    app.add_systems(Update, use_stamina.in_set(AppSet::Update)); //added a UpdateStamina set in AppSet
+    app.add_systems(Update , use_stamina.run_if(just_rolled).run_if(run_once()));
     app.register_type::<Stamina>();
 }
 
@@ -42,7 +43,17 @@ impl Default for RechargeTimer {
 pub fn use_stamina(mut stamina: Query<&mut Stamina>) {
     for mut stamina in &mut stamina.iter_mut() {
         stamina.current_bars -= 1;
+        print!("Stamina: {}", stamina.current_bars);
     }
+}
+
+pub fn just_rolled(movement: Query<&GridMovement>) -> bool {
+    for movement in movement.iter() {
+        if movement.is_rolling {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn recharge_bar(mut stamina: Query<(&mut Stamina, &mut RechargeTimer)>, time: Res<Time>) {
