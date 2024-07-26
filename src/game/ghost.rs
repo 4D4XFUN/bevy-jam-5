@@ -7,13 +7,13 @@ use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
 };
-
+use crate::game::line_of_sight::vision::VisionArchetype;
 use super::{
     animation::PlayerAnimationState,
     assets::ImageAssets,
     end_game::EndGameCondition,
     grid::GridPosition,
-    line_of_sight::LineOfSightBundle,
+    line_of_sight::PlayerLineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},
         player::Player,
@@ -117,7 +117,7 @@ fn spawn_ghost(
                 positions: current_records.0.clone(),
                 current_record: 0,
             },
-            LineOfSightBundle::default(),
+            PlayerLineOfSightBundle::default().with_vision_archetype(VisionArchetype::Ghost),
             player_animation,
         ))
         .id();

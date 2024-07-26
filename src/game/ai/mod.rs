@@ -1,7 +1,27 @@
 use bevy::app::App;
-
-pub mod fov;
+use bevy::prelude::{Component, Query, With, Without};
+use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::{FacingWallsCache, vision};
+use crate::game::line_of_sight::vision::{Facing, VisionAbility};
 
 pub fn plugin(_app: &mut App) {
-    _app.add_plugins(fov::plugin);
+}
+
+/// Hunters have vision, movement, and look for prey. When they see one, they chase it.
+#[derive(Component)]
+pub struct Hunter;
+
+/// Preys are targets for hunters to see and chase down. There's probably only one - the player.
+#[derive(Component)]
+pub struct Prey;
+
+pub fn find_visible_targets(
+    hunters: Query<
+        (&GridPosition, &Facing, &VisionAbility, &FacingWallsCache),
+        (With<Hunter>, Without<Prey>)>,
+    targets: Query<
+        (&GridPosition),
+        (With<Prey>, Without<Hunter>)>,
+) {
+
 }

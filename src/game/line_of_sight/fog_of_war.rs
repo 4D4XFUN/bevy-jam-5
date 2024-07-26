@@ -2,9 +2,10 @@ use bevy::prelude::*;
 
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
+use crate::game::line_of_sight::{FacingWallsCache};
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
+use crate::game::line_of_sight::vision::VisionAbility;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -121,7 +122,7 @@ fn update_grid_fog_of_war_overlay(
 
 fn reveal_fog_of_war(
     grid: Res<GridLayout>,
-    line_of_sight_query: Query<(&GridPosition, &LineOfSightSource, &FacingWallsCache)>,
+    line_of_sight_query: Query<(&GridPosition, &VisionAbility, &FacingWallsCache)>,
     fog_of_war_query: Query<&FogOfWarOverlay>,
     mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
 ) {
@@ -130,7 +131,8 @@ fn reveal_fog_of_war(
     };
 
     // for each LOS source, iterate through the nearest fog of war squares and reduce their alpha
-    for (position, source, walls) in line_of_sight_query.iter() {
+    for (position, vision, walls) in line_of_sight_query.iter() {
+        // todo(martin) we can do this more efficiently by only iterating the square that encompasses the max vision range rather than the entire board
         for x in 0..fog.width {
             for y in 0..fog.height {
                 let fog_coords = Vec2::new(x as f32, y as f32);
@@ -145,17 +147,17 @@ fn reveal_fog_of_war(
                 }
 
                 // don't look too far
-                if dist > source.max_distance_in_grid_units {
+                if dist > vision.range_in_grid_units {
                     continue;
                 }
 
+                // TODO(martin): take cone of vision into account
                 let ray_start = grid.grid_to_world(position);
                 let ray_end = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
 
                 // shorten the ray slightly so we can "see into" walls
                 let penetration_factor = 1.0;
                 let direction = (ray_end - ray_start).normalize();
-                // info!("{} {} {} {} {slope}", ray_start.x, ray_start.y, ray_end.x, ray_end.y);
                 let ray_end = ray_end - direction * penetration_factor;
 
                 let ray = LineSegment::new(ray_start, ray_end);
@@ -168,12 +170,6 @@ fn reveal_fog_of_war(
                     let min_x = usize::clamp(x.saturating_sub(1), 0, fog.width - 1);
                     let max_y = usize::clamp(y.saturating_add(1), 0, fog.height - 1);
                     let min_y = usize::clamp(y.saturating_sub(1), 0, fog.height - 1);
-
-                    // if level_walls.collides(x as i32, y as i32) {
-                    //
-                    // } else {
-                    //     s.color.set_alpha(0.0);
-                    // }
                     for x_index in min_x..=max_x {
                         for y_index in min_y..=max_y {
                             let Ok(mut adjacent_sprite) =

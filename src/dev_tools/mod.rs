@@ -1,7 +1,6 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
 pub mod grid_overlay;
-pub mod line_of_sight_debug;
 
 use crate::game::line_of_sight::fog_of_war::FogOfWarOverlay;
 use crate::input::DevActionToggles;
@@ -12,7 +11,7 @@ use leafwing_input_manager::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<DebugOverlaysState>();
-    app.add_plugins((grid_overlay::plugin, line_of_sight_debug::plugin));
+    app.add_plugins(grid_overlay::plugin);
 
     // Print state transitions in dev builds
     app.add_systems(Update, log_transitions::<Screen>);
