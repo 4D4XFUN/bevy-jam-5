@@ -1,11 +1,11 @@
 //! Represents the global grid and provides mapping functions from grid-coordinate space to world space and back
 
-use std::cmp::min;
-use std::ops::{Range, RangeInclusive};
 use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 use bevy::math::Vec2;
 use bevy::prelude::*;
+use std::cmp::min;
+use std::ops::{Range, RangeInclusive};
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
@@ -67,10 +67,17 @@ impl GridLayout {
         }
     }
 
-    pub fn bounding_box(&self, grid_position: &GridPosition, radius_in_grid_squares: f32) -> GridBoundingBox {
+    pub fn bounding_box(
+        &self,
+        grid_position: &GridPosition,
+        radius_in_grid_squares: f32,
+    ) -> GridBoundingBox {
         // info!("bounding_box grid: {},{}; {:?} {}", self.width, self.height, grid_position, radius_in_grid_squares);
 
-        let (x, y) = (grid_position.coordinates.x as u32, grid_position.coordinates.y as u32);
+        let (x, y) = (
+            grid_position.coordinates.x as u32,
+            grid_position.coordinates.y as u32,
+        );
         let (width, height) = (self.width as u32, self.height as u32);
         let radius_in_grid_squares = radius_in_grid_squares as u32;
 
@@ -78,7 +85,9 @@ impl GridLayout {
         let x_max = x.saturating_add(radius_in_grid_squares + 1).clamp(0, width);
 
         let y_min = y.saturating_sub(radius_in_grid_squares).clamp(0, height);
-        let y_max = y.saturating_add(radius_in_grid_squares + 1).clamp(0, height);
+        let y_max = y
+            .saturating_add(radius_in_grid_squares + 1)
+            .clamp(0, height);
 
         GridBoundingBox {
             origin: UVec2::new(x_min, y_min),

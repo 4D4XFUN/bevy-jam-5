@@ -1,14 +1,14 @@
-use std::f32::consts;
-use bevy::prelude::*;
-use bevy::utils::{HashSet, info};
-use crate::AppSet;
 use crate::game::ai::{Hunter, Prey};
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::FacingWallsCache;
 use crate::game::line_of_sight::front_facing_edges::update_front_facing_edges_when_grid_pos_changes;
+use crate::game::line_of_sight::FacingWallsCache;
 use crate::game::spawn::level::LevelWalls;
 use crate::geometry_2d::line_segment::LineSegment;
+use crate::AppSet;
+use bevy::prelude::*;
+use bevy::utils::{info, HashSet};
+use std::f32::consts;
 
 pub fn plugin(app: &mut App) {
     // systems
@@ -36,7 +36,7 @@ pub struct Facing {
 impl Default for Facing {
     fn default() -> Self {
         Self {
-            direction: Vec2::new(1., 0.)
+            direction: Vec2::new(1., 0.),
         }
     }
 }
@@ -103,16 +103,24 @@ pub struct VisibleSquares {
 
 impl VisibleSquares {
     pub fn contains(&self, target: &GridPosition) -> bool {
-        self.visible_squares.contains(&IVec2::new(target.coordinates.x as i32, target.coordinates.y as i32))
+        self.visible_squares.contains(&IVec2::new(
+            target.coordinates.x as i32,
+            target.coordinates.y as i32,
+        ))
     }
 }
 
 pub fn update_visible_squares(
-    mut query: Query<(&GridPosition, &VisionAbility, &Facing, &FacingWallsCache, &mut VisibleSquares)>,
+    mut query: Query<(
+        &GridPosition,
+        &VisionAbility,
+        &Facing,
+        &FacingWallsCache,
+        &mut VisibleSquares,
+    )>,
     grid: Res<GridLayout>,
 ) {
     for (grid_position, vision, facing, walls, mut visible_squares) in query.iter_mut() {
-
         // don't recompute if grid coordinates haven't changed
         let ray_start = grid_position.coordinates;
         if ray_start.distance(visible_squares.for_position.coordinates) < 1.0 {
@@ -140,7 +148,8 @@ pub fn update_visible_squares(
             // angle too wide
             let ray = LineSegment::new(
                 grid.grid_to_world(&GridPosition::new(ray_start.x, ray_start.y)),
-                grid.grid_to_world(&GridPosition::new(ray_end.x, ray_end.y)), );
+                grid.grid_to_world(&GridPosition::new(ray_end.x, ray_end.y)),
+            );
             // let ray = LineSegment::new(ray_start, ray_end);
             let angle = ray.segment2d.direction.angle_between(facing.direction);
             if angle.abs() > vision.field_of_view_radians / 2. {
@@ -157,6 +166,10 @@ pub fn update_visible_squares(
             new_squares.push(ray_end);
         }
 
-        visible_squares.visible_squares = HashSet::from_iter(new_squares.into_iter().map(|v| IVec2::new(v.x as i32, v.y as i32)));
+        visible_squares.visible_squares = HashSet::from_iter(
+            new_squares
+                .into_iter()
+                .map(|v| IVec2::new(v.x as i32, v.y as i32)),
+        );
     }
 }

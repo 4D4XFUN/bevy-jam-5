@@ -1,12 +1,12 @@
-use std::collections::HashSet;
 use bevy::prelude::*;
+use std::collections::HashSet;
 
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::vision::{VisibleSquares, VisionAbility};
 use crate::game::line_of_sight::{CanRevealFog, FacingWallsCache};
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
-use crate::game::line_of_sight::vision::{VisibleSquares, VisionAbility};
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -132,11 +132,14 @@ fn reveal_fog_of_war(
     };
 
     for (component) in line_of_sight_query.iter() {
-
         let without_neighbors = &component.visible_squares;
         let mut with_neighbors = HashSet::<IVec2>::new();
         for coordinate in without_neighbors.iter() {
-            for x in grid.neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32)).into_iter().map(|v| IVec2::new(v.x as i32, v.y as i32)) {
+            for x in grid
+                .neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32))
+                .into_iter()
+                .map(|v| IVec2::new(v.x as i32, v.y as i32))
+            {
                 with_neighbors.insert(x);
             }
         }
@@ -144,7 +147,9 @@ fn reveal_fog_of_war(
         // info!("Found {} neighbors of {} squares", with_neighbors.len() - without_neighbors.len(), without_neighbors.len());
 
         for coordinate in with_neighbors {
-            let Ok(mut sprite) = fog_of_war_sprite_query.get_mut(fog.get_at(coordinate.x as usize, coordinate.y as usize)) else {
+            let Ok(mut sprite) = fog_of_war_sprite_query
+                .get_mut(fog.get_at(coordinate.x as usize, coordinate.y as usize))
+            else {
                 warn!("Couldn't find fog sprite at {:?}", coordinate);
                 continue;
             };

@@ -1,14 +1,16 @@
+use crate::game::ai::Hunter;
+use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::vision::{
+    Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
+};
+use crate::game::movement::GridMovement;
+use crate::game::spawn::health::{CanApplyDamage, OnDeath};
+use crate::game::spawn::player::Player;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
-use crate::game::ai::Hunter;
-use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::vision::{Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle};
-use crate::game::movement::GridMovement;
-use crate::game::spawn::health::{CanApplyDamage, OnDeath};
-use crate::game::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -72,11 +74,14 @@ struct EnemyBundle {
 
 impl EnemyBundle {
     pub fn new(x: i32, y: i32) -> Self {
-
         // todo delete this it's for testing - randomize types of enemies
         let mut rng = rand::thread_rng();
         let is_sniper = rng.gen_ratio(1, 3);
-        let vision_archetype = if is_sniper { VisionArchetype::Sniper } else { VisionArchetype::Patrol };
+        let vision_archetype = if is_sniper {
+            VisionArchetype::Sniper
+        } else {
+            VisionArchetype::Patrol
+        };
 
         Self {
             marker: Enemy,
@@ -130,7 +135,10 @@ fn spawn_oneshot_enemy(
     ));
 }
 
-fn rotate_facing(mut query: Query<(&mut Facing), (With<Enemy>, Without<CanSeePlayer>)>, time: Res<Time>) {
+fn rotate_facing(
+    mut query: Query<(&mut Facing), (With<Enemy>, Without<CanSeePlayer>)>,
+    time: Res<Time>,
+) {
     const SECONDS_TO_ROTATE: f32 = 10.;
     const RADIANS_PER_SEC: f32 = 2.0 * std::f32::consts::PI / SECONDS_TO_ROTATE;
     for mut facing in query.iter_mut() {
@@ -140,7 +148,7 @@ fn rotate_facing(mut query: Query<(&mut Facing), (With<Enemy>, Without<CanSeePla
         let angle = RADIANS_PER_SEC * dt;
         f = Vec2::new(
             f.x * angle.cos() - f.y * angle.sin(),
-            f.x * angle.sin() + f.y * angle.cos()
+            f.x * angle.sin() + f.y * angle.cos(),
         );
 
         f = f.normalize();
@@ -161,8 +169,7 @@ fn detect_player(
     };
 
     for (enemy_entity, enemy_vision) in &aware_enemies {
-        if !enemy_vision.contains(player_transform)
-        {
+        if !enemy_vision.contains(player_transform) {
             commands.entity(enemy_entity).remove::<CanSeePlayer>();
         }
     }
@@ -199,7 +206,9 @@ fn follow_player(
     >,
     player: Query<&GridPosition, With<Player>>,
 ) {
-    let Ok(player_pos) = player.get_single() else { return; };
+    let Ok(player_pos) = player.get_single() else {
+        return;
+    };
 
     for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
         let direction = enemy_pos.direction_to(player_pos);

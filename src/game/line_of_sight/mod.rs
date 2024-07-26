@@ -44,4 +44,3 @@ impl Default for PlayerLineOfSightBundle {
         }
     }
 }
-

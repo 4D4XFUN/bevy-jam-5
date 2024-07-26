@@ -99,21 +99,29 @@ pub fn toggle_fog(
 }
 
 mod enemy_vision {
-    use bevy::app::App;
-    use bevy::prelude::*;
-    use crate::AppSet;
     use crate::game::ai::Hunter;
     use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::VisibleSquares;
+    use crate::AppSet;
+    use bevy::app::App;
+    use bevy::prelude::*;
 
     pub(super) fn plugin(app: &mut App) {
         app.add_systems(Update, render_enemy_vision_cones.in_set(AppSet::UpdateFog));
     }
 
-    pub fn render_enemy_vision_cones(mut gizmos: Gizmos, query: Query<&VisibleSquares, (With<Hunter>)>, grid: Res<GridLayout>) {
+    pub fn render_enemy_vision_cones(
+        mut gizmos: Gizmos,
+        query: Query<&VisibleSquares, (With<Hunter>)>,
+        grid: Res<GridLayout>,
+    ) {
         for h in query.iter() {
-            let squares: Vec<_> = h.visible_squares.iter().map(GridPosition::from_ivec).collect();
+            let squares: Vec<_> = h
+                .visible_squares
+                .iter()
+                .map(GridPosition::from_ivec)
+                .collect();
             for square in squares {
                 gizmos.rect_2d(
                     grid.grid_to_world(&square),
