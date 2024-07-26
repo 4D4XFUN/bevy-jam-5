@@ -142,11 +142,14 @@ pub fn apply_movement(
     }
 }
 
-fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement, &ActionState<PlayerAction>)>) {
+fn update_roll_timer(
+    time: Res<Time>,
+    mut query: Query<(&mut Roll, &mut GridMovement, &ActionState<PlayerAction>)>,
+) {
     let dt = time.delta_seconds();
     for (mut roll, mut movement, action_state) in query.iter_mut() {
         roll.timer.tick(Duration::from_secs_f32(dt));
-        
+
         if roll.timer.finished() {
             movement.is_rolling = false;
             roll.cooldown.tick(Duration::from_secs_f32(dt));
@@ -159,8 +162,5 @@ fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMove
                 roll.timer.reset();
             }
         }
-
     }
 }
-
-
