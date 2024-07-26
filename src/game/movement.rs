@@ -8,6 +8,7 @@ use std::time::Duration;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
+    app.add_systems(Update, update_cooldown_timer.in_set(AppSet::TickTimers));
     app.add_systems(
         Update,
         (respond_to_input, apply_movement)
@@ -34,6 +35,7 @@ pub struct GridMovement {
 pub struct Roll {
     pub timer: Timer,
     pub velocity_multiplier: f32,
+    cooldown: Timer,
 }
 
 impl Roll {
@@ -45,6 +47,7 @@ impl Default for Roll {
         Self {
             timer: Timer::from_seconds(0.5, TimerMode::Once),
             velocity_multiplier: 3.0,
+            cooldown: Timer::from_seconds(2.0, TimerMode::Once),
         }
     }
 }
@@ -111,7 +114,7 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
 
         movement.acceleration_player_force = intent * movement.acceleration_player_multiplier;
 
-        if !movement.is_rolling && action_state.pressed(&PlayerAction::Roll) {
+        if !movement.is_rolling && action_state.just_pressed(&PlayerAction::Roll) {
             movement.is_rolling = true;
         }
     }
@@ -148,9 +151,28 @@ fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMove
     let dt = time.delta_seconds();
     for (mut roll, mut movement) in query.iter_mut() {
         roll.timer.tick(Duration::from_secs_f32(dt));
-        if roll.timer.finished() {
+
+        if !roll.timer.finished() && movement.is_rolling{
             movement.is_rolling = false;
             roll.timer.reset();
         }
     }
 }
+
+fn update_cooldown_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement)>) {
+    let dt = Duration::from_secs_f32(time.delta_seconds());
+    for (mut roll, movement) in query.iter_mut() {
+
+        if roll.cooldown.finished() {
+            roll.cooldown.paused();
+        } else {
+            roll.cooldown.tick(dt);
+        }
+
+        if movement.is_rolling && roll.cooldown.finished(){
+            roll.cooldown.reset();
+            roll.cooldown.unpause();
+        }
+    }
+}
+
