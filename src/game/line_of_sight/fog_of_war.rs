@@ -134,7 +134,7 @@ fn setup_fog_of_war(
                 grid.height as f32 * grid.square_size,
                 1.0,
             ))
-                .with_translation(mesh_transform_grid_center.extend(10.)),
+            .with_translation(mesh_transform_grid_center.extend(10.)),
             ..default()
         },
         FogOfWar {
@@ -195,7 +195,7 @@ fn reveal_fog_of_war(
             } else {
                 0.2f32
             })
-                .min(fog.data[index as usize]);
+            .min(fog.data[index as usize]);
         }
     }
 }
