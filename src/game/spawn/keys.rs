@@ -1,13 +1,12 @@
 use bevy::app::{App, Update};
 use bevy::core::Name;
 use bevy::prelude::{Bundle, Commands, Component, Entity, Query, Reflect, Trigger, With};
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::grid::GridPosition;
 use crate::game::spawn::enemy::SpawnCoords;
 use crate::game::spawn::health::OnDeath;
-use crate::game::spawn::ldtk::LdtkEntityBundle;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning

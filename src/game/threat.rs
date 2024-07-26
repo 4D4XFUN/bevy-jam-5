@@ -41,8 +41,8 @@ pub struct PlayTimer(pub Timer);
 pub struct ThreatLevelIncreased(u8);
 
 #[derive(Resource)]
-struct ThreatTimer {
-    timer: Timer,
+pub struct ThreatTimer {
+    pub timer: Timer,
     current_level: u8,
 }
 

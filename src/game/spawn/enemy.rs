@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
@@ -148,7 +148,7 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 7000.0;
+const ENEMY_CHASE_SPEED: f32 = 1000.0;
 const ENEMY_RETURN_TO_POST_SPEED: f32 = 4000.0;
 
 fn return_to_post(
