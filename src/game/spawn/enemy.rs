@@ -1,11 +1,10 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
-use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
-use crate::game::spawn::health::{CanApplyDamage, OnDeath, SpawnPointGridPosition};
+use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
@@ -98,18 +97,19 @@ fn fix_loaded_ldtk_entities(
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
+
 #[cfg(feature = "dev")]
 fn spawn_oneshot_enemy(
     _trigger: Trigger<SpawnEnemyTrigger>,
     mut commands: Commands,
-    images: Res<ImageAssets>,
+    images: Res<crate::game::assets::ImageAssets>,
 ) {
     info!("Spawning a dev-only gargoyle next to player to test non-ldtk enemy functionality");
     commands.spawn((
         Name::new("custom_gargoyle"),
         EnemyBundle::new(42, 24), // right next to player
         SpriteBundle {
-            texture: images[&ImageAsset::Gargoyle].clone_weak(),
+            texture: images[&crate::game::assets::ImageAsset::Gargoyle].clone_weak(),
             transform: Transform::from_translation(Vec3::default().with_z(100.)),
             ..Default::default()
         },
@@ -159,8 +159,8 @@ fn return_to_post(
 ) {
     for (mut controller, transform, coords) in &mut unaware_enemies {
         let spawn_translation = Vec2::new(
-            coords.0.coordinates.x as f32 * 16.0,
-            1024.0 - coords.0.coordinates.y as f32 * 16.0,
+            coords.0.coordinates.x * 16.0,
+            1024.0 - coords.0.coordinates.y * 16.0,
         );
         let direction = spawn_translation - transform.translation.truncate();
 
