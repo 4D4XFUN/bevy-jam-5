@@ -6,7 +6,6 @@ use crate::game::line_of_sight::vision::{
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
-use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
@@ -136,7 +135,7 @@ fn spawn_oneshot_enemy(
 }
 
 fn rotate_facing(
-    mut query: Query<(&mut Facing), (With<Enemy>, Without<CanSeePlayer>)>,
+    mut query: Query<&mut Facing, (With<Enemy>, Without<CanSeePlayer>)>,
     time: Res<Time>,
 ) {
     const SECONDS_TO_ROTATE: f32 = 10.;
@@ -191,7 +190,7 @@ fn return_to_post(
 ) {
     for (mut movement, &position, spawn) in &mut unaware_enemies {
         let direction = position.direction_to(&spawn.0);
-        if (direction.length() < 1.0) {
+        if direction.length() < 1.0 {
             movement.acceleration_player_force = Vec2::ZERO;
         } else {
             movement.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;

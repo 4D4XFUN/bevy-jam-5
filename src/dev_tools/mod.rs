@@ -113,7 +113,7 @@ mod enemy_vision {
 
     pub fn render_enemy_vision_cones(
         mut gizmos: Gizmos,
-        query: Query<&VisibleSquares, (With<Hunter>)>,
+        query: Query<&VisibleSquares, With<Hunter>>,
         grid: Res<GridLayout>,
     ) {
         for h in query.iter() {

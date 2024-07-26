@@ -1,13 +1,10 @@
-use crate::game::ai::{Hunter, Prey};
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::front_facing_edges::update_front_facing_edges_when_grid_pos_changes;
 use crate::game::line_of_sight::FacingWallsCache;
-use crate::game::spawn::level::LevelWalls;
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
 use bevy::prelude::*;
-use bevy::utils::{info, HashSet};
+use bevy::utils::HashSet;
 use std::f32::consts;
 
 pub fn plugin(app: &mut App) {

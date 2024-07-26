@@ -19,6 +19,6 @@ pub fn find_visible_targets(
         (&GridPosition, &Facing, &VisionAbility, &FacingWallsCache),
         (With<Hunter>, Without<Prey>),
     >,
-    targets: Query<(&GridPosition), (With<Prey>, Without<Hunter>)>,
+    targets: Query<&GridPosition, (With<Prey>, Without<Hunter>)>,
 ) {
 }

@@ -3,9 +3,8 @@ use std::collections::HashSet;
 
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::vision::{VisibleSquares, VisionAbility};
-use crate::game::line_of_sight::{CanRevealFog, FacingWallsCache};
-use crate::geometry_2d::line_segment::LineSegment;
+use crate::game::line_of_sight::vision::VisibleSquares;
+use crate::game::line_of_sight::CanRevealFog;
 use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
@@ -123,7 +122,7 @@ fn update_grid_fog_of_war_overlay(
 
 fn reveal_fog_of_war(
     grid: Res<GridLayout>,
-    line_of_sight_query: Query<(&VisibleSquares), With<CanRevealFog>>,
+    line_of_sight_query: Query<&VisibleSquares, With<CanRevealFog>>,
     fog_of_war_query: Query<&FogOfWarOverlay>,
     mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
 ) {
@@ -131,7 +130,7 @@ fn reveal_fog_of_war(
         return;
     };
 
-    for (component) in line_of_sight_query.iter() {
+    for component in line_of_sight_query.iter() {
         let without_neighbors = &component.visible_squares;
         let mut with_neighbors = HashSet::<IVec2>::new();
         for coordinate in without_neighbors.iter() {

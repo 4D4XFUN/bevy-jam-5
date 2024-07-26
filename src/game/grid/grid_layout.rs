@@ -4,8 +4,7 @@ use crate::game::grid::GridPosition;
 use crate::geometry_2d::line_segment::LineSegment;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use std::cmp::min;
-use std::ops::{Range, RangeInclusive};
+use std::ops::Range;
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]

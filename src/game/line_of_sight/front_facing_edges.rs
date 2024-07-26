@@ -6,7 +6,6 @@ use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
 /// Finds front facing edges of walls (from player's perspective)
 use bevy::prelude::*;
-use bevy::utils::info;
 
 pub fn plugin(app: &mut App) {
     // Systems
