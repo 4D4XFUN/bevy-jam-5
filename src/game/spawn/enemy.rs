@@ -163,7 +163,6 @@ fn detect_player(
     mut commands: Commands,
 ) {
     let Ok(player_transform) = player.get_single() else {
-        warn!("Couldn't find player? {:?}", player);
         return;
     };
 
