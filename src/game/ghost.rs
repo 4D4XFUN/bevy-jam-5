@@ -7,12 +7,13 @@ use super::{
     assets::ImageAssets,
     end_game::EndGameCondition,
     grid::GridPosition,
-    line_of_sight::LineOfSightBundle,
+    line_of_sight::PlayerLineOfSightBundle,
     spawn::{
         health::{OnDeath, SpawnPointGridPosition},
         player::Player,
     },
 };
+use crate::game::line_of_sight::vision::VisionArchetype;
 use crate::game::movement::Roll;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
@@ -28,7 +29,7 @@ pub fn plugin(app: &mut App) {
     app.insert_resource(CurrentRecords(Vec::new()));
     app.insert_resource(GhostQueue {
         ghosts: VecDeque::new(),
-        max_ghosts: 3,
+        max_ghosts: 30,
     });
     app.add_systems(
         FixedUpdate,
@@ -116,7 +117,7 @@ fn spawn_ghost(
                 positions: current_records.0.clone(),
                 current_record: 0,
             },
-            LineOfSightBundle::default(),
+            PlayerLineOfSightBundle::default().with_vision_archetype(VisionArchetype::Ghost),
             player_animation,
         ))
         .id();

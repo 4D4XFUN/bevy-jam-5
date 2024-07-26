@@ -7,6 +7,7 @@ use bevy::prelude::*;
 mod enemy;
 mod exit;
 pub mod health;
+mod keys;
 mod ldtk;
 pub mod level;
 pub mod player;
@@ -17,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         level::plugin,
         player::plugin,
         enemy::plugin,
+        keys::plugin,
         exit::plugin,
     ));
 }

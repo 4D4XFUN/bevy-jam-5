@@ -1,11 +1,11 @@
-use crate::game::spawn::level::{LevelWalls, GRID_SIZE};
-use crate::game::spawn::player::Player;
-use crate::input::PlayerAction;
 use bevy::core::Name;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
+
+use crate::game::spawn::player::Player;
+use crate::input::PlayerAction;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraProperties>();
@@ -143,7 +143,6 @@ fn camera_follow(
         (With<Camera>, Without<Player>),
     >,
     target: Query<&Transform, (With<CameraFollowTarget>, Without<Camera>)>,
-    level_walls: Res<LevelWalls>,
     time: Res<Time>,
 ) {
     let Ok(target_transform) = target.get_single() else {
@@ -155,8 +154,8 @@ fn camera_follow(
     //calculate bounds
     let vertical_bounds = orthographic.area.width();
     let horizontal_bounds = orthographic.area.height();
-    let level_width = (level_walls.level_width * GRID_SIZE) as f32;
-    let level_height = (level_walls.level_height * GRID_SIZE) as f32;
+    let level_width = 1024.0;
+    let level_height = 1024.0;
     let min_x = (horizontal_bounds / 2.0).min(level_width / 2.0);
     let max_x = (level_width - horizontal_bounds / 2.0).max(level_width / 2.0);
     let min_y = (vertical_bounds / 2.0).min(level_height / 2.0);

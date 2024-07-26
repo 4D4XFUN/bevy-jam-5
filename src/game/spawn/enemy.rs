@@ -1,11 +1,16 @@
-use crate::game::assets::{ImageAsset, ImageAssets};
-use crate::game::grid::GridPosition;
-use crate::game::movement::GridMovement;
-use crate::game::spawn::health::CanApplyDamage;
-use crate::game::spawn::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use rand::Rng;
+
+use crate::game::ai::Hunter;
+use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::vision::{
+    Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
+};
+use crate::game::movement::GridMovement;
+use crate::game::spawn::health::{CanApplyDamage, OnDeath};
+use crate::game::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -18,13 +23,14 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, fix_loaded_ldtk_entities);
     app.add_systems(
         Update,
-        (return_to_post, detect_player, follow_player).chain(),
+        (rotate_facing, return_to_post, detect_player, follow_player).chain(),
     );
 
     // reflection
     app.register_type::<Enemy>();
     app.register_type::<CanSeePlayer>();
     app.register_type::<SpawnCoords>();
+    app.observe(on_death_reset_enemies);
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -35,9 +41,9 @@ pub struct Enemy;
 #[reflect(Component)]
 pub struct CanSeePlayer;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Copy, Clone, Default)]
 #[reflect(Component)]
-pub struct SpawnCoords(IVec2);
+pub struct SpawnCoords(pub GridPosition);
 
 #[derive(Component, Default, Copy, Clone)]
 pub struct LdtkEnemy;
@@ -61,19 +67,33 @@ struct EnemyBundle {
     grid_position: GridPosition,
     grid_movement: GridMovement,
     can_damage: CanApplyDamage,
-    can_see: CanSeePlayer,
     marker: Enemy,
+    vision: VisionBundle,
+    role: Hunter,
 }
 
 impl EnemyBundle {
     pub fn new(x: i32, y: i32) -> Self {
+        // todo delete this it's for testing - randomize types of enemies
+        let mut rng = rand::thread_rng();
+        let is_sniper = rng.gen_ratio(1, 3);
+        let vision_archetype = if is_sniper {
+            VisionArchetype::Sniper
+        } else {
+            VisionArchetype::Patrol
+        };
+
         Self {
             marker: Enemy,
-            can_see: CanSeePlayer,
             can_damage: CanApplyDamage,
-            spawn_coords: SpawnCoords(IVec2::new(x, y)),
+            spawn_coords: SpawnCoords(GridPosition::new(x as f32, y as f32)),
             grid_position: GridPosition::new(x as f32, y as f32),
             grid_movement: GridMovement::default(),
+            vision: VisionBundle {
+                vision_ability: VisionAbility::of(vision_archetype),
+                ..default()
+            },
+            role: Hunter,
         }
     }
 }
@@ -96,87 +116,111 @@ fn fix_loaded_ldtk_entities(
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
+
 #[cfg(feature = "dev")]
 fn spawn_oneshot_enemy(
     _trigger: Trigger<SpawnEnemyTrigger>,
     mut commands: Commands,
-    images: Res<ImageAssets>,
+    images: Res<crate::game::assets::ImageAssets>,
 ) {
     info!("Spawning a dev-only gargoyle next to player to test non-ldtk enemy functionality");
     commands.spawn((
         Name::new("custom_gargoyle"),
         EnemyBundle::new(42, 24), // right next to player
         SpriteBundle {
-            texture: images[&ImageAsset::Gargoyle].clone_weak(),
+            texture: images[&crate::game::assets::ImageAsset::Gargoyle].clone_weak(),
             transform: Transform::from_translation(Vec3::default().with_z(100.)),
             ..Default::default()
         },
     ));
 }
 
-const ENEMY_SIGHT_RANGE: f32 = 100.0;
+fn rotate_facing(
+    mut query: Query<&mut Facing, (With<Enemy>, Without<CanSeePlayer>)>,
+    time: Res<Time>,
+) {
+    const SECONDS_TO_ROTATE: f32 = 10.;
+    const RADIANS_PER_SEC: f32 = 2.0 * std::f32::consts::PI / SECONDS_TO_ROTATE;
+    for mut facing in query.iter_mut() {
+        let dt = time.delta_seconds();
+        let mut f: Vec2 = facing.direction;
+
+        let angle = RADIANS_PER_SEC * dt;
+        f = Vec2::new(
+            f.x * angle.cos() - f.y * angle.sin(),
+            f.x * angle.sin() + f.y * angle.cos(),
+        );
+
+        f = f.normalize();
+
+        facing.direction = f;
+    }
+}
 
 fn detect_player(
-    aware_enemies: Query<(Entity, &Transform), (With<Enemy>, With<CanSeePlayer>)>,
-    unaware_enemies: Query<(Entity, &Transform), (With<Enemy>, Without<CanSeePlayer>)>,
-    player: Query<&Transform, With<Player>>,
+    aware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, With<CanSeePlayer>)>,
+    unaware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, Without<CanSeePlayer>)>,
+    player: Query<&GridPosition, With<Player>>,
     mut commands: Commands,
 ) {
-    for (enemy_entity, enemy_transform) in &aware_enemies {
-        if let Ok(player_transform) = player.get_single() {
-            if enemy_transform
-                .translation
-                .distance(player_transform.translation)
-                > ENEMY_SIGHT_RANGE
-            {
-                commands.entity(enemy_entity).remove::<CanSeePlayer>();
-            }
+    let Ok(player_transform) = player.get_single() else {
+        return;
+    };
+
+    for (enemy_entity, enemy_vision) in &aware_enemies {
+        if !enemy_vision.contains(player_transform) {
+            commands.entity(enemy_entity).remove::<CanSeePlayer>();
         }
     }
-    for (enemy_entity, enemy_transform) in &unaware_enemies {
-        if let Ok(player_transform) = player.get_single() {
-            if enemy_transform
-                .translation
-                .distance(player_transform.translation)
-                <= ENEMY_SIGHT_RANGE
-            {
-                commands.entity(enemy_entity).insert(CanSeePlayer);
-            }
+    for (enemy_entity, enemy_vision) in &unaware_enemies {
+        if enemy_vision.contains(player_transform) {
+            commands.entity(enemy_entity).insert(CanSeePlayer);
         }
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 10.0;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 30.0;
+const ENEMY_CHASE_SPEED: f32 = 35.0;
+const ENEMY_RETURN_TO_POST_SPEED: f32 = 21.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
-        (&mut GridMovement, &Transform, &SpawnCoords),
+        (&mut GridMovement, &GridPosition, &SpawnCoords),
         (With<Enemy>, Without<CanSeePlayer>),
     >,
 ) {
-    for (mut controller, transform, coords) in &mut unaware_enemies {
-        let spawn_translation =
-            Vec2::new(coords.0.x as f32 * 16.0, 1024.0 - coords.0.y as f32 * 16.0);
-        let direction = spawn_translation - transform.translation.truncate();
-
-        controller.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+    for (mut movement, &position, spawn) in &mut unaware_enemies {
+        let direction = position.direction_to(&spawn.0);
+        if direction.length() < 1.0 {
+            movement.acceleration_player_force = Vec2::ZERO;
+        } else {
+            movement.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+        }
     }
 }
 
 fn follow_player(
     mut enemy_movement_controllers: Query<
-        (&mut GridMovement, &Transform),
+        (&mut GridMovement, &mut Facing, &GridPosition),
         (With<Enemy>, With<CanSeePlayer>),
     >,
-    player: Query<&Transform, With<Player>>,
+    player: Query<&GridPosition, With<Player>>,
 ) {
-    for (mut controller, entity_transform) in &mut enemy_movement_controllers {
-        if let Ok(player_transform) = player.get_single() {
-            let direction = player_transform.translation - entity_transform.translation;
+    let Ok(player_pos) = player.get_single() else {
+        return;
+    };
 
-            controller.acceleration_player_force =
-                direction.truncate().normalize() * ENEMY_CHASE_SPEED;
-        }
+    for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
+        let direction = enemy_pos.direction_to(player_pos);
+        facing.direction = direction;
+        controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
+    }
+}
+
+fn on_death_reset_enemies(
+    _trigger: Trigger<OnDeath>,
+    mut query: Query<(&mut GridPosition, &SpawnCoords), With<Enemy>>,
+) {
+    for (mut pos, spawn_point) in &mut query {
+        *pos = spawn_point.0;
     }
 }
