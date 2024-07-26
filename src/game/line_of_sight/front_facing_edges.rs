@@ -1,6 +1,6 @@
 /// Finds front facing edges of walls (from player's perspective)
 use bevy::prelude::*;
-
+use bevy::utils::info;
 use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
@@ -16,7 +16,7 @@ pub fn plugin(app: &mut App) {
     );
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, Default)]
 pub struct FacingWallsCache {
     // previous grid position, used to prevent recomputing LOS if tile hasn't changed
     pub last_grid_position: Vec2,
@@ -26,7 +26,7 @@ pub struct FacingWallsCache {
 impl FacingWallsCache {
     pub fn new() -> Self {
         Self {
-            last_grid_position: Vec2::splat(-69420.),
+            last_grid_position: Vec2::splat(-10.),
             facing_wall_edges: vec![],
         }
     }
@@ -37,7 +37,7 @@ impl FacingWallsCache {
 /// Whenever the player moves a whole tile, we have to recompute which parts of walls are facing them
 pub fn update_front_facing_edges_when_grid_pos_changes(
     mut query: Query<
-        (&GridPosition, &mut VisionAbility, &mut FacingWallsCache),
+        (&GridPosition, &VisionAbility, &mut FacingWallsCache),
         Changed<GridPosition>,
     >,
     walls: Res<LevelWalls>,
@@ -48,7 +48,9 @@ pub fn update_front_facing_edges_when_grid_pos_changes(
         if player_position.coordinates == facing_walls_cache.last_grid_position {
             continue;
         }
+        // info!("Recomputing facing walls for {:?} (was {:?}", player_position.coordinates, facing_walls_cache.last_grid_position);
         facing_walls_cache.last_grid_position = player_position.coordinates;
+
 
         // compute nearest edges for every wall
         let mut edges: Vec<LineSegment> = vec![];

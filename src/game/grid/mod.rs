@@ -44,6 +44,13 @@ impl GridPosition {
         }
     }
 
+    pub fn from_ivec(ivec: &IVec2) -> Self {
+        Self {
+            coordinates: Vec2::new(ivec.x as f32, ivec.y as f32),
+            offset: Vec2::ZERO,
+        }
+    }
+
     pub fn with_offset(mut self, offset: Vec2) -> Self {
         self.offset = offset;
         self

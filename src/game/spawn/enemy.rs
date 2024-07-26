@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
-
+use rand::Rng;
+use crate::game::ai::Hunter;
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::vision::{VisionAbility, VisionArchetype, VisionBundle};
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
@@ -62,19 +64,30 @@ struct EnemyBundle {
     grid_position: GridPosition,
     grid_movement: GridMovement,
     can_damage: CanApplyDamage,
-    can_see: CanSeePlayer,
     marker: Enemy,
+    vision: VisionBundle,
+    role: Hunter,
 }
 
 impl EnemyBundle {
     pub fn new(x: i32, y: i32) -> Self {
+
+        // todo delete this it's for testing - randomize types of enemies
+        let mut rng = rand::thread_rng();
+        let is_sniper = rng.gen_ratio(1, 3);
+        let vision_archetype = if is_sniper { VisionArchetype::Sniper } else { VisionArchetype::Patrol };
+
         Self {
             marker: Enemy,
-            can_see: CanSeePlayer,
             can_damage: CanApplyDamage,
             spawn_coords: SpawnCoords(GridPosition::new(x as f32, y as f32)),
             grid_position: GridPosition::new(x as f32, y as f32),
             grid_movement: GridMovement::default(),
+            vision: VisionBundle{
+                vision_ability: VisionAbility::of(vision_archetype),
+                ..default()
+            },
+            role: Hunter,
         }
     }
 }

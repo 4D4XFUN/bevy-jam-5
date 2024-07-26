@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::game::line_of_sight::front_facing_edges::FacingWallsCache;
-use crate::game::line_of_sight::vision::{Facing, VisionAbility, VisionArchetype};
+use crate::game::line_of_sight::vision::{Facing, VisibleSquares, VisionAbility, VisionArchetype};
 
 pub mod fog_of_war;
 pub mod vision;
@@ -18,10 +18,11 @@ pub struct CanRevealFog;
 
 #[derive(Bundle)]
 pub struct PlayerLineOfSightBundle {
-    pub facing_walls_cache: FacingWallsCache,
+    pub facing: Facing,
     pub can_reveal_fog: CanRevealFog,
     pub vision_ability: VisionAbility,
-    pub facing: Facing,
+    pub facing_walls_cache: FacingWallsCache,
+    pub visible_squares: VisibleSquares,
 }
 
 impl PlayerLineOfSightBundle {
@@ -39,6 +40,7 @@ impl Default for PlayerLineOfSightBundle {
             can_reveal_fog: CanRevealFog,
             vision_ability: VisionAbility::default(),
             facing: Facing::default(),
+            visible_squares: VisibleSquares::default(),
         }
     }
 }

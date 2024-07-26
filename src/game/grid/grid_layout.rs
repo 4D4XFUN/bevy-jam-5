@@ -69,20 +69,26 @@ impl GridLayout {
 
     pub fn bounding_box(&self, grid_position: &GridPosition, radius_in_grid_squares: f32) -> GridBoundingBox {
         // info!("bounding_box grid: {},{}; {:?} {}", self.width, self.height, grid_position, radius_in_grid_squares);
+
         let (x, y) = (grid_position.coordinates.x as u32, grid_position.coordinates.y as u32);
         let (width, height) = (self.width as u32, self.height as u32);
         let radius_in_grid_squares = radius_in_grid_squares as u32;
 
-        let x_min = (x - radius_in_grid_squares.min(x)).max(0);
-        let x_max = (x + radius_in_grid_squares.min(width - 1 - x)).min(width);
+        let x_min = x.saturating_sub(radius_in_grid_squares).clamp(0, width);
+        let x_max = x.saturating_add(radius_in_grid_squares + 1).clamp(0, width);
 
-        let y_min = (y - radius_in_grid_squares.min(y)).max(0);
-        let y_max = (y + radius_in_grid_squares.min(height - 1 - y)).min(height);
+        let y_min = y.saturating_sub(radius_in_grid_squares).clamp(0, height);
+        let y_max = y.saturating_add(radius_in_grid_squares + 1).clamp(0, height);
 
         GridBoundingBox {
             origin: UVec2::new(x_min, y_min),
             dimensions: UVec2::new(x_max - x_min, y_max - y_min),
         }
+    }
+
+    pub fn neighbors(&self, pos: &GridPosition) -> Vec<Vec2> {
+        let bb = self.bounding_box(pos, 1.);
+        bb.coords_range()
     }
 }
 
@@ -93,11 +99,21 @@ pub struct GridBoundingBox {
 }
 
 impl GridBoundingBox {
-    pub fn xrange(&self) -> RangeInclusive<u32> {
-        self.origin.x..=(self.origin.x + self.dimensions.x)
+    pub fn xrange(&self) -> Range<u32> {
+        self.origin.x..(self.origin.x + self.dimensions.x)
     }
-    pub fn yrange(&self) -> RangeInclusive<u32> {
-        self.origin.y..=(self.origin.y + self.dimensions.y)
+    pub fn yrange(&self) -> Range<u32> {
+        self.origin.y..(self.origin.y + self.dimensions.y)
+    }
+
+    pub fn coords_range(&self) -> Vec<Vec2> {
+        let mut coords = vec![];
+        for x in self.xrange() {
+            for y in self.yrange() {
+                coords.push(Vec2::new(x as f32, y as f32));
+            }
+        }
+        coords
     }
 }
 
@@ -131,14 +147,20 @@ mod tests {
     #[test_case(
         1,
         UVec2::new(2, 2),
-        UVec2::new(2, 2);
+        UVec2::new(3, 3);
         "Simple contained box"
     )]
     #[test_case(
         5,
         UVec2::new(0, 0),
-        UVec2::new(8, 8);
+        UVec2::new(9, 9);
         "Overflowing bounds"
+    )]
+    #[test_case(
+        9000,
+        UVec2::new(0, 0),
+        UVec2::new(10, 10);
+        "Huge"
     )]
     fn bounding_box(radius: usize, expected_origin: UVec2, expected_dimensions: UVec2) {
         let grid = GridLayout::new(10, 10);
@@ -148,5 +170,14 @@ mod tests {
 
         assert_eq!(act.origin, expected_origin);
         assert_eq!(act.dimensions, expected_dimensions);
+    }
+
+    #[test]
+    fn neighbors() {
+        let grid = GridLayout::new(10, 10);
+        let origin = GridPosition::new(3., 3.);
+        let neighbors = grid.neighbors(&origin);
+
+        assert_eq!(9, neighbors.len(), "{:?}", neighbors);
     }
 }

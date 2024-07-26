@@ -1,11 +1,12 @@
+use std::collections::HashSet;
 use bevy::prelude::*;
 
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{FacingWallsCache};
+use crate::game::line_of_sight::{CanRevealFog, FacingWallsCache};
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
-use crate::game::line_of_sight::vision::VisionAbility;
+use crate::game::line_of_sight::vision::{VisibleSquares, VisionAbility};
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -122,7 +123,7 @@ fn update_grid_fog_of_war_overlay(
 
 fn reveal_fog_of_war(
     grid: Res<GridLayout>,
-    line_of_sight_query: Query<(&GridPosition, &VisionAbility, &FacingWallsCache)>,
+    line_of_sight_query: Query<(&VisibleSquares), With<CanRevealFog>>,
     fog_of_war_query: Query<&FogOfWarOverlay>,
     mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
 ) {
@@ -130,57 +131,30 @@ fn reveal_fog_of_war(
         return;
     };
 
-    // for each LOS source, iterate through the nearest fog of war squares and reduce their alpha
-    for (position, vision, walls) in line_of_sight_query.iter() {
-        let bbox = grid.bounding_box(position, vision.range_in_grid_units);
-        for x in bbox.xrange() {
-            for y in bbox.yrange() {
-                let fog_coords = Vec2::new(x as f32, y as f32);
-                let dist = position.coordinates.distance(fog_coords);
+    for (component) in line_of_sight_query.iter() {
 
-                // special case for the square we're standing on
-                if dist <= 1.0 {
-                    if let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x as usize, y as usize)) {
-                        s.color.set_alpha(0.0);
-                    }
-                    continue;
-                }
+        let without_neighbors = &component.visible_squares;
+        let mut with_neighbors = HashSet::<IVec2>::new();
+        for coordinate in without_neighbors.iter() {
+            for x in grid.neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32)).into_iter().map(|v| IVec2::new(v.x as i32, v.y as i32)) {
+                with_neighbors.insert(x);
+            }
+        }
 
-                // don't look too far
-                if dist > vision.range_in_grid_units {
-                    continue;
-                }
+        // info!("Found {} neighbors of {} squares", with_neighbors.len() - without_neighbors.len(), without_neighbors.len());
 
-                // TODO(martin): take cone of vision into account
-                let ray_start = grid.grid_to_world(position);
-                let ray_end = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
+        for coordinate in with_neighbors {
+            let Ok(mut sprite) = fog_of_war_sprite_query.get_mut(fog.get_at(coordinate.x as usize, coordinate.y as usize)) else {
+                warn!("Couldn't find fog sprite at {:?}", coordinate);
+                continue;
+            };
 
-                // shorten the ray slightly so we can "see into" walls
-                let penetration_factor = 1.0;
-                let direction = (ray_end - ray_start).normalize();
-                let ray_end = ray_end - direction * penetration_factor;
+            let is_neighbor = !without_neighbors.contains(&coordinate);
 
-                let ray = LineSegment::new(ray_start, ray_end);
-
-                let can_see = walls.facing_wall_edges.iter().all(|w| !ray.do_intersect(w));
-
-                if can_see {
-                    // set surrounding tiles
-                    let max_x = usize::clamp(x.saturating_add(1) as usize, 0, fog.width - 1);
-                    let min_x = usize::clamp(x.saturating_sub(1) as usize, 0, fog.width - 1);
-                    let max_y = usize::clamp(y.saturating_add(1) as usize, 0, fog.height - 1);
-                    let min_y = usize::clamp(y.saturating_sub(1) as usize, 0, fog.height - 1);
-                    for x_index in min_x..=max_x {
-                        for y_index in min_y..=max_y {
-                            let Ok(mut adjacent_sprite) =
-                                fog_of_war_sprite_query.get_mut(fog.get_at(x_index, y_index))
-                            else {
-                                continue;
-                            };
-                            adjacent_sprite.color.set_alpha(0.0);
-                        }
-                    }
-                }
+            if is_neighbor {
+                sprite.color.set_alpha(0.5); // neighbors slightly dimmer
+            } else {
+                sprite.color.set_alpha(0.0);
             }
         }
     }

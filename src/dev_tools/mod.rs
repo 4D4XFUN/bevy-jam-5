@@ -11,7 +11,7 @@ use leafwing_input_manager::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<DebugOverlaysState>();
-    app.add_plugins(grid_overlay::plugin);
+    app.add_plugins((grid_overlay::plugin, enemy_vision::plugin));
 
     // Print state transitions in dev builds
     app.add_systems(Update, log_transitions::<Screen>);
@@ -94,6 +94,34 @@ pub fn toggle_fog(
             Visibility::Inherited => Visibility::Hidden,
             Visibility::Hidden => Visibility::Visible,
             Visibility::Visible => Visibility::Hidden,
+        }
+    }
+}
+
+mod enemy_vision {
+    use bevy::app::App;
+    use bevy::prelude::*;
+    use crate::AppSet;
+    use crate::game::ai::Hunter;
+    use crate::game::grid::grid_layout::GridLayout;
+    use crate::game::grid::GridPosition;
+    use crate::game::line_of_sight::vision::VisibleSquares;
+
+    pub(super) fn plugin(app: &mut App) {
+        app.add_systems(Update, render_enemy_vision_cones.in_set(AppSet::UpdateFog));
+    }
+
+    pub fn render_enemy_vision_cones(mut gizmos: Gizmos, query: Query<&VisibleSquares, (With<Hunter>)>, grid: Res<GridLayout>) {
+        for h in query.iter() {
+            let squares: Vec<_> = h.visible_squares.iter().map(GridPosition::from_ivec).collect();
+            for square in squares {
+                gizmos.rect_2d(
+                    grid.grid_to_world(&square),
+                    0.,
+                    Vec2::splat(10.),
+                    Color::srgba(0.5, 0.1, 0.1, 0.5),
+                )
+            }
         }
     }
 }
