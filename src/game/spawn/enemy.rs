@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
@@ -38,7 +38,7 @@ pub struct CanSeePlayer;
 
 #[derive(Component, Reflect, Copy, Clone, Default)]
 #[reflect(Component)]
-pub struct SpawnCoords(GridPosition);
+pub struct SpawnCoords(pub GridPosition);
 
 #[derive(Component, Default, Copy, Clone)]
 pub struct LdtkEnemy;
