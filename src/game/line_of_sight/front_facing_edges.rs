@@ -53,6 +53,8 @@ pub fn update_front_facing_edges_when_grid_pos_changes(
         // compute nearest edges for every wall
         let mut edges: Vec<LineSegment> = vec![];
         let pc = player_position.coordinates;
+
+        // todo we can use a grid bounding box and iterate x,y over the vision radius instead to do less work when there's lots of entities with LOS
         for wall in walls.wall_locations.iter() {
             let wall_pos = GridPosition::new(wall.x as f32, wall.y as f32)
                 .with_offset(Vec2::new(-0.5, -0.5));

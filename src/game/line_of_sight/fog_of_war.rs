@@ -132,15 +132,15 @@ fn reveal_fog_of_war(
 
     // for each LOS source, iterate through the nearest fog of war squares and reduce their alpha
     for (position, vision, walls) in line_of_sight_query.iter() {
-        // todo(martin) we can do this more efficiently by only iterating the square that encompasses the max vision range rather than the entire board
-        for x in 0..fog.width {
-            for y in 0..fog.height {
+        let bbox = grid.bounding_box(position, vision.range_in_grid_units);
+        for x in bbox.xrange() {
+            for y in bbox.yrange() {
                 let fog_coords = Vec2::new(x as f32, y as f32);
                 let dist = position.coordinates.distance(fog_coords);
 
                 // special case for the square we're standing on
                 if dist <= 1.0 {
-                    if let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y)) {
+                    if let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x as usize, y as usize)) {
                         s.color.set_alpha(0.0);
                     }
                     continue;
@@ -166,10 +166,10 @@ fn reveal_fog_of_war(
 
                 if can_see {
                     // set surrounding tiles
-                    let max_x = usize::clamp(x.saturating_add(1), 0, fog.width - 1);
-                    let min_x = usize::clamp(x.saturating_sub(1), 0, fog.width - 1);
-                    let max_y = usize::clamp(y.saturating_add(1), 0, fog.height - 1);
-                    let min_y = usize::clamp(y.saturating_sub(1), 0, fog.height - 1);
+                    let max_x = usize::clamp(x.saturating_add(1) as usize, 0, fog.width - 1);
+                    let min_x = usize::clamp(x.saturating_sub(1) as usize, 0, fog.width - 1);
+                    let max_y = usize::clamp(y.saturating_add(1) as usize, 0, fog.height - 1);
+                    let min_y = usize::clamp(y.saturating_sub(1) as usize, 0, fog.height - 1);
                     for x_index in min_x..=max_x {
                         for y_index in min_y..=max_y {
                             let Ok(mut adjacent_sprite) =
