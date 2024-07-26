@@ -2,6 +2,12 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
+use crate::game::movement::Roll;
+use crate::{
+    game::{animation::PlayerAnimation, assets::ImageAsset},
+    screen::Screen,
+};
+
 use super::{
     animation::PlayerAnimationState,
     assets::ImageAssets,
@@ -13,11 +19,6 @@ use super::{
         player::Player,
     },
 };
-use crate::game::movement::Roll;
-use crate::{
-    game::{animation::PlayerAnimation, assets::ImageAsset},
-    screen::Screen,
-};
 
 ///Handles ghosts.
 ///
@@ -28,7 +29,7 @@ pub fn plugin(app: &mut App) {
     app.insert_resource(CurrentRecords(Vec::new()));
     app.insert_resource(GhostQueue {
         ghosts: VecDeque::new(),
-        max_ghosts: 3,
+        max_ghosts: 30,
     });
     app.add_systems(
         FixedUpdate,

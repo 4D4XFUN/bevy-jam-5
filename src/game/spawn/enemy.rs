@@ -1,11 +1,11 @@
-use crate::game::assets::{ImageAsset, ImageAssets};
-use crate::game::grid::GridPosition;
-use crate::game::movement::GridMovement;
-use crate::game::spawn::health::CanApplyDamage;
-use crate::game::spawn::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+
+use crate::game::grid::GridPosition;
+use crate::game::movement::GridMovement;
+use crate::game::spawn::health::{CanApplyDamage, OnDeath};
+use crate::game::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -25,6 +25,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<Enemy>();
     app.register_type::<CanSeePlayer>();
     app.register_type::<SpawnCoords>();
+    app.observe(on_death_reset_enemies);
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -37,7 +38,7 @@ pub struct CanSeePlayer;
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct SpawnCoords(IVec2);
+pub struct SpawnCoords(GridPosition);
 
 #[derive(Component, Default, Copy, Clone)]
 pub struct LdtkEnemy;
@@ -71,7 +72,7 @@ impl EnemyBundle {
             marker: Enemy,
             can_see: CanSeePlayer,
             can_damage: CanApplyDamage,
-            spawn_coords: SpawnCoords(IVec2::new(x, y)),
+            spawn_coords: SpawnCoords(GridPosition::new(x as f32, y as f32)),
             grid_position: GridPosition::new(x as f32, y as f32),
             grid_movement: GridMovement::default(),
         }
@@ -96,18 +97,19 @@ fn fix_loaded_ldtk_entities(
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
+
 #[cfg(feature = "dev")]
 fn spawn_oneshot_enemy(
     _trigger: Trigger<SpawnEnemyTrigger>,
     mut commands: Commands,
-    images: Res<ImageAssets>,
+    images: Res<crate::game::assets::ImageAssets>,
 ) {
     info!("Spawning a dev-only gargoyle next to player to test non-ldtk enemy functionality");
     commands.spawn((
         Name::new("custom_gargoyle"),
         EnemyBundle::new(42, 24), // right next to player
         SpriteBundle {
-            texture: images[&ImageAsset::Gargoyle].clone_weak(),
+            texture: images[&crate::game::assets::ImageAsset::Gargoyle].clone_weak(),
             transform: Transform::from_translation(Vec3::default().with_z(100.)),
             ..Default::default()
         },
@@ -156,8 +158,10 @@ fn return_to_post(
     >,
 ) {
     for (mut controller, transform, coords) in &mut unaware_enemies {
-        let spawn_translation =
-            Vec2::new(coords.0.x as f32 * 16.0, 1024.0 - coords.0.y as f32 * 16.0);
+        let spawn_translation = Vec2::new(
+            coords.0.coordinates.x * 16.0,
+            1024.0 - coords.0.coordinates.y * 16.0,
+        );
         let direction = spawn_translation - transform.translation.truncate();
 
         controller.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
@@ -178,5 +182,14 @@ fn follow_player(
             controller.acceleration_player_force =
                 direction.truncate().normalize() * ENEMY_CHASE_SPEED;
         }
+    }
+}
+
+fn on_death_reset_enemies(
+    _trigger: Trigger<OnDeath>,
+    mut query: Query<(&mut GridPosition, &SpawnCoords), With<Enemy>>,
+) {
+    for (mut pos, spawn_point) in &mut query {
+        *pos = spawn_point.0;
     }
 }
