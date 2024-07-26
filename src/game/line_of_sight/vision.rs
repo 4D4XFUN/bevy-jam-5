@@ -127,7 +127,7 @@ pub fn update_visible_squares(
             // info!("{:?} -> {:?}", ray_start, ray_end);
 
             // too near
-            if ray_end.distance(ray_start) < 1.0 {
+            if ray_end.distance(ray_start) <= 1.0 {
                 new_squares.push(ray_end);
                 continue;
             }
@@ -138,16 +138,16 @@ pub fn update_visible_squares(
             }
 
             // angle too wide
-            let ray = LineSegment::new(ray_start, ray_end);
+            let ray = LineSegment::new(
+                grid.grid_to_world(&GridPosition::new(ray_start.x, ray_start.y)),
+                grid.grid_to_world(&GridPosition::new(ray_end.x, ray_end.y)), );
+            // let ray = LineSegment::new(ray_start, ray_end);
             let angle = ray.segment2d.direction.angle_between(facing.direction);
             if angle.abs() > vision.field_of_view_radians / 2. {
                 continue;
             }
 
             // wall in the way
-            let ray = LineSegment::new(
-                grid.grid_to_world(&GridPosition::new(ray_start.x, ray_start.y)),
-                grid.grid_to_world(&GridPosition::new(ray_end.x, ray_end.y)), );
             let wall_in_the_way = walls.facing_wall_edges.iter().any(|w| ray.do_intersect(w));
             if wall_in_the_way {
                 continue;

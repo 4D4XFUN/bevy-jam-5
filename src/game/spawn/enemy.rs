@@ -173,7 +173,7 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 20.0;
+const ENEMY_CHASE_SPEED: f32 = 42.0;
 const ENEMY_RETURN_TO_POST_SPEED: f32 = 30.0;
 
 fn return_to_post(
@@ -204,11 +204,7 @@ fn follow_player(
     for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
         let direction = enemy_pos.direction_to(player_pos);
         facing.direction = direction;
-        if (direction.length() < 1.0) {
-            controller.acceleration_player_force = Vec2::ZERO;
-        } else {
-            controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
-        }
+        controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
     }
 }
 
