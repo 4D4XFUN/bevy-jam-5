@@ -203,8 +203,8 @@ fn reveal_fog_of_war(
 fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
     for mut s in fog_of_war_query.iter_mut() {
         let data = &mut s.data;
-        for i in 0..data.len() {
-            data[i] = (data[i] + 0.1).min(1.0);
+        for mut d in data {
+            *d = (d + 0.1).min(1.0);
         }
     }
 }
