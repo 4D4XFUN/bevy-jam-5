@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use std::collections::HashSet;
-
+use bevy::sprite::MaterialMesh2dBundle;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::VisibleSquares;
@@ -9,6 +9,7 @@ use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
+    app.init_resource::<FogOfWarGpuHandles>();
     app.add_systems(
         Update,
         (
@@ -23,6 +24,11 @@ pub(super) fn plugin(app: &mut App) {
     // reflection
     app.register_type::<FogOfWarOverlay>();
 }
+
+pub fn setup(
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {}
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
@@ -62,9 +68,41 @@ impl FogOfWarOverlay {
     }
 }
 
+
+#[derive(Resource)]
+struct FogOfWarGpuHandles {
+    mesh: Handle<Mesh>,
+    mat_transparent: Handle<ColorMaterial>,
+    mat_revealed: Handle<ColorMaterial>,
+    mat_hidden: Handle<ColorMaterial>,
+}
+
+impl FromWorld for FogOfWarGpuHandles {
+    // called when init_resource is used on the app
+    fn from_world(world: &mut World) -> Self {
+        // meshes
+        let mut meshes = world.resource_mut::<Assets<Mesh>>();
+        // hardcoded grid size :(
+        let mesh_handle = meshes.add(Rectangle::new(16., 16., ));
+
+        // materials
+        let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
+        let mat_hidden = materials.add(ColorMaterial::from(Color::srgba(0.0, 0.0, 0.0, 1.0)));
+        let mat_revealed = materials.add(ColorMaterial::from(Color::srgba(0.0, 0.0, 0.0, 0.0)));
+        let mat_transparent = materials.add(ColorMaterial::from(Color::srgba(0.0, 0.0, 0.0, 0.5)));
+
+        FogOfWarGpuHandles {
+            mesh: mesh_handle,
+            mat_hidden,
+            mat_revealed,
+            mat_transparent,
+        }
+    }
+}
 fn update_grid_fog_of_war_overlay(
     mut commands: Commands,
     grid: Res<GridLayout>,
+    fog_of_war_gpu_handles: Res<FogOfWarGpuHandles>,
     existing_overlays: Query<Entity, With<FogOfWarOverlay>>,
 ) {
     if !grid.is_changed() {
@@ -90,12 +128,9 @@ fn update_grid_fog_of_war_overlay(
             let child_id = commands
                 .spawn((
                     FogOfWarOverlayVoxel,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color,
-                            custom_size: Some(Vec2::splat(grid.square_size)), // todo resolution
-                            ..default()
-                        },
+                    MaterialMesh2dBundle {
+                        mesh: fog_of_war_gpu_handles.mesh.clone().clone().into(),
+                        material: fog_of_war_gpu_handles.mat_hidden.clone(),
                         transform: Transform::from_translation(position.extend(10.0)),
                         ..default()
                     },
@@ -123,8 +158,10 @@ fn update_grid_fog_of_war_overlay(
 fn reveal_fog_of_war(
     grid: Res<GridLayout>,
     line_of_sight_query: Query<&VisibleSquares, With<CanRevealFog>>,
+    mut commands: Commands,
     fog_of_war_query: Query<&FogOfWarOverlay>,
-    mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
+    fog_of_war_gpu_handles: Res<FogOfWarGpuHandles>,
+    mut fog_of_war_sprite_query: Query<Entity, With<FogOfWarOverlayVoxel>>,
 ) {
     let Ok(fog) = fog_of_war_query.get_single() else {
         return;
@@ -146,33 +183,20 @@ fn reveal_fog_of_war(
         // info!("Found {} neighbors of {} squares", with_neighbors.len() - without_neighbors.len(), without_neighbors.len());
 
         for coordinate in with_neighbors {
-            let Ok(mut sprite) = fog_of_war_sprite_query
-                .get_mut(fog.get_at(coordinate.x as usize, coordinate.y as usize))
-            else {
-                warn!("Couldn't find fog sprite at {:?}", coordinate);
-                continue;
-            };
-
-            let is_neighbor = !without_neighbors.contains(&coordinate);
-
-            if is_neighbor {
-                sprite.color.set_alpha(0.5); // neighbors slightly dimmer
-            } else {
-                sprite.color.set_alpha(0.0);
-            }
+            let fog_entity = fog.get_at(coordinate.x as usize, coordinate.y as usize);
+            commands.entity(fog_entity).insert(fog_of_war_gpu_handles.mat_revealed.clone());
         }
     }
 }
 
-fn recover_fog_of_war(mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>) {
-    let recovery_alpha_change = 1.0 / 15.0;
-    for mut s in fog_of_war_sprite_query.iter_mut() {
-        let alpha = s.color.alpha();
-        if alpha < 1.0 - recovery_alpha_change {
-            // it'll never fully recover
-            s.color.set_alpha(alpha + recovery_alpha_change);
-        } else {
-            s.color.set_alpha(1.0);
+fn recover_fog_of_war(
+    mut commands: Commands,
+    fog_of_war_query: Query<&FogOfWarOverlay>,
+    fog_of_war_gpu_handles: Res<FogOfWarGpuHandles>,
+   ) {
+    for mut s in fog_of_war_query.iter() {
+        for &x in s.fog_of_war_grid_sprites.iter() {
+            commands.entity(x).insert(fog_of_war_gpu_handles.mat_hidden.clone());
         }
     }
 }
