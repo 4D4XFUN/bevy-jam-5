@@ -1,6 +1,11 @@
 use bevy::prelude::*;
 use std::collections::HashSet;
-use bevy::sprite::MaterialMesh2dBundle;
+use bevy::render::mesh::{Indices, PrimitiveTopology};
+use bevy::render::render_asset::RenderAssetUsages;
+use bevy::render::render_resource::{AsBindGroup, ShaderRef};
+use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
+use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle, Mesh2d};
+use bevy::utils::info;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::VisibleSquares;
@@ -10,10 +15,12 @@ use crate::AppSet;
 pub(super) fn plugin(app: &mut App) {
     //systems
     app.init_resource::<FogOfWarGpuHandles>();
+    app.add_plugins(Material2dPlugin::<FogOfWarMaterial>::default());
     app.add_systems(
         Update,
         (
-            update_grid_fog_of_war_overlay,
+            setup_fog_of_war,
+            // update_grid_fog_of_war_overlay,
             recover_fog_of_war,
             reveal_fog_of_war,
         )
@@ -29,6 +36,104 @@ pub fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {}
+
+#[derive(Component)]
+struct FogOfWar {
+    width: u32,
+    height: u32,
+    data: Vec<f32>,
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct FogOfWarMaterial {
+    #[uniform(0)]
+    color: LinearRgba,
+    #[texture(1)]
+    #[sampler(2)]
+    fog_texture: Handle<Image>,
+}
+
+impl Material2d for FogOfWarMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/fog_of_war.wgsl".into()
+    }
+}
+
+fn setup_fog_of_war(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<FogOfWarMaterial>>,
+    mut images: ResMut<Assets<Image>>,
+    old_fog: Query<(Entity, &FogOfWar)>,
+    grid: Res<GridLayout>,
+) {
+    // only rerun if the grid has changed
+    if !grid.is_changed() {
+        return;
+    }
+
+    // despawn old fogs of war
+    for (e, fow) in old_fog.iter() {
+        info!("Despawning old {} x {} fog", fow.width, fow.height);
+        commands.entity(e).despawn_recursive();
+    }
+
+    let width = grid.width as u32;
+    let height = grid.height as u32;
+
+    if width == 0 || height == 0 {
+        info!("Tried to make grid with dimensions {} x {}, skipping because it's 0 in a dimension.", width, height);
+        return;
+    }
+
+    // Create a single quad mesh for the entire grid
+    // todo can we just use Rectangle::default()?
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::all());
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        vec![[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]],
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]);
+    mesh.insert_indices(Indices::U32(vec![0, 1, 2, 0, 2, 3]));
+
+    // Create a texture for fog of war data
+    let mut fog_texture = Image::new_fill(
+        bevy::render::render_resource::Extent3d {
+            width,
+            height,
+            depth_or_array_layers: 1,
+        },
+        bevy::render::render_resource::TextureDimension::D2,
+        &vec![255; (width * height) as usize],
+        bevy::render::render_resource::TextureFormat::R8Unorm,
+        RenderAssetUsages::all(),
+    );
+    fog_texture.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::nearest());
+
+    let fog_texture_handle = images.add(fog_texture);
+
+    // Create the material
+    let material = materials.add(FogOfWarMaterial {
+        color: Color::linear_rgba(0.,0.,0.5,1.,).to_linear(),
+        fog_texture: fog_texture_handle.clone(),
+    });
+
+    // Spawn the fog of war entity
+    commands.spawn((
+        MaterialMesh2dBundle {
+            mesh: meshes.add(mesh).into(),
+            material,
+            transform: Transform::from_scale(Vec3::new(grid.width as f32 * grid.square_size, grid.height as f32 * grid.square_size, 1.0))
+                .with_translation(Vec3::new(0.0, 0.0, 10.0)),
+            ..default()
+        },
+        FogOfWar {
+            width,
+            height,
+            data: vec![1.0; (width * height) as usize],
+        },
+    ));
+}
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
@@ -68,7 +173,6 @@ impl FogOfWarOverlay {
     }
 }
 
-
 #[derive(Resource)]
 struct FogOfWarGpuHandles {
     mesh: Handle<Mesh>,
@@ -83,7 +187,7 @@ impl FromWorld for FogOfWarGpuHandles {
         // meshes
         let mut meshes = world.resource_mut::<Assets<Mesh>>();
         // hardcoded grid size :(
-        let mesh_handle = meshes.add(Rectangle::new(16., 16., ));
+        let mesh_handle = meshes.add(Rectangle::new(16., 16.));
 
         // materials
         let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
@@ -193,7 +297,7 @@ fn recover_fog_of_war(
     mut commands: Commands,
     fog_of_war_query: Query<&FogOfWarOverlay>,
     fog_of_war_gpu_handles: Res<FogOfWarGpuHandles>,
-   ) {
+) {
     for mut s in fog_of_war_query.iter() {
         for &x in s.fog_of_war_grid_sprites.iter() {
             commands.entity(x).insert(fog_of_war_gpu_handles.mat_hidden.clone());
