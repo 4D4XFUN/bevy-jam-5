@@ -134,7 +134,7 @@ fn setup_fog_of_war(
                 grid.height as f32 * grid.square_size,
                 1.0,
             ))
-            .with_translation(mesh_transform_grid_center.extend(10.)),
+                .with_translation(mesh_transform_grid_center.extend(10.)),
             ..default()
         },
         FogOfWar {
@@ -195,16 +195,17 @@ fn reveal_fog_of_war(
             } else {
                 0.2f32
             })
-            .min(fog.data[index as usize]);
+                .min(fog.data[index as usize]);
         }
     }
 }
 
 fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
+    const RECOVERY_SPEED: f32 = 0.1;
     for mut s in fog_of_war_query.iter_mut() {
-        let mut data = &mut s.data;
-        for mut d in data.iter_mut() {
-            *d = (d + 0.1).min(1.0);
+        let data = &mut s.data;
+        for d in data.iter_mut() {
+            *d = (*d + RECOVERY_SPEED).min(1.0);
         }
     }
 }
