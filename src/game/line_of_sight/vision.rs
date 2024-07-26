@@ -34,10 +34,7 @@ pub struct VisionAbility {
 
 impl Default for VisionAbility {
     fn default() -> Self {
-        Self {
-            field_of_view_radians: 2. * consts::PI,
-            range_in_grid_units: 3.,
-        }
+        Self::of(VisionArchetype::default())
     }
 }
 
@@ -65,14 +62,16 @@ impl VisionAbility {
 }
 
 // maybe we can figure out a way to encode these in LDTK for easy enemy design
+#[derive(Default)]
 pub enum VisionArchetype {
     /// Very narrow FOV, Long range, short detection time
+    #[default]
     Sniper,
 
     /// Medium FOV, Medium Range, Medium detection time
     Patrol,
 
-    /// Huge FOV, Short Range
+    /// Like the player but less range
     Ghost,
 
     /// This is the player's FOV

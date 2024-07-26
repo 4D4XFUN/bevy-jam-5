@@ -1,7 +1,7 @@
 use bevy::app::App;
 use bevy::prelude::{Component, Query, With, Without};
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{FacingWallsCache, vision};
+use crate::game::line_of_sight::front_facing_edges::FacingWallsCache;
 use crate::game::line_of_sight::vision::{Facing, VisionAbility};
 
 pub fn plugin(_app: &mut App) {
