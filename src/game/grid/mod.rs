@@ -128,17 +128,6 @@ impl Add for GridPosition {
     }
 }
 
-impl Default for GridLayout {
-    fn default() -> Self {
-        GridLayout {
-            square_size: 32.,
-            width: 20,
-            height: 10,
-            origin: Vec2::ZERO,
-        }
-    }
-}
-
 fn update_grid_when_level_changes(
     mut grid: ResMut<GridLayout>,
     level_walls: Res<LevelWalls>,
@@ -153,6 +142,7 @@ fn update_grid_when_level_changes(
         level_walls.level_width, level_walls.level_height
     );
     let square_size = 16.; // we should reconcile this with the LDTK tile size
+    grid.padding = Vec2::splat(square_size / 2.);
     grid.width = level_walls.level_width as usize;
     grid.height = level_walls.level_height as usize;
     grid.square_size = square_size;

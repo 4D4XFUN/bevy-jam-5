@@ -19,14 +19,13 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             setup_fog_of_war,
-            // update_grid_fog_of_war_overlay,
-            // recover_fog_of_war,
-            // reveal_fog_of_war,
+            recover_fog_of_war,
+            reveal_fog_of_war,
+            copy_data_to_texture,
         )
             .chain()
             .in_set(AppSet::UpdateFog),
     );
-
 }
 
 #[derive(Component)]
@@ -36,13 +35,21 @@ struct FogOfWar {
     data: Vec<f32>,
 }
 
+impl FogOfWar {
+    pub fn index(&self, x: u32, y: u32) -> u32 {
+        let row = self.height - y - 1;
+        let index = self.width * row + x;
+        index
+    }
+}
+
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 struct FogOfWarMaterial {
     #[uniform(0)]
     color: LinearRgba,
     #[texture(1)]
     #[sampler(2)]
-    fog_texture: Option<Handle<Image>>,
+    fog_texture: Handle<Image>,
 }
 
 impl Material2d for FogOfWarMaterial {
@@ -82,6 +89,14 @@ fn setup_fog_of_war(
     let mut mesh = Rectangle::default();
 
     // Create a texture for fog of war data
+    let num_grid_squares = width * height;
+
+    let pixels: Vec<u8> = (0..num_grid_squares).map(|i| {
+        let step = 255. / num_grid_squares as f32;
+        let value = step * i as f32;
+        value.floor() as u8
+    }).collect();
+
     let mut fog_texture = Image::new_fill(
         bevy::render::render_resource::Extent3d {
             width,
@@ -89,7 +104,8 @@ fn setup_fog_of_war(
             depth_or_array_layers: 1,
         },
         bevy::render::render_resource::TextureDimension::D2,
-        &vec![255; (width * height) as usize],
+        // &vec![255; num_grid_squares as usize],
+        &pixels[..],
         bevy::render::render_resource::TextureFormat::R8Unorm,
         RenderAssetUsages::all(),
     );
@@ -100,7 +116,7 @@ fn setup_fog_of_war(
     // Create the material
     let material = materials.add(FogOfWarMaterial {
         color: LinearRgba::BLACK,
-        fog_texture: Some(fog_texture_handle.clone()),
+        fog_texture: fog_texture_handle.clone(),
     });
 
     let mesh_transform_grid_center = grid.center_worldpos();
@@ -117,7 +133,65 @@ fn setup_fog_of_war(
         FogOfWar {
             width,
             height,
-            data: vec![1.0; (width * height) as usize],
+            data: vec![1.0; num_grid_squares as usize],
         },
     ));
+
+    info!("Initialized fog of war with {} grid positions", num_grid_squares);
 }
+
+fn copy_data_to_texture(
+    mut fog_query: Query<(&mut FogOfWar, &Handle<FogOfWarMaterial>)>,
+    mut images: ResMut<Assets<Image>>,
+    mut fog_materials: ResMut<Assets<FogOfWarMaterial>>,
+) {
+    for (mut fog, material_handle) in fog_query.iter_mut() {
+        if let Some(material) = fog_materials.get_mut(material_handle) {
+            if let Some(texture) = images.get_mut(&material.fog_texture) {
+                for (i, value) in fog.data.iter().enumerate() {
+                    texture.data[i] = (*value * 255.0) as u8;
+                }
+            }
+        }
+    }
+}
+
+fn reveal_fog_of_war(
+    grid: Res<GridLayout>,
+    line_of_sight_query: Query<&VisibleSquares, With<CanRevealFog>>,
+    mut fog_of_war_query: Query<&mut FogOfWar>,
+) {
+    let Ok(mut fog) = fog_of_war_query.get_single_mut() else {
+        return;
+    };
+
+    for component in line_of_sight_query.iter() {
+        let without_neighbors = &component.visible_squares;
+        let mut with_neighbors = HashSet::<IVec2>::new();
+        for coordinate in without_neighbors.iter() {
+            for x in grid.neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32))
+                .into_iter()
+                .map(|v| IVec2::new(v.x as i32, v.y as i32))
+            {
+                with_neighbors.insert(x);
+            }
+        }
+
+        for square in with_neighbors.iter() {
+            let index = fog.index(square.x as u32, square.y as u32);
+            fog.data[index as usize] = (if without_neighbors.contains(square) { 0.0f32 } else { 0.2f32 }).min(fog.data[index as usize]);
+        }
+    }
+}
+
+fn recover_fog_of_war(
+    mut fog_of_war_query: Query<&mut FogOfWar>,
+) {
+    for mut s in fog_of_war_query.iter_mut() {
+        let mut data = &mut s.data;
+        for i in 0..data.len() {
+            data[i] = (data[i] + 0.1).min(1.0);
+        }
+    }
+}
+
