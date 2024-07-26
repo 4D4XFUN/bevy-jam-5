@@ -1,3 +1,7 @@
+use bevy::prelude::*;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+
 use crate::game::ai::Hunter;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
@@ -40,9 +44,9 @@ pub struct Enemy;
 #[reflect(Component)]
 pub struct CanSeePlayer;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Copy, Clone, Default)]
 #[reflect(Component)]
-pub struct SpawnCoords(GridPosition);
+pub struct SpawnCoords(pub GridPosition);
 
 #[derive(Component, Default, Copy, Clone)]
 pub struct LdtkEnemy;
@@ -179,7 +183,7 @@ fn detect_player(
 }
 
 const ENEMY_CHASE_SPEED: f32 = 42.0;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 30.0;
+const ENEMY_RETURN_TO_POST_SPEED: f32 = 21.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
