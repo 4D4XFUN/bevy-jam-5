@@ -1,10 +1,11 @@
+use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 use crate::game::ai::Hunter;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::vision::{VisionAbility, VisionArchetype, VisionBundle};
+use crate::game::line_of_sight::vision::{Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle};
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
@@ -20,7 +21,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, fix_loaded_ldtk_entities);
     app.add_systems(
         Update,
-        (return_to_post, detect_player, follow_player).chain(),
+        (rotate_facing, return_to_post, detect_player, follow_player).chain(),
     );
 
     // reflection
@@ -83,7 +84,7 @@ impl EnemyBundle {
             spawn_coords: SpawnCoords(GridPosition::new(x as f32, y as f32)),
             grid_position: GridPosition::new(x as f32, y as f32),
             grid_movement: GridMovement::default(),
-            vision: VisionBundle{
+            vision: VisionBundle {
                 vision_ability: VisionAbility::of(vision_archetype),
                 ..default()
             },
@@ -129,71 +130,84 @@ fn spawn_oneshot_enemy(
     ));
 }
 
-const ENEMY_SIGHT_RANGE: f32 = 100.0;
+fn rotate_facing(mut query: Query<(&mut Facing), (With<Enemy>, Without<CanSeePlayer>)>, time: Res<Time>) {
+    const SECONDS_TO_ROTATE: f32 = 10.;
+    const RADIANS_PER_SEC: f32 = 2.0 * std::f32::consts::PI / SECONDS_TO_ROTATE;
+    for mut facing in query.iter_mut() {
+        let dt = time.delta_seconds();
+        let mut f: Vec2 = facing.direction;
+
+        let angle = RADIANS_PER_SEC * dt;
+        f = Vec2::new(
+            f.x * angle.cos() - f.y * angle.sin(),
+            f.x * angle.sin() + f.y * angle.cos()
+        );
+
+        f = f.normalize();
+
+        facing.direction = f;
+    }
+}
 
 fn detect_player(
-    aware_enemies: Query<(Entity, &Transform), (With<Enemy>, With<CanSeePlayer>)>,
-    unaware_enemies: Query<(Entity, &Transform), (With<Enemy>, Without<CanSeePlayer>)>,
-    player: Query<&Transform, With<Player>>,
+    aware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, With<CanSeePlayer>)>,
+    unaware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, Without<CanSeePlayer>)>,
+    player: Query<&GridPosition, With<Player>>,
     mut commands: Commands,
 ) {
-    for (enemy_entity, enemy_transform) in &aware_enemies {
-        if let Ok(player_transform) = player.get_single() {
-            if enemy_transform
-                .translation
-                .distance(player_transform.translation)
-                > ENEMY_SIGHT_RANGE
-            {
-                commands.entity(enemy_entity).remove::<CanSeePlayer>();
-            }
+    let Ok(player_transform) = player.get_single() else {
+        warn!("Couldn't find player? {:?}", player);
+        return;
+    };
+
+    for (enemy_entity, enemy_vision) in &aware_enemies {
+        if !enemy_vision.contains(player_transform)
+        {
+            commands.entity(enemy_entity).remove::<CanSeePlayer>();
         }
     }
-    for (enemy_entity, enemy_transform) in &unaware_enemies {
-        if let Ok(player_transform) = player.get_single() {
-            if enemy_transform
-                .translation
-                .distance(player_transform.translation)
-                <= ENEMY_SIGHT_RANGE
-            {
-                commands.entity(enemy_entity).insert(CanSeePlayer);
-            }
+    for (enemy_entity, enemy_vision) in &unaware_enemies {
+        if enemy_vision.contains(player_transform) {
+            commands.entity(enemy_entity).insert(CanSeePlayer);
         }
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 10.0;
+const ENEMY_CHASE_SPEED: f32 = 20.0;
 const ENEMY_RETURN_TO_POST_SPEED: f32 = 30.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
-        (&mut GridMovement, &Transform, &SpawnCoords),
+        (&mut GridMovement, &GridPosition, &SpawnCoords),
         (With<Enemy>, Without<CanSeePlayer>),
     >,
 ) {
-    for (mut controller, transform, coords) in &mut unaware_enemies {
-        let spawn_translation = Vec2::new(
-            coords.0.coordinates.x * 16.0,
-            1024.0 - coords.0.coordinates.y * 16.0,
-        );
-        let direction = spawn_translation - transform.translation.truncate();
-
-        controller.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+    for (mut movement, &position, spawn) in &mut unaware_enemies {
+        let direction = position.direction_to(&spawn.0);
+        if (direction.length() < 1.0) {
+            movement.acceleration_player_force = Vec2::ZERO;
+        } else {
+            movement.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+        }
     }
 }
 
 fn follow_player(
     mut enemy_movement_controllers: Query<
-        (&mut GridMovement, &Transform),
+        (&mut GridMovement, &mut Facing, &GridPosition),
         (With<Enemy>, With<CanSeePlayer>),
     >,
-    player: Query<&Transform, With<Player>>,
+    player: Query<&GridPosition, With<Player>>,
 ) {
-    for (mut controller, entity_transform) in &mut enemy_movement_controllers {
-        if let Ok(player_transform) = player.get_single() {
-            let direction = player_transform.translation - entity_transform.translation;
+    let Ok(player_pos) = player.get_single() else { return; };
 
-            controller.acceleration_player_force =
-                direction.truncate().normalize() * ENEMY_CHASE_SPEED;
+    for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
+        let direction = enemy_pos.direction_to(player_pos);
+        facing.direction = direction;
+        if (direction.length() < 1.0) {
+            controller.acceleration_player_force = Vec2::ZERO;
+        } else {
+            controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
         }
     }
 }

@@ -51,6 +51,13 @@ impl GridPosition {
         }
     }
 
+    pub fn direction_to(&self, other: &Self) -> Vec2 {
+        if other == self {
+            return Vec2::ZERO;
+        }
+        ((other.coordinates + other.offset) - (self.coordinates + self.offset))
+    }
+
     pub fn with_offset(mut self, offset: Vec2) -> Self {
         self.offset = offset;
         self
