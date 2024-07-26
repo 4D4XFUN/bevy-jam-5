@@ -36,7 +36,7 @@ struct FogOfWar {
 impl FogOfWar {
     pub fn index(&self, x: u32, y: u32) -> u32 {
         let row = self.height - y - 1;
-        
+
         self.width * row + x
     }
 }
