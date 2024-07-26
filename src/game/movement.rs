@@ -8,7 +8,6 @@ use std::time::Duration;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
-    app.add_systems(Update, update_cooldown_timer.in_set(AppSet::TickTimers));
     app.add_systems(
         Update,
         (respond_to_input, apply_movement)
@@ -113,10 +112,6 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
         let intent = intent.normalize_or_zero();
 
         movement.acceleration_player_force = intent * movement.acceleration_player_multiplier;
-
-        if !movement.is_rolling && action_state.just_pressed(&PlayerAction::Roll) {
-            movement.is_rolling = true;
-        }
     }
 }
 
@@ -147,32 +142,25 @@ pub fn apply_movement(
     }
 }
 
-fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement)>) {
+fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement, &ActionState<PlayerAction>)>) {
     let dt = time.delta_seconds();
-    for (mut roll, mut movement) in query.iter_mut() {
+    for (mut roll, mut movement, action_state) in query.iter_mut() {
         roll.timer.tick(Duration::from_secs_f32(dt));
-
-        if !roll.timer.finished() && movement.is_rolling{
+        
+        if roll.timer.finished() {
             movement.is_rolling = false;
-            roll.timer.reset();
+            roll.cooldown.tick(Duration::from_secs_f32(dt));
         }
-    }
-}
-
-fn update_cooldown_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement)>) {
-    let dt = Duration::from_secs_f32(time.delta_seconds());
-    for (mut roll, movement) in query.iter_mut() {
 
         if roll.cooldown.finished() {
-            roll.cooldown.paused();
-        } else {
-            roll.cooldown.tick(dt);
+            if action_state.pressed(&PlayerAction::Roll) {
+                movement.is_rolling = true;
+                roll.cooldown.reset();
+                roll.timer.reset();
+            }
         }
 
-        if movement.is_rolling && roll.cooldown.finished(){
-            roll.cooldown.reset();
-            roll.cooldown.unpause();
-        }
     }
 }
+
 
