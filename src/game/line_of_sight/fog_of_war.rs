@@ -4,12 +4,10 @@ use crate::game::line_of_sight::vision::VisibleSquares;
 use crate::game::line_of_sight::CanRevealFog;
 use crate::AppSet;
 use bevy::prelude::*;
-use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
-use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle, Mesh2d};
-use bevy::utils::info;
+use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle};
 use std::collections::HashSet;
 
 pub(super) fn plugin(app: &mut App) {
@@ -38,8 +36,8 @@ struct FogOfWar {
 impl FogOfWar {
     pub fn index(&self, x: u32, y: u32) -> u32 {
         let row = self.height - y - 1;
-        let index = self.width * row + x;
-        index
+        
+        self.width * row + x
     }
 }
 
@@ -89,7 +87,7 @@ fn setup_fog_of_war(
     }
 
     // Create a single quad mesh for the entire grid
-    let mut mesh = Rectangle::default();
+    let mesh = Rectangle::default();
 
     // Create a texture for fog of war data
     let num_grid_squares = width * height;
@@ -157,7 +155,7 @@ fn copy_data_to_texture(
     mut images: ResMut<Assets<Image>>,
     mut fog_materials: ResMut<Assets<FogOfWarMaterial>>,
 ) {
-    for (mut fog, material_handle) in fog_query.iter_mut() {
+    for (fog, material_handle) in fog_query.iter_mut() {
         if let Some(material) = fog_materials.get_mut(material_handle) {
             if let Some(texture) = images.get_mut(&material.fog_texture) {
                 for (i, value) in fog.data.iter().enumerate() {
@@ -204,7 +202,7 @@ fn reveal_fog_of_war(
 
 fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
     for mut s in fog_of_war_query.iter_mut() {
-        let mut data = &mut s.data;
+        let data = &mut s.data;
         for i in 0..data.len() {
             data[i] = (data[i] + 0.1).min(1.0);
         }
