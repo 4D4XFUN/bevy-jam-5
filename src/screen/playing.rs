@@ -2,8 +2,8 @@
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
-use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
 use crate::game::threat::ThreatTimer;
+use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
 use crate::ui::prelude::*;
 
 use super::Screen;

@@ -5,9 +5,9 @@ use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
 
-use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::level::LevelWalls;
+use crate::AppSet;
 
 pub mod grid_layout;
 

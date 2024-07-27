@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 
 use crate::game::ai::Hunter;
