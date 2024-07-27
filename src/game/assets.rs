@@ -113,7 +113,7 @@ impl SoundtrackAssets {
         );
         assets.insert(
             SoundtrackAsset::Gameplay,
-            asset_server.load("audio/soundtracks/Fluffing A Duck.ogg"),
+            asset_server.load("audio/soundtracks/stealthstrike.ogg"),
         );
         Self(assets)
     }

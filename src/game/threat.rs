@@ -13,7 +13,7 @@ use crate::screen::Screen;
 pub fn plugin(app: &mut App) {
     let settings = ThreatTimerSettings {
         levels: 3,
-        seconds_between_levels: 5.0,
+        seconds_between_levels: 30.0,
     };
     app.insert_resource(ThreatTimer {
         timer: Timer::new(
