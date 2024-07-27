@@ -4,13 +4,6 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
 
-use crate::game::grid::collision::GridCollider;
-use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::PlayerLineOfSightBundle;
-use crate::game::movement::GridMovement;
-use crate::game::movement::Roll;
-use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};
-use crate::input::PlayerAction;
 use crate::{
     game::{
         animation::PlayerAnimation,
@@ -20,6 +13,13 @@ use crate::{
     },
     screen::Screen,
 };
+use crate::game::grid::collision::GridCollider;
+use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::PlayerLineOfSightBundle;
+use crate::game::movement::GridMovement;
+use crate::game::movement::Roll;
+use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};
+use crate::input::PlayerAction;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_player);
@@ -65,9 +65,9 @@ fn spawn_player(
             layout: texture_atlas_layout.clone(),
             index: player_animation.get_atlas_index(),
         },
-        SpawnPointGridPosition(Vec2::new(45., 24.)),
+        SpawnPointGridPosition(Vec2::new(64., 64.)),
         CanReceiveDamage,
-        GridPosition::new(24., 54.),
+        GridPosition::new(64., 64.),
         GridMovement::default(),
         GridCollider::default(),
         Roll::default(),
