@@ -31,7 +31,7 @@ impl Default for GridLayout {
 }
 
 impl GridLayout {
-    pub fn _new(width: usize, height: usize) -> Self {
+    pub fn new(width: usize, height: usize) -> Self {
         Self {
             width,
             height,
