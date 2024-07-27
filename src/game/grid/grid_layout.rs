@@ -31,6 +31,7 @@ impl Default for GridLayout {
 }
 
 impl GridLayout {
+    #[allow(dead_code)]
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             width,
