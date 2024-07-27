@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
 
-use crate::game::grid::collision::GridCollider;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::PlayerLineOfSightBundle;
 use crate::game::movement::GridMovement;
@@ -69,7 +68,6 @@ fn spawn_player(
         CanReceiveDamage,
         GridPosition::new(64., 64.),
         GridMovement::default(),
-        GridCollider::default(),
         Roll::default(),
         InputManagerBundle::with_map(PlayerAction::default_input_map()),
         player_animation,

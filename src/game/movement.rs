@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::game::grid::GridPosition;
+use crate::game::spawn::level::LevelWalls;
 /// Grid-based movement
 use crate::input::PlayerAction;
 use crate::AppSet;
@@ -47,24 +48,13 @@ impl Default for Roll {
     fn default() -> Self {
         Self {
             timer: Timer::from_seconds(0.25, TimerMode::Once),
-            velocity_multiplier: 4.0,
-            cooldown: Timer::from_seconds(5.0, TimerMode::Once),
+            velocity_multiplier: 3.0,
+            cooldown: Timer::from_seconds(0.5, TimerMode::Once),
         }
     }
 }
 
 impl GridMovement {
-    pub fn _immobile() -> Self {
-        Self {
-            velocity: Vec2::ZERO,
-            friction: 0.0,
-            acceleration_player_force: Vec2::ZERO,
-            acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 0.,
-            is_rolling: false,
-        }
-    }
-
     /// Sets every variable relevant to movement back to default
     pub fn reset(&mut self) {
         self.velocity = Vec2::ZERO;
@@ -75,14 +65,13 @@ impl GridMovement {
 }
 
 impl Default for GridMovement {
-    // todo create "presets" like slow, medium, fast for use by enemies or players
     fn default() -> Self {
         Self {
             velocity: Vec2::ZERO,
             friction: 0.85,
             acceleration_player_force: Vec2::ZERO,
             acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 120.,
+            acceleration_player_multiplier: 1.0,
             is_rolling: false,
         }
     }
@@ -120,6 +109,7 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
 pub fn apply_movement(
     mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&mut Roll>)>,
     time: Res<Time>,
+    walls: Res<LevelWalls>,
 ) {
     let dt = time.delta_seconds();
     for (mut position, mut movement, maybe_roll) in query.iter_mut() {
@@ -128,7 +118,7 @@ pub fn apply_movement(
         // apply forces and friction
         let mut velocity = movement.velocity + force;
         velocity *= movement.friction;
-        if velocity.length() < 0.01 {
+        if velocity.length() < 0.0001 {
             velocity = Vec2::ZERO;
         }
         movement.velocity = velocity;
@@ -139,8 +129,22 @@ pub fn apply_movement(
             _ => 1.0,
         };
 
-        position.offset += movement.velocity * dt * roll_multi;
-        position.fix_offset_overflow();
+        // brute force check if next step would put us inside a wall square, and cancel if it would
+        // one downside of this is that walls feel "sticky" instead of being able to slide along them, but it fixes the rolling through wall glitch at high speeds/low framerates
+        let mut next_pos = *position;
+        next_pos.offset += movement.velocity * roll_multi;
+        next_pos.fix_offset_overflow();
+        if walls.collides_gridpos(&next_pos) {
+            movement.acceleration_external_force = movement.velocity.normalize() * -1.;
+            // info!("Moving to {:?} would put you in a wall", next_pos);
+            continue;
+        } else {
+            movement.acceleration_external_force = Vec2::ZERO;
+        }
+
+        // apply the movement to our actual position
+        position.coordinates = next_pos.coordinates;
+        position.offset = next_pos.offset;
     }
 }
 

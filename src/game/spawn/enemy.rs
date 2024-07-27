@@ -186,8 +186,8 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 100.0;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 21.0;
+const ENEMY_CHASE_SPEED: f32 = 0.5;
+const ENEMY_RETURN_TO_POST_SPEED: f32 = 0.3;
 const ENEMY_CHASE_RANGE: f32 = 100.0;
 
 fn return_to_post(
