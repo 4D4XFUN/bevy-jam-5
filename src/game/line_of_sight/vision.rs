@@ -3,11 +3,11 @@ use std::f32::consts;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::FacingWallsCache;
+use crate::game::line_of_sight::{CanRevealFog, FacingWallsCache};
 use crate::geometry_2d::line_segment::LineSegment;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // systems
@@ -116,6 +116,7 @@ impl VisibleSquares {
 
 pub fn update_visible_squares(
     mut query: Query<(
+        Option<&CanRevealFog>,
         &GridPosition,
         &VisionAbility,
         &Facing,
@@ -124,13 +125,17 @@ pub fn update_visible_squares(
     )>,
     grid: Res<GridLayout>,
 ) {
-    for (grid_position, vision, facing, walls, mut visible_squares) in query.iter_mut() {
+    for (is_fog_revealer, grid_position, vision, facing, walls, mut visible_squares) in
+        query.iter_mut()
+    {
         // don't recompute if grid coordinates haven't changed
         let ray_start = grid_position.coordinates;
-        if ray_start.distance(visible_squares.for_position.coordinates) < 1.0 {
+        if !is_fog_revealer.is_some()
+            && ray_start.distance(visible_squares.for_position.coordinates) < 1.0
+        {
             continue;
         }
-        //visible_squares.for_position = *grid_position;
+        visible_squares.for_position = *grid_position;
 
         let mut new_squares = vec![];
 
