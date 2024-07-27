@@ -1,9 +1,9 @@
-use bevy::window::WindowResolution;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
+use bevy::window::WindowResolution;
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
 
 #[cfg(feature = "dev")]
@@ -98,6 +98,8 @@ enum AppSet {
     UpdateVirtualGrid,
     /// Do everything else (consider splitting this into further variants).
     Update,
+    /// Ai behaviors execute in here
+    UpdateAi,
     /// After all grid coordinates are settled, we translate them to real pixels in world space
     UpdateWorld,
     /// Fog updates happen last

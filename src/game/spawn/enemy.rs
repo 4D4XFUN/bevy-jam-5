@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use rand::Rng;
 
 use crate::game::ai::Hunter;
@@ -186,7 +186,7 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 100.0;
+const ENEMY_CHASE_SPEED: f32 = 50.0;
 const ENEMY_RETURN_TO_POST_SPEED: f32 = 21.0;
 const ENEMY_CHASE_RANGE: f32 = 100.0;
 
@@ -194,7 +194,7 @@ fn return_to_post(
     mut unaware_enemies: Query<
         (&mut GridMovement, &GridPosition, &SpawnCoords),
         (With<Enemy>, Without<CanSeePlayer>),
-    >,
+    > thi,
 ) {
     for (mut movement, &position, spawn) in &mut unaware_enemies {
         let direction = position.direction_to(&spawn.0);
