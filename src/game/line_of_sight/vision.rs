@@ -3,11 +3,11 @@ use std::f32::consts;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::FacingWallsCache;
 use crate::geometry_2d::line_segment::LineSegment;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // systems
@@ -102,7 +102,7 @@ pub enum VisionArchetype {
 #[reflect(Component)]
 pub struct VisibleSquares {
     pub visible_squares: HashSet<IVec2>,
-    for_position: GridPosition,
+    pub for_position: GridPosition,
 }
 
 impl VisibleSquares {

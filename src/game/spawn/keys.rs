@@ -1,10 +1,14 @@
 use bevy::app::{App, Update};
 use bevy::core::Name;
+use bevy::math::IVec2;
 use bevy::prelude::{Bundle, Commands, Component, Entity, Query, Reflect, Trigger, With};
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy::utils::HashSet;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::CanRevealFog;
+use crate::game::line_of_sight::vision::VisibleSquares;
 use crate::game::spawn::enemy::SpawnCoords;
 use crate::game::spawn::health::OnDeath;
 
@@ -38,6 +42,8 @@ struct LdtkKeyBundle {
 struct KeyBundle {
     spawn_coords: SpawnCoords,
     grid_position: GridPosition,
+    visible_squares: VisibleSquares,
+    can_reveal_fog: CanRevealFog,
 }
 
 impl KeyBundle {
@@ -45,15 +51,20 @@ impl KeyBundle {
         Self {
             spawn_coords: SpawnCoords(GridPosition::new(x, y)),
             grid_position: GridPosition::new(x, y),
+            visible_squares: VisibleSquares::default(),
+            can_reveal_fog: CanRevealFog,
         }
     }
 }
 
 fn fix_loaded_ldtk_entities(
-    query: Query<(Entity, &GridCoords), With<LdtkKey>>,
+    mut query: Query<(Entity, &GridCoords, &mut VisibleSquares), With<LdtkKey>>,
     mut commands: Commands,
 ) {
-    for (ldtk_entity, grid_coords) in query.iter() {
+    for (ldtk_entity, grid_coords, mut visible_squares) in query.iter_mut() {
+        let mut hash_set = HashSet::new();
+        hash_set.insert(IVec2::new(grid_coords.x, grid_coords.y));
+        visible_squares.visible_squares = hash_set;
         commands
             .entity(ldtk_entity)
             .remove::<LdtkKey>() // we have to remove it because it's used as the query for this function
