@@ -61,7 +61,7 @@ impl GridPosition {
         self
     }
 
-    pub fn _actual_coordinates(&self) -> Vec2 {
+    pub fn actual_coordinates(&self) -> Vec2 {
         Vec2::new(
             self.coordinates.x + self.offset.x,
             self.coordinates.y + self.offset.y,

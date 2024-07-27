@@ -2,6 +2,13 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
+use crate::game::line_of_sight::vision::VisionArchetype;
+use crate::game::movement::Roll;
+use crate::{
+    game::{animation::PlayerAnimation, assets::ImageAsset},
+    screen::Screen,
+};
+
 use super::{
     animation::PlayerAnimationState,
     assets::ImageAssets,
@@ -12,12 +19,6 @@ use super::{
         health::{OnDeath, SpawnPointGridPosition},
         player::Player,
     },
-};
-use crate::game::line_of_sight::vision::VisionArchetype;
-use crate::game::movement::Roll;
-use crate::{
-    game::{animation::PlayerAnimation, assets::ImageAsset},
-    screen::Screen,
 };
 
 ///Handles ghosts.
@@ -101,7 +102,7 @@ fn spawn_ghost(
             SpriteBundle {
                 texture: images[&ImageAsset::Player].clone_weak(),
                 sprite: Sprite {
-                    color: Color::srgb(0.5, 0.5, 0.5),
+                    color: Color::srgba(0.5, 0.5, 0.5, 0.3),
                     ..default()
                 },
                 transform: Transform::from_xyz(0.0, 0.0, 1.0),

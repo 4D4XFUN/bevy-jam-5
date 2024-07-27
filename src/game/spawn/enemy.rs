@@ -12,6 +12,7 @@ use crate::game::line_of_sight::vision::{
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
+use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -162,11 +163,20 @@ fn detect_player(
     aware_enemies: Query<(Entity, &Transform, &VisibleSquares), (With<Enemy>, With<CanSeePlayer>)>,
     unaware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, Without<CanSeePlayer>)>,
     player: Query<(&GridPosition, &Transform), With<Player>>,
+    threat_timer: Res<ThreatTimer>,
+    threat_settings: Res<ThreatTimerSettings>,
     mut commands: Commands,
 ) {
     let Ok((player_grid_pos, player_transform)) = player.get_single() else {
         return;
     };
+
+    if threat_timer.current_level >= threat_settings.levels - 1 {
+        for (enemy_entity, _) in &unaware_enemies {
+            commands.entity(enemy_entity).insert(CanSeePlayer);
+        }
+        return;
+    }
 
     for (enemy_entity, enemy_transform, enemy_vision) in &aware_enemies {
         if !enemy_vision.contains(player_grid_pos)

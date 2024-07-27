@@ -1,6 +1,7 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 
 use crate::game::assets::{SoundtrackAsset, SoundtrackAssets};
+use crate::game::spawn::health::OnDeath;
 
 pub(super) fn play_soundtrack(
     trigger: Trigger<Soundtrack>,
@@ -41,4 +42,8 @@ pub enum Soundtrack {
     Credits,
     Gameplay,
     Disable,
+}
+
+pub fn on_death_reset_audio(_trigger: Trigger<OnDeath>, mut commands: Commands) {
+    commands.trigger(Soundtrack::Gameplay);
 }
