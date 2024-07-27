@@ -82,7 +82,10 @@ impl SfxAssets {
 
         assets.insert(SfxAsset::Roll, asset_server.load("audio/sfx/roll.ogg"));
         assets.insert(SfxAsset::Death, asset_server.load("audio/sfx/death.ogg"));
-        assets.insert(SfxAsset::Detected, asset_server.load("audio/sfx/enemy_detect.ogg"));
+        assets.insert(
+            SfxAsset::Detected,
+            asset_server.load("audio/sfx/enemy_detect.ogg"),
+        );
 
         Self(assets)
     }

@@ -92,9 +92,10 @@ fn trigger_step_sfx(mut commands: Commands, mut step_query: Query<&PlayerAnimati
 // If the player is rolling, play a roll sound effect.
 fn trigger_roll_sfx(mut commands: Commands, mut roll_query: Query<&PlayerAnimation>) {
     for animation in &mut roll_query {
-        if animation.state == PlayerAnimationState::Rolling 
+        if animation.state == PlayerAnimationState::Rolling
             && animation.changed()
-            && animation.frame == 1  {
+            && animation.frame == 1
+        {
             commands.trigger(Sfx::Roll);
         }
     }
