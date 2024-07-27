@@ -1,10 +1,12 @@
+use std::time::Duration;
+
+use bevy::prelude::*;
+use leafwing_input_manager::prelude::ActionState;
+
 use crate::game::grid::GridPosition;
 /// Grid-based movement
 use crate::input::PlayerAction;
 use crate::AppSet;
-use bevy::prelude::*;
-use leafwing_input_manager::prelude::ActionState;
-use std::time::Duration;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -34,6 +36,7 @@ pub struct GridMovement {
 pub struct Roll {
     pub timer: Timer,
     pub velocity_multiplier: f32,
+    cooldown: Timer,
 }
 
 impl Roll {
@@ -43,8 +46,9 @@ impl Roll {
 impl Default for Roll {
     fn default() -> Self {
         Self {
-            timer: Timer::from_seconds(0.5, TimerMode::Once),
-            velocity_multiplier: 3.0,
+            timer: Timer::from_seconds(0.25, TimerMode::Once),
+            velocity_multiplier: 4.0,
+            cooldown: Timer::from_seconds(5.0, TimerMode::Once),
         }
     }
 }
@@ -78,7 +82,7 @@ impl Default for GridMovement {
             friction: 0.85,
             acceleration_player_force: Vec2::ZERO,
             acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 66.,
+            acceleration_player_multiplier: 120.,
             is_rolling: false,
         }
     }
@@ -110,10 +114,6 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
         let intent = intent.normalize_or_zero();
 
         movement.acceleration_player_force = intent * movement.acceleration_player_multiplier;
-
-        if !movement.is_rolling && action_state.pressed(&PlayerAction::Roll) {
-            movement.is_rolling = true;
-        }
     }
 }
 
@@ -144,12 +144,22 @@ pub fn apply_movement(
     }
 }
 
-fn update_roll_timer(time: Res<Time>, mut query: Query<(&mut Roll, &mut GridMovement)>) {
+fn update_roll_timer(
+    time: Res<Time>,
+    mut query: Query<(&mut Roll, &mut GridMovement, &ActionState<PlayerAction>)>,
+) {
     let dt = time.delta_seconds();
-    for (mut roll, mut movement) in query.iter_mut() {
+    for (mut roll, mut movement, action_state) in query.iter_mut() {
         roll.timer.tick(Duration::from_secs_f32(dt));
+
         if roll.timer.finished() {
             movement.is_rolling = false;
+            roll.cooldown.tick(Duration::from_secs_f32(dt));
+        }
+
+        if roll.cooldown.finished() && action_state.pressed(&PlayerAction::Roll) {
+            movement.is_rolling = true;
+            roll.cooldown.reset();
             roll.timer.reset();
         }
     }

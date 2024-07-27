@@ -4,7 +4,7 @@
 
 use bevy::prelude::*;
 
-mod enemy;
+pub(crate) mod enemy;
 mod exit;
 pub mod health;
 mod keys;

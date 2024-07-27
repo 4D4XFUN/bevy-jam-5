@@ -44,6 +44,20 @@ impl GridPosition {
         }
     }
 
+    pub fn from_ivec(ivec: &IVec2) -> Self {
+        Self {
+            coordinates: Vec2::new(ivec.x as f32, ivec.y as f32),
+            offset: Vec2::ZERO,
+        }
+    }
+
+    pub fn direction_to(&self, other: &Self) -> Vec2 {
+        if other == self {
+            return Vec2::ZERO;
+        }
+        (other.coordinates + other.offset) - (self.coordinates + self.offset)
+    }
+
     pub fn with_offset(mut self, offset: Vec2) -> Self {
         self.offset = offset;
         self
@@ -114,18 +128,6 @@ impl Add for GridPosition {
     }
 }
 
-impl Default for GridLayout {
-    fn default() -> Self {
-        GridLayout {
-            square_size: 32.,
-            width: 20,
-            height: 10,
-            origin: Vec2::ZERO,
-            padding: 0.,
-        }
-    }
-}
-
 fn update_grid_when_level_changes(
     mut grid: ResMut<GridLayout>,
     level_walls: Res<LevelWalls>,
@@ -140,7 +142,7 @@ fn update_grid_when_level_changes(
         level_walls.level_width, level_walls.level_height
     );
     let square_size = 16.; // we should reconcile this with the LDTK tile size
-    grid.padding = square_size / 2.0;
+    grid.padding = Vec2::splat(square_size / 2.);
     grid.width = level_walls.level_width as usize;
     grid.height = level_walls.level_height as usize;
     grid.square_size = square_size;

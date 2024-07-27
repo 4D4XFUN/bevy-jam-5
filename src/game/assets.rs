@@ -27,10 +27,7 @@ impl ImageAssets {
             ("images/robo_crab.png", ImageAsset::RoboCrab),
             ("images/character_animated.png", ImageAsset::Player),
             ("images/gargoyle.png", ImageAsset::Gargoyle),
-            (
-                "atlas/SunnyLand_by_Ansimuz-extended.png",
-                ImageAsset::Decoration,
-            ),
+            ("atlas/Dungeon_Tileset_v2.png", ImageAsset::Decoration),
         ] {
             assets.insert(
                 image_asset_tag,
@@ -58,6 +55,9 @@ pub enum SfxAsset {
     Step2,
     Step3,
     Step4,
+    Roll,
+    Death,
+    Detected,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -79,6 +79,13 @@ impl SfxAssets {
         assets.insert(SfxAsset::Step2, asset_server.load("audio/sfx/step2.ogg"));
         assets.insert(SfxAsset::Step3, asset_server.load("audio/sfx/step3.ogg"));
         assets.insert(SfxAsset::Step4, asset_server.load("audio/sfx/step4.ogg"));
+
+        assets.insert(SfxAsset::Roll, asset_server.load("audio/sfx/roll.ogg"));
+        assets.insert(SfxAsset::Death, asset_server.load("audio/sfx/death.ogg"));
+        assets.insert(
+            SfxAsset::Detected,
+            asset_server.load("audio/sfx/enemy_detect.ogg"),
+        );
 
         Self(assets)
     }

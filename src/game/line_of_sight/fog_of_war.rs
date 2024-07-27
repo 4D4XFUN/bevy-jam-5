@@ -1,204 +1,211 @@
-use bevy::prelude::*;
-
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{FacingWallsCache, LineOfSightSource};
-use crate::geometry_2d::line_segment::LineSegment;
+use crate::game::line_of_sight::vision::VisibleSquares;
+use crate::game::line_of_sight::CanRevealFog;
 use crate::AppSet;
+use bevy::prelude::*;
+use bevy::render::render_asset::RenderAssetUsages;
+use bevy::render::render_resource::{AsBindGroup, ShaderRef};
+use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
+use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle};
+use std::collections::HashSet;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
+    app.add_plugins(Material2dPlugin::<FogOfWarMaterial>::default());
     app.add_systems(
         Update,
         (
-            update_grid_fog_of_war_overlay,
+            setup_fog_of_war,
             recover_fog_of_war,
             reveal_fog_of_war,
+            copy_data_to_texture,
         )
             .chain()
             .in_set(AppSet::UpdateFog),
     );
-
-    // reflection
-    app.register_type::<FogOfWarOverlay>();
 }
 
-#[derive(Component, Reflect, Debug)]
-#[reflect(Component)]
-pub struct FogOfWarOverlay {
-    fog_of_war_grid_sprites: Vec<Entity>,
-    width: usize,
-    height: usize,
-    resolution: f32,
+#[derive(Component)]
+struct FogOfWar {
+    width: u32,
+    height: u32,
+    data: Vec<f32>,
 }
 
-#[derive(Component, Reflect, Debug)]
-#[reflect(Component)]
-pub struct FogOfWarOverlayVoxel;
+impl FogOfWar {
+    pub fn index(&self, x: u32, y: u32) -> u32 {
+        let row = self.height - y - 1;
 
-impl FogOfWarOverlay {
-    pub(crate) fn insert_at(&mut self, x: usize, y: usize, e: Entity) {
-        self.fog_of_war_grid_sprites[x + y * self.width] = e;
-    }
-
-    pub fn get_at(&self, x: usize, y: usize) -> Entity {
-        let index = x + y * self.width;
-        self.fog_of_war_grid_sprites[index]
+        self.width * row + x
     }
 }
 
-impl FogOfWarOverlay {
-    pub fn new(width: usize, height: usize) -> Self {
-        let size = width * height;
-        let mut fog_of_war_grid_sprites = Vec::new();
-        fog_of_war_grid_sprites.resize(size, Entity::PLACEHOLDER);
-        Self {
-            fog_of_war_grid_sprites,
-            width,
-            height,
-            resolution: 1.0,
-        }
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct FogOfWarMaterial {
+    #[uniform(0)]
+    color: LinearRgba,
+    #[texture(1)]
+    #[sampler(2)]
+    fog_texture: Handle<Image>,
+}
+
+impl Material2d for FogOfWarMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/fog_of_war.wgsl".into()
     }
 }
 
-fn update_grid_fog_of_war_overlay(
+fn setup_fog_of_war(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<FogOfWarMaterial>>,
+    mut images: ResMut<Assets<Image>>,
+    old_fog: Query<(Entity, &FogOfWar)>,
     grid: Res<GridLayout>,
-    existing_overlays: Query<Entity, With<FogOfWarOverlay>>,
 ) {
+    // only rerun if the grid has changed
     if !grid.is_changed() {
         return;
     }
 
-    for e in existing_overlays.iter() {
+    // despawn old fogs of war
+    for (e, fow) in old_fog.iter() {
+        info!("Despawning old {} x {} fog", fow.width, fow.height);
         commands.entity(e).despawn_recursive();
     }
 
-    let mut overlay = FogOfWarOverlay::new(grid.width, grid.height);
+    let width = grid.width as u32;
+    let height = grid.height as u32;
 
-    let mut child_ids = vec![];
-    // Spawn child sprites for each grid cell
-    for y in 0..grid.height {
-        for x in 0..grid.width {
-            let position = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
-
-            let alpha = 1.0;
-            let color = Color::srgba(0.0, 0.0, 0.0, alpha);
-
-            // Spawn the child sprite and parent it to the GridSprite
-            let child_id = commands
-                .spawn((
-                    FogOfWarOverlayVoxel,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color,
-                            custom_size: Some(Vec2::splat(grid.square_size)), // todo resolution
-                            ..default()
-                        },
-                        transform: Transform::from_translation(position.extend(10.0)),
-                        ..default()
-                    },
-                ))
-                .id();
-
-            overlay.insert_at(x, y, child_id);
-            child_ids.push(child_id);
-        }
+    if width == 0 || height == 0 {
+        info!(
+            "Tried to make grid with dimensions {} x {}, skipping because it's 0 in a dimension.",
+            width, height
+        );
+        return;
     }
 
-    let parent_overlay_entity = commands
-        .spawn((
-            Name::new("FogOfWarOverlay"),
-            overlay,
-            SpatialBundle::default(),
-        ))
-        .id();
+    // Create a single quad mesh for the entire grid
+    let mesh = Rectangle::default();
 
-    for e in child_ids.iter() {
-        commands.entity(*e).set_parent(parent_overlay_entity);
-    }
+    // Create a texture for fog of war data
+    let num_grid_squares = width * height;
+
+    let pixels: Vec<u8> = (0..num_grid_squares)
+        .map(|i| {
+            let step = 255. / num_grid_squares as f32;
+            let value = step * i as f32;
+            value.floor() as u8
+        })
+        .collect();
+
+    let mut fog_texture = Image::new_fill(
+        bevy::render::render_resource::Extent3d {
+            width,
+            height,
+            depth_or_array_layers: 1,
+        },
+        bevy::render::render_resource::TextureDimension::D2,
+        // &vec![255; num_grid_squares as usize],
+        &pixels[..],
+        bevy::render::render_resource::TextureFormat::R8Unorm,
+        RenderAssetUsages::all(),
+    );
+    fog_texture.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::nearest());
+
+    let fog_texture_handle = images.add(fog_texture);
+
+    // Create the material
+    let material = materials.add(FogOfWarMaterial {
+        color: LinearRgba::BLACK,
+        fog_texture: fog_texture_handle.clone(),
+    });
+
+    let mesh_transform_grid_center = grid.center_worldpos();
+
+    // Spawn the fog of war entity
+    commands.spawn((
+        MaterialMesh2dBundle {
+            mesh: meshes.add(mesh).into(),
+            material,
+            transform: Transform::from_scale(Vec3::new(
+                grid.width as f32 * grid.square_size,
+                grid.height as f32 * grid.square_size,
+                1.0,
+            ))
+            .with_translation(mesh_transform_grid_center.extend(10.)),
+            ..default()
+        },
+        FogOfWar {
+            width,
+            height,
+            data: vec![1.0; num_grid_squares as usize],
+        },
+    ));
+
+    info!(
+        "Initialized fog of war with {} grid positions",
+        num_grid_squares
+    );
 }
 
-fn reveal_fog_of_war(
-    grid: Res<GridLayout>,
-    line_of_sight_query: Query<(&GridPosition, &LineOfSightSource, &FacingWallsCache)>,
-    fog_of_war_query: Query<&FogOfWarOverlay>,
-    mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>,
+fn copy_data_to_texture(
+    mut fog_query: Query<(&mut FogOfWar, &Handle<FogOfWarMaterial>)>,
+    mut images: ResMut<Assets<Image>>,
+    mut fog_materials: ResMut<Assets<FogOfWarMaterial>>,
 ) {
-    let Ok(fog) = fog_of_war_query.get_single() else {
-        return;
-    };
-
-    // for each LOS source, iterate through the nearest fog of war squares and reduce their alpha
-    for (position, source, walls) in line_of_sight_query.iter() {
-        for x in 0..fog.width {
-            for y in 0..fog.height {
-                let fog_coords = Vec2::new(x as f32, y as f32);
-                let dist = position.coordinates.distance(fog_coords);
-
-                // special case for the square we're standing on
-                if dist <= 1.0 {
-                    if let Ok(mut s) = fog_of_war_sprite_query.get_mut(fog.get_at(x, y)) {
-                        s.color.set_alpha(0.0);
-                    }
-                    continue;
-                }
-
-                // don't look too far
-                if dist > source.max_distance_in_grid_units {
-                    continue;
-                }
-
-                let ray_start = grid.grid_to_world(position);
-                let ray_end = grid.grid_to_world(&GridPosition::new(x as f32, y as f32));
-
-                // shorten the ray slightly so we can "see into" walls
-                let penetration_factor = 1.0;
-                let direction = (ray_end - ray_start).normalize();
-                // info!("{} {} {} {} {slope}", ray_start.x, ray_start.y, ray_end.x, ray_end.y);
-                let ray_end = ray_end - direction * penetration_factor;
-
-                let ray = LineSegment::new(ray_start, ray_end);
-
-                let can_see = walls.facing_wall_edges.iter().all(|w| !ray.do_intersect(w));
-
-                if can_see {
-                    // set surrounding tiles
-                    let max_x = usize::clamp(x.saturating_add(1), 0, fog.width - 1);
-                    let min_x = usize::clamp(x.saturating_sub(1), 0, fog.width - 1);
-                    let max_y = usize::clamp(y.saturating_add(1), 0, fog.height - 1);
-                    let min_y = usize::clamp(y.saturating_sub(1), 0, fog.height - 1);
-
-                    // if level_walls.collides(x as i32, y as i32) {
-                    //
-                    // } else {
-                    //     s.color.set_alpha(0.0);
-                    // }
-                    for x_index in min_x..=max_x {
-                        for y_index in min_y..=max_y {
-                            let Ok(mut adjacent_sprite) =
-                                fog_of_war_sprite_query.get_mut(fog.get_at(x_index, y_index))
-                            else {
-                                continue;
-                            };
-                            adjacent_sprite.color.set_alpha(0.0);
-                        }
-                    }
+    for (fog, material_handle) in fog_query.iter_mut() {
+        if let Some(material) = fog_materials.get_mut(material_handle) {
+            if let Some(texture) = images.get_mut(&material.fog_texture) {
+                for (i, value) in fog.data.iter().enumerate() {
+                    texture.data[i] = (*value * 255.0) as u8;
                 }
             }
         }
     }
 }
 
-fn recover_fog_of_war(mut fog_of_war_sprite_query: Query<&mut Sprite, With<FogOfWarOverlayVoxel>>) {
-    let recovery_alpha_change = 1.0 / 15.0;
-    for mut s in fog_of_war_sprite_query.iter_mut() {
-        let alpha = s.color.alpha();
-        if alpha < 1.0 - recovery_alpha_change {
-            // it'll never fully recover
-            s.color.set_alpha(alpha + recovery_alpha_change);
-        } else {
-            s.color.set_alpha(1.0);
+fn reveal_fog_of_war(
+    grid: Res<GridLayout>,
+    line_of_sight_query: Query<&VisibleSquares, With<CanRevealFog>>,
+    mut fog_of_war_query: Query<&mut FogOfWar>,
+) {
+    let Ok(mut fog) = fog_of_war_query.get_single_mut() else {
+        return;
+    };
+
+    for component in line_of_sight_query.iter() {
+        let without_neighbors = &component.visible_squares;
+        let mut with_neighbors = HashSet::<IVec2>::new();
+        for coordinate in without_neighbors.iter() {
+            for x in grid
+                .neighbors(&GridPosition::new(coordinate.x as f32, coordinate.y as f32))
+                .into_iter()
+                .map(|v| IVec2::new(v.x as i32, v.y as i32))
+            {
+                with_neighbors.insert(x);
+            }
+        }
+
+        for square in with_neighbors.iter() {
+            let index = fog.index(square.x as u32, square.y as u32);
+            fog.data[index as usize] = (if without_neighbors.contains(square) {
+                0.0f32
+            } else {
+                0.2f32
+            })
+            .min(fog.data[index as usize]);
+        }
+    }
+}
+
+fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
+    const RECOVERY_SPEED: f32 = 0.1;
+    for mut s in fog_of_war_query.iter_mut() {
+        let data = &mut s.data;
+        for d in data.iter_mut() {
+            *d = (*d + RECOVERY_SPEED).min(1.0);
         }
     }
 }

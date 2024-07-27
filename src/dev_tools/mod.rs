@@ -1,9 +1,7 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
 pub mod grid_overlay;
-pub mod line_of_sight_debug;
 
-use crate::game::line_of_sight::fog_of_war::FogOfWarOverlay;
 use crate::input::DevActionToggles;
 use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
@@ -12,7 +10,7 @@ use leafwing_input_manager::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<DebugOverlaysState>();
-    app.add_plugins((grid_overlay::plugin, line_of_sight_debug::plugin));
+    app.add_plugins((grid_overlay::plugin, enemy_vision::plugin));
 
     // Print state transitions in dev builds
     app.add_systems(Update, log_transitions::<Screen>);
@@ -20,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, log_transitions::<DebugOverlaysState>);
     app.add_systems(Startup, spawn_dev_input_manager);
 
-    app.add_systems(Update, (toggle_debug_overlays, toggle_fog));
+    app.add_systems(Update, toggle_debug_overlays);
 
     // press F1 in dev builds to open an entity inspector
     app.init_state::<WorldInspectorState>()
@@ -79,22 +77,38 @@ pub fn toggle_debug_overlays(
     }
 }
 
-pub fn toggle_fog(
-    query: Query<&ActionState<DevActionToggles>>,
-    mut fog_query: Query<&mut Visibility, With<FogOfWarOverlay>>,
-) {
-    for act in query.iter() {
-        if !act.just_pressed(&DevActionToggles::FogOfWar) {
-            return;
-        }
-        info!("Foggy {:?}", fog_query);
+mod enemy_vision {
+    use crate::game::ai::Hunter;
+    use crate::game::grid::grid_layout::GridLayout;
+    use crate::game::grid::GridPosition;
+    use crate::game::line_of_sight::vision::VisibleSquares;
+    use crate::AppSet;
+    use bevy::app::App;
+    use bevy::prelude::*;
 
-        let vis: Mut<Visibility> = fog_query.single_mut();
-        let curr = vis.into_inner();
-        *curr = match curr {
-            Visibility::Inherited => Visibility::Hidden,
-            Visibility::Hidden => Visibility::Visible,
-            Visibility::Visible => Visibility::Hidden,
+    pub(super) fn plugin(app: &mut App) {
+        app.add_systems(Update, render_enemy_vision_cones.in_set(AppSet::UpdateFog));
+    }
+
+    pub fn render_enemy_vision_cones(
+        mut gizmos: Gizmos,
+        query: Query<&VisibleSquares, With<Hunter>>,
+        grid: Res<GridLayout>,
+    ) {
+        for h in query.iter() {
+            let squares: Vec<_> = h
+                .visible_squares
+                .iter()
+                .map(GridPosition::from_ivec)
+                .collect();
+            for square in squares {
+                gizmos.rect_2d(
+                    grid.grid_to_world(&square),
+                    0.,
+                    Vec2::splat(10.),
+                    Color::srgba(0.5, 0.1, 0.1, 0.5),
+                )
+            }
         }
     }
 }
