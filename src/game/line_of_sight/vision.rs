@@ -1,15 +1,22 @@
+use std::f32::consts;
+
+use bevy::prelude::*;
+use bevy::utils::HashSet;
+
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::FacingWallsCache;
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
-use bevy::prelude::*;
-use bevy::utils::HashSet;
-use std::f32::consts;
 
 pub fn plugin(app: &mut App) {
     // systems
-    app.add_systems(Update, update_visible_squares.in_set(AppSet::Update));
+    app.add_systems(
+        Update,
+        update_visible_squares
+            .in_set(AppSet::Update)
+            .before(crate::game::spawn::enemy::follow_player),
+    );
 
     // reflect
     app.register_type::<Facing>();

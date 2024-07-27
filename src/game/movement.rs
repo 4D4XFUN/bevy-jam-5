@@ -1,10 +1,12 @@
+use std::time::Duration;
+
+use bevy::prelude::*;
+use leafwing_input_manager::prelude::ActionState;
+
 use crate::game::grid::GridPosition;
 /// Grid-based movement
 use crate::input::PlayerAction;
 use crate::AppSet;
-use bevy::prelude::*;
-use leafwing_input_manager::prelude::ActionState;
-use std::time::Duration;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -44,9 +46,9 @@ impl Roll {
 impl Default for Roll {
     fn default() -> Self {
         Self {
-            timer: Timer::from_seconds(0.5, TimerMode::Once),
-            velocity_multiplier: 3.0,
-            cooldown: Timer::from_seconds(2.0, TimerMode::Once),
+            timer: Timer::from_seconds(0.25, TimerMode::Once),
+            velocity_multiplier: 4.0,
+            cooldown: Timer::from_seconds(5.0, TimerMode::Once),
         }
     }
 }
@@ -80,7 +82,7 @@ impl Default for GridMovement {
             friction: 0.85,
             acceleration_player_force: Vec2::ZERO,
             acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 50.,
+            acceleration_player_multiplier: 120.,
             is_rolling: false,
         }
     }
