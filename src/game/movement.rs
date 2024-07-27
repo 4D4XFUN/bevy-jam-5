@@ -130,12 +130,16 @@ pub fn apply_movement(
         };
 
         // brute force check if next step would put us inside a wall square, and cancel if it would
+        // one downside of this is that walls feel "sticky" instead of being able to slide along them, but it fixes the rolling through wall glitch at high speeds/low framerates
         let mut next_pos = position.clone();
         next_pos.offset += movement.velocity * roll_multi;
         next_pos.fix_offset_overflow();
         if walls.collides_gridpos(&next_pos) {
-            info!("Moving to {:?} would put you in a wall", next_pos);
+            movement.acceleration_external_force = movement.velocity.normalize() * -1.;
+            // info!("Moving to {:?} would put you in a wall", next_pos);
             continue;
+        } else {
+            movement.acceleration_external_force = Vec2::ZERO;
         }
 
         // apply the movement to our actual position
