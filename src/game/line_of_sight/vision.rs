@@ -130,7 +130,7 @@ pub fn update_visible_squares(
         if ray_start.distance(visible_squares.for_position.coordinates) < 1.0 {
             continue;
         }
-        visible_squares.for_position = grid_position.clone();
+        visible_squares.for_position = *grid_position;
 
         let mut new_squares = vec![];
 
