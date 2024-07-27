@@ -2,12 +2,12 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::game::line_of_sight::vision::VisionArchetype;
-use crate::game::movement::Roll;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
 };
+use crate::game::line_of_sight::vision::VisionArchetype;
+use crate::game::movement::Roll;
 
 use super::{
     animation::PlayerAnimationState,
@@ -27,7 +27,7 @@ use super::{
 /// Replays
 pub fn plugin(app: &mut App) {
     app.insert_resource(Time::<Fixed>::from_hz(30.0));
-    app.insert_resource(CurrentRecords(Vec::new()));
+    app.insert_resource(CurrentRecordQueue::new());
     app.insert_resource(GhostQueue {
         ghosts: VecDeque::new(),
         max_ghosts: 30,
@@ -41,6 +41,22 @@ pub fn plugin(app: &mut App) {
     app.observe(clean_up);
 }
 
+fn record_intent(
+    mut ghost_records: ResMut<CurrentRecordQueue>,
+    query: Query<(&GridPosition, &PlayerAnimation), With<Player>>,
+) {
+    let Ok((position, animation)) = query.get_single() else {
+        return;
+    };
+    let (coord, offset) = position.get_values();
+    ghost_records.0.records.push(GhostRecord {
+        coord,
+        offset,
+        anim_state: animation.get_current_state(),
+        is_alive: true,
+    });
+}
+
 #[derive(Resource)]
 struct GhostQueue {
     ghosts: VecDeque<Entity>,
@@ -48,34 +64,50 @@ struct GhostQueue {
 }
 
 #[derive(Resource)]
-struct CurrentRecords(Vec<(Vec2, Vec2, PlayerAnimationState)>);
+struct CurrentRecordQueue(GhostRecordQueue);
+
+impl CurrentRecordQueue {
+    pub fn new() -> Self {
+        Self {
+            0: GhostRecordQueue {
+                records: vec![],
+                current_record: 0,
+            },
+        }
+    }
+}
 
 #[derive(Component)]
 struct Ghost;
 
-fn record_intent(
-    mut current_velocities: ResMut<CurrentRecords>,
-    query: Query<(&GridPosition, &PlayerAnimation), With<Player>>,
-) {
-    let Ok((position, animation)) = query.get_single() else {
-        return;
-    };
-    let (coordinates, offset) = position.get_values();
-    current_velocities
-        .0
-        .push((coordinates, offset, animation.get_current_state()));
-}
-
 #[derive(Component)]
-struct PositionRecord {
-    positions: Vec<(Vec2, Vec2, PlayerAnimationState)>,
+pub struct GhostRecordQueue {
+    records: Vec<GhostRecord>,
     current_record: usize,
 }
 
+#[derive(Reflect, Debug, Clone, PartialEq)]
+struct GhostRecord {
+    coord: Vec2,
+    offset: Vec2,
+    anim_state: PlayerAnimationState,
+    is_alive: bool,
+}
+
+impl GhostRecord {
+    pub fn new() -> Self {
+        Self {
+            coord: Default::default(),
+            offset: Default::default(),
+            anim_state: PlayerAnimationState::Idling,
+            is_alive: true,
+        }
+    }
+}
 fn spawn_ghost(
     _trigger: Trigger<OnDeath>,
     mut ghost_queue: ResMut<GhostQueue>,
-    mut current_records: ResMut<CurrentRecords>,
+    mut current_record_queue: ResMut<CurrentRecordQueue>,
     spawn_points: Query<&SpawnPointGridPosition>,
     images: Res<ImageAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
@@ -90,9 +122,9 @@ fn spawn_ghost(
     let player_animation = PlayerAnimation::new();
 
     // if you die rolling, your ghost rolls infinitely, so we reset the last frame to Idling
-    if let Some(mut entry) = current_records.0.pop() {
-        entry.2 = PlayerAnimationState::Idling;
-        current_records.0.push(entry);
+    if let Some(mut entry) = current_record_queue.0.records.pop() {
+        entry.anim_state = PlayerAnimationState::Idling;
+        current_record_queue.0.records.push(entry);
     }
 
     let new_ghost = commands
@@ -114,8 +146,8 @@ fn spawn_ghost(
             },
             GridPosition::new(spawn_point.0.x, spawn_point.0.y),
             Roll::default(),
-            PositionRecord {
-                positions: current_records.0.clone(),
+            GhostRecordQueue {
+                records: current_record_queue.0.records.clone(),
                 current_record: 0,
             },
             PlayerLineOfSightBundle::default().with_vision_archetype(VisionArchetype::Ghost),
@@ -130,13 +162,13 @@ fn spawn_ghost(
         }
     }
 
-    current_records.0.clear();
+    current_record_queue.0.records.clear();
 }
 
 fn reset_ghosts(
     _trigger: Trigger<OnDeath>,
     spawn_points: Query<&SpawnPointGridPosition>,
-    mut query: Query<(&mut GridPosition, &mut PositionRecord), With<Ghost>>,
+    mut query: Query<(&mut GridPosition, &mut GhostRecordQueue), With<Ghost>>,
 ) {
     let Ok(spawn_point) = spawn_points.get_single() else {
         return;
@@ -148,13 +180,13 @@ fn reset_ghosts(
     }
 }
 
-fn replay_ghost(mut query: Query<(&mut PositionRecord, &mut GridPosition)>) {
-    for (mut position_record, mut position) in &mut query {
-        if position_record.current_record < position_record.positions.len() {
-            let (coordinates, offset, _) =
-                position_record.positions[position_record.current_record];
-            position.set(coordinates, offset);
-            position_record.current_record += 1;
+fn replay_ghost(mut query: Query<(&mut GhostRecordQueue, &mut GridPosition)>) {
+    for (mut ghost_record_queue, mut position) in &mut query {
+        if ghost_record_queue.current_record < ghost_record_queue.records.len() {
+            let ghost_record =
+                ghost_record_queue.records[ghost_record_queue.current_record].clone();
+            position.set(ghost_record.coord, ghost_record.offset);
+            ghost_record_queue.current_record += 1;
         }
     }
 }
@@ -169,26 +201,24 @@ fn clean_up(
     }
 }
 
-fn animate_ghost(mut query: Query<(&PositionRecord, &mut Sprite, &mut PlayerAnimation)>) {
-    for (position_record, mut sprite, mut animation) in &mut query {
-        if position_record.current_record == 0
-            || position_record.current_record >= position_record.positions.len()
+fn animate_ghost(mut query: Query<(&GhostRecordQueue, &mut Sprite, &mut PlayerAnimation)>) {
+    for (ghost_record, mut sprite, mut animation) in &mut query {
+        if ghost_record.current_record == 0
+            || ghost_record.current_record >= ghost_record.records.len()
         {
             continue;
         }
 
-        let (current_pos, current_offset, animation_state) =
-            position_record.positions[position_record.current_record];
+        let current_ghost_record = ghost_record.records[ghost_record.current_record].clone();
 
-        let (previous_pos, previous_offset, _) =
-            position_record.positions[position_record.current_record - 1];
+        let previous_ghost_record = ghost_record.records[ghost_record.current_record - 1].clone();
 
-        let current = current_pos + current_offset;
-        let previous = previous_pos + previous_offset;
+        let current = current_ghost_record.coord + current_ghost_record.offset;
+        let previous = previous_ghost_record.coord + previous_ghost_record.offset;
 
         let diff = current - previous;
         sprite.flip_x = diff.x < 0.0;
 
-        animation.update_state(animation_state);
+        animation.update_state(current_ghost_record.anim_state);
     }
 }
