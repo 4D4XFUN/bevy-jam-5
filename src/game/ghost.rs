@@ -2,12 +2,12 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
+use crate::game::line_of_sight::vision::VisionArchetype;
+use crate::game::movement::Roll;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
 };
-use crate::game::line_of_sight::vision::VisionArchetype;
-use crate::game::movement::Roll;
 
 use super::{
     animation::PlayerAnimationState,
@@ -68,12 +68,10 @@ struct CurrentRecordQueue(GhostRecordQueue);
 
 impl CurrentRecordQueue {
     pub fn new() -> Self {
-        Self {
-            0: GhostRecordQueue {
-                records: vec![],
-                current_record: 0,
-            },
-        }
+        Self(GhostRecordQueue {
+            records: vec![],
+            current_record: 0,
+        })
     }
 }
 
