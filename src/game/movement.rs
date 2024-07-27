@@ -3,11 +3,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
-use crate::AppSet;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::level::LevelWalls;
 /// Grid-based movement
 use crate::input::PlayerAction;
+use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
