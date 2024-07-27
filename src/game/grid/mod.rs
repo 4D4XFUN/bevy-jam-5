@@ -5,9 +5,9 @@ use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::level::LevelWalls;
-use crate::AppSet;
 
 pub mod grid_layout;
 
@@ -61,7 +61,7 @@ impl GridPosition {
         self
     }
 
-    pub fn _actual_coordinates(&self) -> Vec2 {
+    pub fn actual_coordinates(&self) -> Vec2 {
         Vec2::new(
             self.coordinates.x + self.offset.x,
             self.coordinates.y + self.offset.y,

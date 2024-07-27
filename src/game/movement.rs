@@ -107,7 +107,7 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
 }
 
 pub fn apply_movement(
-    mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&mut Roll>)>,
+    mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&Roll>)>,
     time: Res<Time>,
     walls: Res<LevelWalls>,
 ) {
@@ -132,19 +132,54 @@ pub fn apply_movement(
         // brute force check if next step would put us inside a wall square, and cancel if it would
         // one downside of this is that walls feel "sticky" instead of being able to slide along them, but it fixes the rolling through wall glitch at high speeds/low framerates
         let mut next_pos = *position;
-        next_pos.offset += movement.velocity * roll_multi;
+        let adjusted_velocity = movement.velocity * roll_multi;
+        next_pos.offset += adjusted_velocity;
         next_pos.fix_offset_overflow();
         if walls.collides_gridpos(&next_pos) {
             if next_pos.coordinates.x == position.coordinates.x {
-                next_pos.coordinates.x = position.coordinates.x;
-                next_pos.offset.x = position.offset.x;
-            }
-            if next_pos.coordinates.y == position.coordinates.y {
                 next_pos.coordinates.y = position.coordinates.y;
                 next_pos.offset.y = position.offset.y;
+                next_pos.fix_offset_overflow();
+
+                if walls.collides_gridpos(&next_pos) {
+                    next_pos = *position;
+                }
+            } else if next_pos.coordinates.y == position.coordinates.y {
+                next_pos.coordinates.x = position.coordinates.x;
+                next_pos.offset.x = position.offset.x;
+                next_pos.fix_offset_overflow();
+
+                if walls.collides_gridpos(&next_pos) {
+                    next_pos = *position;
+                }
+            } else {
+                //diagonal move between grid positions
+                let mut temp_pos = next_pos;
+                temp_pos.coordinates.y = position.coordinates.y;
+                temp_pos.offset.y = position.offset.y;
+                temp_pos.fix_offset_overflow();
+
+                if walls.collides_gridpos(&temp_pos) {
+                    let mut temp_pos2 = next_pos;
+                    temp_pos2.coordinates.x = position.coordinates.x;
+                    temp_pos2.offset.x = position.offset.x;
+                    temp_pos2.fix_offset_overflow();
+
+                    if walls.collides_gridpos(&temp_pos2) {
+                        next_pos = *position;
+                    } else {
+                        next_pos = temp_pos2;
+                    }
+                } else {
+                    next_pos = temp_pos;
+                }
             }
-            // info!("Moving to {:?} would put you in a wall", next_pos);
-            continue;
+            if maybe_roll.is_some() {
+                info!(
+                    "Moving from {:?} to {:?} would put you in a wall",
+                    position, next_pos
+                );
+            }
         } else {
             movement.acceleration_external_force = Vec2::ZERO;
         }
