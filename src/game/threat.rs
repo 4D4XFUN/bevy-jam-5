@@ -13,7 +13,7 @@ use crate::screen::Screen;
 pub fn plugin(app: &mut App) {
     let settings = ThreatTimerSettings {
         levels: 3,
-        seconds_between_levels: 20.0,
+        seconds_between_levels: 5.0,
     };
     app.insert_resource(ThreatTimer {
         timer: Timer::new(
@@ -59,7 +59,7 @@ fn tick(
     mut play_timer: ResMut<PlayTimer>,
     mut commands: Commands,
 ) {
-    if threat_timer.current_level < threat_settings.levels {
+    if threat_timer.current_level < threat_settings.levels - 1 {
         threat_timer.timer.tick(time.delta());
         play_timer.0.tick(time.delta());
         if threat_timer.timer.finished() {

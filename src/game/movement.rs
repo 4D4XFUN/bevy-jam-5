@@ -3,11 +3,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
+use crate::AppSet;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::level::LevelWalls;
 /// Grid-based movement
 use crate::input::PlayerAction;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -135,7 +135,14 @@ pub fn apply_movement(
         next_pos.offset += movement.velocity * roll_multi;
         next_pos.fix_offset_overflow();
         if walls.collides_gridpos(&next_pos) {
-            movement.acceleration_external_force = movement.velocity.normalize() * -1.;
+            if next_pos.coordinates.x == position.coordinates.x {
+                next_pos.coordinates.x = position.coordinates.x;
+                next_pos.offset.x = position.offset.x;
+            }
+            if next_pos.coordinates.y == position.coordinates.y {
+                next_pos.coordinates.y = position.coordinates.y;
+                next_pos.offset.y = position.offset.y;
+            }
             // info!("Moving to {:?} would put you in a wall", next_pos);
             continue;
         } else {

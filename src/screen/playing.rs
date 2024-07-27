@@ -57,7 +57,7 @@ fn update_timer(
     mut query: Query<&mut Text, With<PlayTime>>,
 ) {
     if let Ok(mut text) = query.get_single_mut() {
-        if threat_timer.current_level < threat_settings.levels {
+        if threat_timer.current_level < threat_settings.levels - 1 {
             let time = threat_timer.timer.remaining();
             let seconds = time.as_secs() % 60;
             text.sections[0].value = format!(
