@@ -4,6 +4,7 @@ use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 
 use crate::game::ai::Hunter;
+use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
     Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
@@ -180,6 +181,7 @@ fn detect_player(
     for (enemy_entity, enemy_vision) in &unaware_enemies {
         if enemy_vision.contains(player_grid_pos) {
             commands.entity(enemy_entity).insert(CanSeePlayer);
+            commands.trigger(Sfx::Detected);
         }
     }
 }

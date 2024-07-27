@@ -2,6 +2,7 @@ use bevy::app::App;
 use bevy::prelude::*;
 
 use crate::game::animation::PlayerAnimation;
+use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
 
@@ -85,6 +86,7 @@ fn on_receive_damage(
             grid_movement.reset();
             player_animation.reset();
             commands.trigger(OnDeath);
+            commands.trigger(Sfx::Death);
         }
     }
 }

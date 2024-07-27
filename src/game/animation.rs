@@ -22,6 +22,7 @@ pub(super) fn plugin(app: &mut App) {
                 update_animation_movement,
                 update_animation_atlas,
                 trigger_step_sfx,
+                trigger_roll_sfx,
             )
                 .chain()
                 .in_set(AppSet::Update),
@@ -84,6 +85,17 @@ fn trigger_step_sfx(mut commands: Commands, mut step_query: Query<&PlayerAnimati
             && (animation.frame == 2 || animation.frame == 5)
         {
             commands.trigger(Sfx::Step);
+        }
+    }
+}
+
+// If the player is rolling, play a roll sound effect.
+fn trigger_roll_sfx(mut commands: Commands, mut roll_query: Query<&PlayerAnimation>) {
+    for animation in &mut roll_query {
+        if animation.state == PlayerAnimationState::Rolling 
+            && animation.changed()
+            && animation.frame == 1  {
+            commands.trigger(Sfx::Roll);
         }
     }
 }
