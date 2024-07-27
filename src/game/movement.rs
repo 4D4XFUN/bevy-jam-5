@@ -5,6 +5,7 @@ use leafwing_input_manager::prelude::ActionState;
 
 use crate::AppSet;
 use crate::game::grid::GridPosition;
+use crate::game::spawn::level::LevelWalls;
 /// Grid-based movement
 use crate::input::PlayerAction;
 
@@ -48,7 +49,7 @@ impl Default for Roll {
         Self {
             timer: Timer::from_seconds(0.25, TimerMode::Once),
             velocity_multiplier: 3.0,
-            cooldown: Timer::from_seconds(5.0, TimerMode::Once),
+            cooldown: Timer::from_seconds(0.5, TimerMode::Once),
         }
     }
 }
@@ -70,7 +71,7 @@ impl Default for GridMovement {
             friction: 0.85,
             acceleration_player_force: Vec2::ZERO,
             acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 0.7,
+            acceleration_player_multiplier: 1.0,
             is_rolling: false,
         }
     }
@@ -108,6 +109,7 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
 pub fn apply_movement(
     mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&mut Roll>)>,
     time: Res<Time>,
+    walls: Res<LevelWalls>,
 ) {
     let dt = time.delta_seconds();
     for (mut position, mut movement, maybe_roll) in query.iter_mut() {
@@ -127,8 +129,18 @@ pub fn apply_movement(
             _ => 1.0,
         };
 
-        position.offset += movement.velocity * roll_multi;
-        position.fix_offset_overflow();
+        // brute force check if next step would put us inside a wall square, and cancel if it would
+        let mut next_pos = position.clone();
+        next_pos.offset += movement.velocity * roll_multi;
+        next_pos.fix_offset_overflow();
+        if walls.collides_gridpos(&next_pos) {
+            info!("Moving to {:?} would put you in a wall", next_pos);
+            continue;
+        }
+
+        // apply the movement to our actual position
+        position.coordinates = next_pos.coordinates;
+        position.offset = next_pos.offset;
     }
 }
 

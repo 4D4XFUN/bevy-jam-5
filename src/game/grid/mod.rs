@@ -1,23 +1,21 @@
-pub mod grid_layout;
-
-pub mod collision;
-
 use std::ops::{Add, Sub};
 
-use crate::game::grid::grid_layout::GridLayout;
-use crate::game::spawn::level::LevelWalls;
-use crate::AppSet;
 use bevy::app::App;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
+
+use crate::AppSet;
+use crate::game::grid::grid_layout::GridLayout;
+use crate::game::spawn::level::LevelWalls;
+
+pub mod grid_layout;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<GridLayout>();
     app.add_systems(Update, update_grid_when_level_changes);
     // app.observe(fix_grid_position_system);
 
-    app.add_plugins(collision::plugin);
     app.add_systems(
         Update,
         set_real_position_based_on_grid.in_set(AppSet::UpdateWorld),
