@@ -3,11 +3,12 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
+use crate::AppSet;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::level::LevelWalls;
+use crate::game::spawn::player::Player;
 /// Grid-based movement
 use crate::input::PlayerAction;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -187,20 +188,31 @@ pub fn apply_movement(
 fn update_roll_timer(
     time: Res<Time>,
     mut query: Query<(&mut Roll, &mut GridMovement, &ActionState<PlayerAction>)>,
+    mut player_sprite: Query<&mut Sprite, With<Player>>,
 ) {
     let dt = time.delta_seconds();
-    for (mut roll, mut movement, action_state) in query.iter_mut() {
-        roll.timer.tick(Duration::from_secs_f32(dt));
+    if let Ok(mut sprite) = player_sprite.get_single_mut() {
+        for (mut roll, mut movement, action_state) in query.iter_mut() {
+            roll.timer.tick(Duration::from_secs_f32(dt));
 
-        if roll.timer.finished() {
-            movement.is_rolling = false;
-            roll.cooldown.tick(Duration::from_secs_f32(dt));
-        }
+            if roll.timer.finished() {
+                movement.is_rolling = false;
+                roll.cooldown.tick(Duration::from_secs_f32(dt));
+            }
 
-        if roll.cooldown.finished() && action_state.pressed(&PlayerAction::Roll) {
-            movement.is_rolling = true;
-            roll.cooldown.reset();
-            roll.timer.reset();
+            if !roll.cooldown.finished() {
+                if sprite.color.luminance() > 0.1 {
+                    sprite.color = sprite.color.darker(0.1);
+                }
+            } else {
+                sprite.color = sprite.color.lighter(0.1);
+            }
+
+            if roll.cooldown.finished() && action_state.pressed(&PlayerAction::Roll) {
+                movement.is_rolling = true;
+                roll.cooldown.reset();
+                roll.timer.reset();
+            }
         }
     }
 }
