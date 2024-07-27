@@ -3,11 +3,11 @@ use std::f32::consts;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::FacingWallsCache;
 use crate::geometry_2d::line_segment::LineSegment;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // systems
@@ -130,6 +130,7 @@ pub fn update_visible_squares(
         if ray_start.distance(visible_squares.for_position.coordinates) < 1.0 {
             continue;
         }
+        visible_squares.for_position = grid_position.clone();
 
         let mut new_squares = vec![];
 
