@@ -30,11 +30,22 @@ fn enter_playing(mut commands: Commands) {
         .insert(StateScoped(Screen::Playing))
         .with_children(|children| {
             children
-                .spawn(TextBundle::from("X:XX").with_style(Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::Px(15.0),
-                    ..default()
-                }))
+                .spawn((
+                    Name::new("Header Text"),
+                    TextBundle::from_section(
+                        "TempText".to_string(),
+                        TextStyle {
+                            font_size: 40.0,
+                            ..default()
+                        },
+                    )
+                    .with_style(Style {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(15.0),
+                        ..default()
+                    })
+                    .with_text_justify(JustifyText::Center),
+                ))
                 .insert(PlayTime);
         });
 
@@ -60,10 +71,12 @@ fn update_timer(
         if threat_timer.current_level < threat_settings.levels - 1 {
             let time = threat_timer.timer.remaining();
             let seconds = time.as_secs() % 60;
+            let millis = ((time.as_millis() as f32 % 1000.0) / 100.0).floor();
             text.sections[0].value = format!(
-                "THREAT LEVEL {} ({}s until next level)",
+                "THREAT LEVEL {}\n(next level in {}.{}s)",
                 threat_timer.current_level + 1,
                 seconds,
+                millis,
             );
         } else {
             text.sections[0].value = "RUN FOR YOUR LIFE!".to_string();
