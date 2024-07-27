@@ -3,10 +3,10 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
+use crate::AppSet;
 use crate::game::grid::GridPosition;
 /// Grid-based movement
 use crate::input::PlayerAction;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -54,17 +54,6 @@ impl Default for Roll {
 }
 
 impl GridMovement {
-    pub fn _immobile() -> Self {
-        Self {
-            velocity: Vec2::ZERO,
-            friction: 0.0,
-            acceleration_player_force: Vec2::ZERO,
-            acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 0.,
-            is_rolling: false,
-        }
-    }
-
     /// Sets every variable relevant to movement back to default
     pub fn reset(&mut self) {
         self.velocity = Vec2::ZERO;
@@ -75,7 +64,6 @@ impl GridMovement {
 }
 
 impl Default for GridMovement {
-    // todo create "presets" like slow, medium, fast for use by enemies or players
     fn default() -> Self {
         Self {
             velocity: Vec2::ZERO,
