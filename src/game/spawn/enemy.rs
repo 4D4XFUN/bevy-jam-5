@@ -4,6 +4,7 @@ use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 
 use crate::game::ai::Hunter;
+use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
     Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
@@ -158,29 +159,36 @@ fn rotate_facing(
 }
 
 fn detect_player(
-    aware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, With<CanSeePlayer>)>,
+    aware_enemies: Query<(Entity, &Transform, &VisibleSquares), (With<Enemy>, With<CanSeePlayer>)>,
     unaware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, Without<CanSeePlayer>)>,
-    player: Query<&GridPosition, With<Player>>,
+    player: Query<(&GridPosition, &Transform), With<Player>>,
     mut commands: Commands,
 ) {
-    let Ok(player_transform) = player.get_single() else {
+    let Ok((player_grid_pos, player_transform)) = player.get_single() else {
         return;
     };
 
-    for (enemy_entity, enemy_vision) in &aware_enemies {
-        if !enemy_vision.contains(player_transform) {
+    for (enemy_entity, enemy_transform, enemy_vision) in &aware_enemies {
+        if !enemy_vision.contains(player_grid_pos)
+            && enemy_transform
+                .translation
+                .distance(player_transform.translation)
+                > ENEMY_CHASE_RANGE
+        {
             commands.entity(enemy_entity).remove::<CanSeePlayer>();
         }
     }
     for (enemy_entity, enemy_vision) in &unaware_enemies {
-        if enemy_vision.contains(player_transform) {
+        if enemy_vision.contains(player_grid_pos) {
             commands.entity(enemy_entity).insert(CanSeePlayer);
+            commands.trigger(Sfx::Detected);
         }
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 35.0;
+const ENEMY_CHASE_SPEED: f32 = 100.0;
 const ENEMY_RETURN_TO_POST_SPEED: f32 = 21.0;
+const ENEMY_CHASE_RANGE: f32 = 100.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
@@ -198,7 +206,7 @@ fn return_to_post(
     }
 }
 
-fn follow_player(
+pub(crate) fn follow_player(
     mut enemy_movement_controllers: Query<
         (&mut GridMovement, &mut Facing, &GridPosition),
         (With<Enemy>, With<CanSeePlayer>),
@@ -218,9 +226,12 @@ fn follow_player(
 
 fn on_death_reset_enemies(
     _trigger: Trigger<OnDeath>,
-    mut query: Query<(&mut GridPosition, &SpawnCoords), With<Enemy>>,
+    mut query: Query<(Entity, &mut GridPosition, &SpawnCoords, &mut Facing), With<Enemy>>,
+    mut commands: Commands,
 ) {
-    for (mut pos, spawn_point) in &mut query {
+    for (enemy, mut pos, spawn_point, mut facing) in &mut query {
         *pos = spawn_point.0;
+        facing.direction = Vec2::new(1., 0.);
+        commands.entity(enemy).remove::<CanSeePlayer>();
     }
 }

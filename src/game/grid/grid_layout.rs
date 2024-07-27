@@ -1,10 +1,12 @@
 //! Represents the global grid and provides mapping functions from grid-coordinate space to world space and back
 
-use crate::game::grid::GridPosition;
-use crate::geometry_2d::line_segment::LineSegment;
+use std::ops::Range;
+
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use std::ops::Range;
+
+use crate::game::grid::GridPosition;
+use crate::geometry_2d::line_segment::LineSegment;
 
 #[derive(Resource, Debug, Reflect)]
 #[reflect(Resource)]
@@ -29,6 +31,7 @@ impl Default for GridLayout {
 }
 
 impl GridLayout {
+    #[allow(dead_code)]
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             width,
@@ -169,8 +172,9 @@ impl Sides {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use test_case::test_case;
+
+    use super::*;
 
     #[test_case(
         1,

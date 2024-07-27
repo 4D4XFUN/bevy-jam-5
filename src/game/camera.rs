@@ -154,8 +154,8 @@ fn camera_follow(
     //calculate bounds
     let vertical_bounds = orthographic.area.width();
     let horizontal_bounds = orthographic.area.height();
-    let level_width = 1024.0;
-    let level_height = 1024.0;
+    let level_width = 2048.0;
+    let level_height = 2048.0;
     let min_x = (horizontal_bounds / 2.0).min(level_width / 2.0);
     let max_x = (level_width - horizontal_bounds / 2.0).max(level_width / 2.0);
     let min_y = (vertical_bounds / 2.0).min(level_height / 2.0);

@@ -9,6 +9,9 @@ pub(super) fn play_sfx(trigger: Trigger<Sfx>, mut commands: Commands, sfxs: Res<
         Sfx::ButtonHover => &sfxs[&SfxAsset::ButtonHover],
         Sfx::ButtonPress => &sfxs[&SfxAsset::ButtonPress],
         Sfx::Step => random_step(&sfxs),
+        Sfx::Roll => &sfxs[&SfxAsset::Roll],
+        Sfx::Death => &sfxs[&SfxAsset::Death],
+        Sfx::Detected => &sfxs[&SfxAsset::Detected],
     }
     .clone_weak();
     let settings = PlaybackSettings {
@@ -24,6 +27,9 @@ pub enum Sfx {
     ButtonHover,
     ButtonPress,
     Step,
+    Roll,
+    Death,
+    Detected,
 }
 
 fn random_step(sfxs: &SfxAssets) -> &Handle<AudioSource> {
