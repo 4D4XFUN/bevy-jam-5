@@ -3,11 +3,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
+use crate::AppSet;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::level::LevelWalls;
 /// Grid-based movement
 use crate::input::PlayerAction;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
@@ -49,7 +49,7 @@ impl Default for Roll {
         Self {
             timer: Timer::from_seconds(0.25, TimerMode::Once),
             velocity_multiplier: 3.0,
-            cooldown: Timer::from_seconds(0.5, TimerMode::Once),
+            cooldown: Timer::from_seconds(5.0, TimerMode::Once),
         }
     }
 }
@@ -173,12 +173,6 @@ pub fn apply_movement(
                 } else {
                     next_pos = temp_pos;
                 }
-            }
-            if maybe_roll.is_some() {
-                info!(
-                    "Moving from {:?} to {:?} would put you in a wall",
-                    position, next_pos
-                );
             }
         } else {
             movement.acceleration_external_force = Vec2::ZERO;

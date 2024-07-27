@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use super::Screen;
-
 use crate::{
     game::{end_game::EndGameCondition, threat::ThreatTimer},
     ui::prelude::*,
 };
+
+use super::Screen;
 
 pub fn plugin(app: &mut App) {
     app.observe(end_game);
@@ -22,7 +22,6 @@ pub fn plugin(app: &mut App) {
 #[source(Screen = Screen::GameOver)]
 pub enum EndGame {
     #[default]
-    Loose,
     Win,
 }
 
@@ -34,7 +33,6 @@ fn end_game(
     next_screen.set(Screen::GameOver);
     let substate = match _trigger.event() {
         EndGameCondition::Win => EndGame::Win,
-        _ => EndGame::Loose,
     };
     next_substate.set(substate);
 }
@@ -50,10 +48,7 @@ fn enter_game_over(mut commands: Commands, substate: Res<State<EndGame>>, time: 
         .ui_root()
         .insert(StateScoped(Screen::GameOver))
         .with_children(|children| {
-            let text = match substate.get() {
-                EndGame::Win => "You won!",
-                EndGame::Loose => "You died",
-            };
+            let text = "You won!";
             children.header(text);
             if *substate.get() == EndGame::Win {
                 children.label(format!("Your time was {}s", time.timer.elapsed_secs()));
