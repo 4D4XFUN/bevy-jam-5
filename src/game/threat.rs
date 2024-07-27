@@ -14,7 +14,7 @@ use super::end_game::EndGameCondition;
 pub fn plugin(app: &mut App) {
     let settings = ThreatTimerSettings {
         levels: 3,
-        seconds_between_levels: 60.0,
+        seconds_between_levels: 20.0,
     };
     app.insert_resource(ThreatTimer {
         timer: Timer::new(
