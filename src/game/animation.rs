@@ -10,6 +10,7 @@ use bevy::prelude::*;
 use bevy::utils::HashMap;
 
 use super::audio::sfx::Sfx;
+use super::movement::Roll;
 use crate::game::movement::GridMovement;
 use crate::AppSet;
 
@@ -174,5 +175,42 @@ impl PlayerAnimation {
         self.update_state(PlayerAnimationState::Idling);
         self.frame = 0;
         self.timer.tick(self.timer.duration());
+    }
+}
+
+impl Default for PlayerAnimation {
+    fn default() -> Self {
+        let mut frames = HashMap::new();
+        frames.insert(
+            PlayerAnimationState::FrontIdling,
+            (0, 4, Duration::from_millis(500)),
+        );
+        frames.insert(
+            PlayerAnimationState::FrontWalking,
+            (7, 4, Duration::from_millis(100)),
+        );
+        frames.insert(
+            PlayerAnimationState::FrontRolling,
+            (14, 7, Roll::ROLL_TIME / 7),
+        );
+        frames.insert(
+            PlayerAnimationState::Idling,
+            (21, 4, Duration::from_millis(500)),
+        );
+        frames.insert(
+            PlayerAnimationState::Walking,
+            (28, 4, Duration::from_millis(100)),
+        );
+        frames.insert(PlayerAnimationState::Rolling, (35, 7, Roll::ROLL_TIME / 7));
+
+        Self {
+            timer: Timer::new(
+                frames[&PlayerAnimationState::Idling].2,
+                TimerMode::Repeating,
+            ),
+            frame: 0,
+            state: PlayerAnimationState::Idling,
+            frames,
+        }
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{end_game::EndGameCondition, threat::ThreatTimer},
+    game::{end_game::EndGameCondition, threat::PlayStopwatch},
     ui::prelude::*,
 };
 
@@ -43,7 +43,11 @@ enum GameOverAction {
     Back,
 }
 
-fn enter_game_over(mut commands: Commands, substate: Res<State<EndGame>>, time: Res<ThreatTimer>) {
+fn enter_game_over(
+    mut commands: Commands,
+    substate: Res<State<EndGame>>,
+    time: Res<PlayStopwatch>,
+) {
     commands
         .ui_root()
         .insert(StateScoped(Screen::GameOver))
@@ -51,7 +55,7 @@ fn enter_game_over(mut commands: Commands, substate: Res<State<EndGame>>, time: 
             let text = "You won!";
             children.header(text);
             if *substate.get() == EndGame::Win {
-                children.label(format!("Your time was {}s", time.timer.elapsed_secs()));
+                children.label(format!("Your time was {}s", time.0.elapsed_secs()));
             }
 
             children.button("Back").insert(GameOverAction::Back);

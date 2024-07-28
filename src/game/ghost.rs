@@ -1,8 +1,6 @@
 use std::collections::VecDeque;
-use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
 
 use crate::game::line_of_sight::vision::VisionArchetype;
 use crate::game::line_of_sight::CanRevealFog;
@@ -131,32 +129,7 @@ fn on_death_spawn_new_ghost(
     };
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 7, 6, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    let mut frames = HashMap::new();
-    frames.insert(
-        PlayerAnimationState::FrontIdling,
-        (0, 4, Duration::from_millis(500)),
-    );
-    frames.insert(
-        PlayerAnimationState::FrontWalking,
-        (7, 4, Duration::from_millis(500)),
-    );
-    frames.insert(
-        PlayerAnimationState::FrontRolling,
-        (14, 7, Roll::ROLL_TIME / 7),
-    );
-    frames.insert(
-        PlayerAnimationState::Idling,
-        (21, 4, Duration::from_millis(500)),
-    );
-    frames.insert(
-        PlayerAnimationState::Walking,
-        (28, 4, Duration::from_millis(500)),
-    );
-    frames.insert(
-        PlayerAnimationState::Walking,
-        (35, 7, Duration::from_millis(500)),
-    );
-    let player_animation = PlayerAnimation::new(frames);
+    let player_animation = PlayerAnimation::default();
 
     // if you die rolling, your ghost rolls infinitely, so we reset the last frame to Idling
     if let Some(mut entry) = current_record_queue.0.records.pop() {

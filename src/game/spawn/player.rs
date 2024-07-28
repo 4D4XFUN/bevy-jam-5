@@ -1,13 +1,8 @@
 //! Spawn the player.
-
-use std::time::Duration;
-
 use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
 
-use crate::game::animation::PlayerAnimationState;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::PlayerLineOfSightBundle;
 use crate::game::movement::GridMovement;
@@ -49,29 +44,7 @@ fn spawn_player(
     // https://github.com/bevyengine/bevy/blob/latest/examples/2d/texture_atlas.rs
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 7, 6, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    let mut frames = HashMap::new();
-    frames.insert(
-        PlayerAnimationState::FrontIdling,
-        (0, 4, Duration::from_millis(500)),
-    );
-    frames.insert(
-        PlayerAnimationState::FrontWalking,
-        (7, 4, Duration::from_millis(100)),
-    );
-    frames.insert(
-        PlayerAnimationState::FrontRolling,
-        (14, 7, Roll::ROLL_TIME / 7),
-    );
-    frames.insert(
-        PlayerAnimationState::Idling,
-        (21, 4, Duration::from_millis(500)),
-    );
-    frames.insert(
-        PlayerAnimationState::Walking,
-        (28, 4, Duration::from_millis(100)),
-    );
-    frames.insert(PlayerAnimationState::Rolling, (35, 7, Roll::ROLL_TIME / 7));
-    let player_animation = PlayerAnimation::new(frames);
+    let player_animation = PlayerAnimation::default();
 
     let mut player_transform = Transform::from_scale(Vec2::splat(1.).extend(1.0));
     player_transform.translation.z = 10.; // ensure player goes above level
