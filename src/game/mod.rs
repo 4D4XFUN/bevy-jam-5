@@ -15,6 +15,7 @@ pub mod movement;
 pub mod spawn;
 pub mod threat;
 
+mod dialog;
 mod utilities;
 
 pub(super) fn plugin(app: &mut App) {
