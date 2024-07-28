@@ -3,13 +3,13 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
+use crate::AppSet;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::health::CanReceiveDamage;
 use crate::game::spawn::level::LevelWalls;
 use crate::game::spawn::player::Player;
 /// Grid-based movement
 use crate::input::PlayerAction;
-use crate::AppSet;
 
 use super::spawn::health::OnDeath;
 
@@ -236,7 +236,7 @@ fn update_roll_timer(
 
 fn reset_roll_timer_on_death(
     _trigger: Trigger<OnDeath>,
-    mut query: Query<(&mut Roll, &mut GridMovement)>,
+    mut query: Query<(&mut RollState, &mut GridMovement)>,
 ) {
     for (mut roll, mut movement) in &mut query {
         let timer_duration = roll.timer.duration();

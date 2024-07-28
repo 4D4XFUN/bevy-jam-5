@@ -9,14 +9,12 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
-use super::audio::sfx::Sfx;
-use super::movement::Roll;
-use super::spawn::health::OnDeath;
-use crate::game::movement::GridMovement;
 use crate::AppSet;
+use crate::game::movement::GridMovement;
 
 use super::audio::sfx::Sfx;
 use super::movement::RollState;
+use super::spawn::health::OnDeath;
 
 pub(super) fn plugin(app: &mut App) {
     // Animate and play sound effects based on controls.
