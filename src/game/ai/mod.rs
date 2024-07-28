@@ -1,9 +1,9 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::AppSet;
 use crate::game::ai::patrol::Patrolling;
 use crate::screen::Screen;
+use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // plugins
@@ -40,10 +40,10 @@ pub enum AiBehavior {
 }
 
 pub fn main_ai_behavior_system(
-    mut query: Query<(Entity, &mut HasAiBehavior), (Without<Patrolling>)>,
+    mut query: Query<(Entity), (Without<Patrolling>)>,
     mut commands: Commands,
 ) {
-    for (entity, ai_behavior) in query.iter_mut() {
+    for entity in query.iter_mut() {
         commands.entity(entity).insert(Patrolling);
     }
 }
@@ -54,12 +54,12 @@ pub mod patrol {
     use bevy::app::App;
     use bevy::prelude::*;
 
-    use crate::AppSet::UpdateAi;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
     use crate::game::movement::GridMovement;
     use crate::game::spawn::enemy::{Enemy, ENEMY_PATROL_SPEED};
     use crate::screen::Screen;
+    use crate::AppSet::UpdateAi;
 
     pub fn plugin(app: &mut App) {
         // systems

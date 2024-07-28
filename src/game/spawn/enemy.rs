@@ -1,12 +1,12 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 
-use crate::game::ai::{AiBehavior, HasAiBehavior, Hunter};
 use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
+use crate::game::ai::{AiBehavior, HasAiBehavior, Hunter};
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
