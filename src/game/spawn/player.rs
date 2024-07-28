@@ -1,13 +1,8 @@
 //! Spawn the player.
-
-use std::time::Duration;
-
 use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
 
-use crate::game::animation::PlayerAnimationState;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::PlayerLineOfSightBundle;
 use crate::game::movement::GridMovement;

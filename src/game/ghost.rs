@@ -1,8 +1,6 @@
 use std::collections::VecDeque;
-use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
 
 use crate::game::line_of_sight::vision::VisionArchetype;
 use crate::game::line_of_sight::CanRevealFog;
