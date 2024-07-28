@@ -7,6 +7,7 @@ use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
+use crate::game::grid::GridPosition;
 use crate::game::spawn::enemy::SpawnEnemyTrigger;
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 
@@ -49,6 +50,10 @@ impl LevelWalls {
             || x >= self.level_width
             || y >= self.level_height
             || self.wall_locations.contains(&GridCoords::new(x, y))
+    }
+
+    pub fn collides_gridpos(&self, gridpos: &GridPosition) -> bool {
+        self.collides(gridpos.coordinates.x as i32, gridpos.coordinates.y as i32)
     }
 }
 

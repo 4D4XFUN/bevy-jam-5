@@ -6,6 +6,7 @@ use bevy::utils::HashSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::FacingWallsCache;
+use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
 
@@ -122,19 +123,32 @@ pub fn update_visible_squares(
         &FacingWallsCache,
         &mut VisibleSquares,
     )>,
+    threat_timer: Res<ThreatTimer>,
+    threat_settings: Res<ThreatTimerSettings>,
     grid: Res<GridLayout>,
 ) {
     for (grid_position, vision, facing, walls, mut visible_squares) in query.iter_mut() {
-        // don't recompute if grid coordinates haven't changed
+        // don't recompute if grid coordinates haven't changed and if not immediately after threat level has changed TODO change this to work off a next threat level trigger
         let ray_start = grid_position.coordinates;
-        if ray_start.distance(visible_squares.for_position.coordinates) < 1.0 {
+        let vision_range_threat_adjusted =
+            if threat_timer.current_level < threat_settings.levels - 1 {
+                vision.range_in_grid_units
+            } else {
+                vision.range_in_grid_units * threat_settings.levels as f32
+            };
+        if ray_start.distance(visible_squares.for_position.coordinates) < 1.0
+            && threat_timer.timer.duration().as_secs_f32()
+                > threat_settings.seconds_between_levels
+                    - threat_settings.seconds_between_levels / 10.0
+        {
             continue;
         }
+        //visible_squares.for_position = *grid_position;
 
         let mut new_squares = vec![];
 
         // iterate all squares in range and determine if they're visible or not
-        let bb = grid.bounding_box(grid_position, vision.range_in_grid_units);
+        let bb = grid.bounding_box(grid_position, vision_range_threat_adjusted);
         for ray_end in bb.coords_range() {
             // info!("{:?} -> {:?}", ray_start, ray_end);
 
@@ -145,7 +159,7 @@ pub fn update_visible_squares(
             }
 
             // too far
-            if ray_start.distance(ray_end) > vision.range_in_grid_units {
+            if ray_start.distance(ray_end) > vision_range_threat_adjusted {
                 continue;
             }
 
@@ -156,7 +170,7 @@ pub fn update_visible_squares(
             );
             // let ray = LineSegment::new(ray_start, ray_end);
             let angle = ray.segment2d.direction.angle_between(facing.direction);
-            if angle.abs() > vision.field_of_view_radians / 2. {
+            if angle.abs() > vision.field_of_view_radians {
                 continue;
             }
 

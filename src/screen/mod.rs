@@ -6,9 +6,10 @@ mod playing;
 mod title;
 
 use bevy::prelude::*;
+use game_over::EndGame;
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_state::<Screen>();
+    app.init_state::<Screen>().add_sub_state::<EndGame>();
     app.enable_state_scoped_entities::<Screen>();
 
     app.add_plugins((

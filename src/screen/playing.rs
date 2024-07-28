@@ -2,9 +2,11 @@
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
-use super::Screen;
+use crate::game::threat::ThreatTimer;
 use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
-use crate::{game::threat::PlayTimer, ui::prelude::*};
+use crate::ui::prelude::*;
+
+use super::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Playing), enter_playing);
@@ -28,11 +30,22 @@ fn enter_playing(mut commands: Commands) {
         .insert(StateScoped(Screen::Playing))
         .with_children(|children| {
             children
-                .spawn(TextBundle::from("X:XX").with_style(Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::Px(15.0),
-                    ..default()
-                }))
+                .spawn((
+                    Name::new("Header Text"),
+                    TextBundle::from_section(
+                        "TempText".to_string(),
+                        TextStyle {
+                            font_size: 40.0,
+                            ..default()
+                        },
+                    )
+                    .with_style(Style {
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(15.0),
+                        ..default()
+                    })
+                    .with_text_justify(JustifyText::Center),
+                ))
                 .insert(PlayTime);
         });
 
@@ -49,12 +62,24 @@ pub(crate) fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>)
     next_screen.set(Screen::Title);
 }
 
-fn update_timer(play_timer: Res<PlayTimer>, mut query: Query<&mut Text, With<PlayTime>>) {
-    for mut text in &mut query {
-        let time = play_timer.0.remaining();
-        let minutes = time.as_secs() / 60;
-        let seconds = time.as_secs() % 60;
-        let millis = time.as_millis() % 1000;
-        text.sections[0].value = format!("{}:{}.{:0<3}", minutes, seconds, millis);
+fn update_timer(
+    threat_settings: Res<crate::game::threat::ThreatTimerSettings>,
+    threat_timer: Res<ThreatTimer>,
+    mut query: Query<&mut Text, With<PlayTime>>,
+) {
+    if let Ok(mut text) = query.get_single_mut() {
+        if threat_timer.current_level < threat_settings.levels - 1 {
+            let time = threat_timer.timer.remaining();
+            let seconds = time.as_secs() % 60;
+            let millis = ((time.as_millis() as f32 % 1000.0) / 100.0).floor();
+            text.sections[0].value = format!(
+                "THREAT LEVEL {}\n(next level in {}.{}s)",
+                threat_timer.current_level + 1,
+                seconds,
+                millis,
+            );
+        } else {
+            text.sections[0].value = "RUN FOR YOUR LIFE!".to_string();
+        }
     }
 }

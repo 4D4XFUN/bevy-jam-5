@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 
 use crate::game::ai::Hunter;
@@ -12,6 +12,7 @@ use crate::game::line_of_sight::vision::{
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
+use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -162,11 +163,20 @@ fn detect_player(
     aware_enemies: Query<(Entity, &Transform, &VisibleSquares), (With<Enemy>, With<CanSeePlayer>)>,
     unaware_enemies: Query<(Entity, &VisibleSquares), (With<Enemy>, Without<CanSeePlayer>)>,
     player: Query<(&GridPosition, &Transform), With<Player>>,
+    threat_timer: Res<ThreatTimer>,
+    threat_settings: Res<ThreatTimerSettings>,
     mut commands: Commands,
 ) {
     let Ok((player_grid_pos, player_transform)) = player.get_single() else {
         return;
     };
+
+    if threat_timer.current_level >= threat_settings.levels - 1 {
+        for (enemy_entity, _) in &unaware_enemies {
+            commands.entity(enemy_entity).insert(CanSeePlayer);
+        }
+        return;
+    }
 
     for (enemy_entity, enemy_transform, enemy_vision) in &aware_enemies {
         if !enemy_vision.contains(player_grid_pos)
@@ -186,15 +196,15 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 50.0;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 21.0;
+const ENEMY_CHASE_SPEED: f32 = 0.5;
+const ENEMY_RETURN_TO_POST_SPEED: f32 = 0.3;
 const ENEMY_CHASE_RANGE: f32 = 100.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
         (&mut GridMovement, &GridPosition, &SpawnCoords),
         (With<Enemy>, Without<CanSeePlayer>),
-    > thi,
+    >,
 ) {
     for (mut movement, &position, spawn) in &mut unaware_enemies {
         let direction = position.direction_to(&spawn.0);
