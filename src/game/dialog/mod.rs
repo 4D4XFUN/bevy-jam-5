@@ -19,25 +19,41 @@ pub struct Dialog {
 pub struct DialogLines {
     // this will get loaded from a file, or instantiated in-place
     pub lines: Vec<String>,
+    pub index: usize,
 }
 
 impl DialogLines {
-    pub fn from_string(blob: String) -> Self {
+    pub fn from_string(blob: &str) -> Self {
         DialogLines {
             lines: blob.lines().map(String::from).collect(),
+            index: 0,
         }
     }
 
     pub fn from(lines: Vec<String>) -> Self {
-        DialogLines { lines }
+        DialogLines { lines, index: 0 }
     }
 
+    /// Picks a line at random from all the lines
     pub fn random_line(&self) -> String {
         self.lines.choose(&mut rand::thread_rng()).unwrap().clone()
     }
 
-    pub fn next_line(&self, index: usize) -> String {
-        self.lines[index % self.lines.len()].clone()
+    /// Get a specific line, by index
+    pub fn line(&self, index: usize) -> String {
+        let index = index & self.lines.len();
+        self.lines[index].clone()
+    }
+
+    /// Gets the next line, advancing the pointer. Once we're out of lines, returns nothing.
+    pub fn next_line(&mut self) -> Option<String> {
+        let index = self.index;
+        if index >= self.lines.len() {
+            return None;
+        }
+        let line = self.lines[index].clone();
+        self.index += 1;
+        Some(line)
     }
 }
 
@@ -66,8 +82,9 @@ pub struct ShowDialogEvent {
 #[derive(Debug)]
 pub enum ShowDialogType {
     Custom(String, f32),
-    NextLine(DialogLineType, usize),
+    NextLine(DialogLineType),
     RandomLine(DialogLineType),
+    SpecificLine(DialogLineType, usize),
 }
 
 fn setup_dialog_system(mut commands: Commands) {
@@ -75,17 +92,24 @@ fn setup_dialog_system(mut commands: Commands) {
         store: HashMap::new(),
     };
 
-    // Add some example dialog lines
+    // Here's an example of how to add dialog lines from a rust vec
     dialog_line_resource.store.insert(
         DialogLineType::PlayerSpawn,
         DialogLines::from(vec![
-            "Where am I?".to_string(),
-            "A new adventure begins!".to_string(),
+            "How do I get out of here?".to_string(),
+            "How..?".to_string(),
         ]),
     );
+
+    // Another way of adding lines, this time from a file
+    // (it's statically compiled into the binary so no different than a string, just easier to write out a bunch of lines)
     dialog_line_resource.store.insert(
         DialogLineType::EnemySpotsPlayer,
-        DialogLines::from(vec!["Intruder alert!".to_string(), "Get them!".to_string()]),
+        DialogLines::from_string(include_str!("lines/EnemySpotsPlayer.txt")),
+    );
+    dialog_line_resource.store.insert(
+        DialogLineType::EnemyLosesPlayer,
+        DialogLines::from_string(include_str!("lines/EnemyLosesPlayer.txt")),
     );
 
     commands.insert_resource(dialog_line_resource);
@@ -94,7 +118,8 @@ fn setup_dialog_system(mut commands: Commands) {
 fn handle_show_dialog_event(
     mut trigger: Trigger<ShowDialogEvent>,
     mut commands: Commands,
-    dialog_line_resource: Res<DialogLineResource>,
+    mut dialog_line_resource: ResMut<DialogLineResource>,
+    dialog_query: Query<(Entity, &Parent), With<Dialog>>,
     asset_server: Res<AssetServer>,
 ) {
     let font = asset_server.load("fonts/m3x6.ttf");
@@ -110,25 +135,46 @@ fn handle_show_dialog_event(
 
     let event = trigger.event();
 
-    let (content, duration) = match &event.dialog_type {
-        ShowDialogType::Custom(text, duration) => (text.clone(), *duration),
-        ShowDialogType::NextLine(dialog_type, index) => {
+    let default_duration = 3.0;
+    let maybe_line: Option<(String, f32)> = match &event.dialog_type {
+        ShowDialogType::Custom(text, duration) => Some((text.clone(), *duration)),
+        ShowDialogType::NextLine(dialog_type) => {
+            let store = &mut dialog_line_resource.store;
+            if let Some(mut dialog_lines) = store.get_mut(dialog_type) {
+                dialog_lines.next_line().map(|l| (l, default_duration))
+            } else {
+                info!("Can't find dialog lines for {:?}", dialog_type);
+                None
+            }
+        }
+        ShowDialogType::RandomLine(dialog_type) => {
             if let Some(dialog_lines) = dialog_line_resource.store.get(dialog_type) {
-                (dialog_lines.next_line(*index), 3.0)
+                Some((dialog_lines.random_line(), default_duration))
             } else {
                 info!("Can't find dialog lines for {:?}", dialog_type);
                 return;
             }
         }
-        ShowDialogType::RandomLine(dialog_type) => {
+        ShowDialogType::SpecificLine(dialog_type, index) => {
             if let Some(dialog_lines) = dialog_line_resource.store.get(dialog_type) {
-                (dialog_lines.random_line(), 3.0)
+                Some((dialog_lines.line(*index), default_duration))
             } else {
                 info!("Can't find dialog lines for {:?}", dialog_type);
                 return;
             }
         }
     };
+
+    let Some((content, duration)) = maybe_line else {
+        return;
+    };
+
+    // Remove existing dialog before adding more
+    for (dialog_entity, parent) in dialog_query.iter() {
+        if parent.get() == event.entity {
+            commands.entity(dialog_entity).despawn();
+        }
+    }
 
     commands.entity(event.entity).with_children(|parent| {
         parent.spawn((

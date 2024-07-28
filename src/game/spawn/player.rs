@@ -78,6 +78,6 @@ fn spawn_player(
 
     commands.trigger(ShowDialogEvent {
         entity: entity_id,
-        dialog_type: ShowDialogType::Custom("hello world".to_owned(), 60.0),
+        dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerSpawn),
     });
 }
