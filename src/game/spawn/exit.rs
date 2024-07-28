@@ -27,7 +27,7 @@ struct Exit;
 #[derive(Component)]
 pub struct CanBeUnlocked;
 
-const LADDER_INDEX: usize = 0 + 4 * 12;
+const LADDER_INDEX: usize = 4 * 12;
 
 fn spawn_exit(
     _trigger: Trigger<SpawnExitTrigger>,
@@ -60,15 +60,15 @@ fn check_exit(
     players: Query<(&Transform, &Aabb), With<Player>>,
     mut commands: Commands,
 ) {
-    let Ok((exit_transform, exit)) = exits.get_single() else {
+    let Ok(exit) = exits.get_single() else {
         return;
     };
 
-    let Ok((player_transform, player)) = players.get_single() else {
+    let Ok(player) = players.get_single() else {
         return;
     };
 
-    if intersect((exit_transform, exit), (player_transform, player)) {
+    if intersect(exit, player) {
         commands.trigger(EndGameCondition::Win);
     }
 }

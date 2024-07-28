@@ -61,13 +61,6 @@ impl GridPosition {
         self
     }
 
-    pub fn actual_coordinates(&self) -> Vec2 {
-        Vec2::new(
-            self.coordinates.x + self.offset.x,
-            self.coordinates.y + self.offset.y,
-        )
-    }
-
     /// If the offset is more than a whole cell, then update the coordinates (and bring the offset back within 0..1)
     pub fn fix_offset_overflow(&mut self) {
         if self.offset.x >= 0.5 {

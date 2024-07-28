@@ -1,17 +1,17 @@
 use bevy::app::{App, Update};
 use bevy::core::Name;
 use bevy::math::Vec3;
-use bevy::prelude::{
-    Bundle, Commands, Component, Entity, Query, Reflect, Transform, Trigger, With, Without,
-};
+use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::audio::sfx::Sfx;
+use crate::game::end_game::EndGameCondition;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::enemy::SpawnCoords;
 use crate::game::spawn::health::OnDeath;
+use crate::game::utilities::intersect;
 
 use super::player::Player;
 
@@ -24,7 +24,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, pickup_key);
     // reflection
     app.register_type::<Key>();
-    app.observe(on_death_reset_keys);
+    app.observe(on_end_game_reset_keys);
     app.observe(on_death_drop_key);
 }
 
@@ -72,16 +72,18 @@ fn fix_loaded_ldtk_entities(
             .entity(ldtk_entity)
             .remove::<LdtkKey>() // we have to remove it because it's used as the query for this function
             .insert((
-                Name::new("LdtkKey"),
+                Name::new("Key"),
                 KeyBundle::new(grid_coords.x as f32, grid_coords.y as f32),
+                Key,
             ));
     }
 }
 
-fn on_death_reset_keys(
-    _trigger: Trigger<OnDeath>,
+fn on_end_game_reset_keys(
+    _trigger: Trigger<EndGameCondition>,
     mut query: Query<(&mut GridPosition, &SpawnCoords), With<Key>>,
 ) {
+    info!("resetting keys");
     for (mut pos, spawn_point) in &mut query {
         *pos = spawn_point.0;
     }
@@ -89,62 +91,35 @@ fn on_death_reset_keys(
 
 fn pickup_key(
     player: Query<(&Transform, &Aabb), (With<Player>, Without<Key>)>,
-    mut keys: Query<(Entity, &mut GridPosition, &Aabb), With<CanPickup>>,
+    mut keys: Query<(Entity, &mut Transform, &Aabb), (With<Key>, With<CanPickup>)>,
     mut commands: Commands,
 ) {
-    let Ok((player_transform, player)) = player.get_single() else {
+    let Ok(player) = player.get_single() else {
         return;
     };
 
-    let player_min =
-        Vec3::from(player.center) - Vec3::from(player.half_extents) + player_transform.translation;
-    let player_max =
-        Vec3::from(player.center) + Vec3::from(player.half_extents) + player_transform.translation;
-
-    let Ok((_key_entity, _key_transform, _key)) = keys.get_single() else {
-        return;
-    };
-
-    for (key_entity, key_transform, key) in keys.iter_mut() {
-        let key_min = Vec3::from(key.center) - Vec3::from(key.half_extents)
-            + key_transform.coordinates.extend(0.0);
-        let key_max = Vec3::from(key.center)
-            + Vec3::from(key.half_extents)
-            + key_transform.coordinates.extend(0.0);
-
-        let x_min = player_min.x >= key_min.x && player_min.x <= key_max.x;
-        let x_max = player_max.x >= key_min.x && player_max.x <= key_max.x;
-
-        let y_min = player_min.y >= key_min.y && player_min.y <= key_max.y;
-        let y_max = player_max.y >= key_min.y && player_max.y <= key_max.y;
-
-        if (x_min || x_max) && (y_min || y_max) {
+    for (key_entity, mut key_transform, key) in &mut keys {
+        if intersect(player, (&key_transform, key)) {
             commands.trigger(Sfx::KeyPickup);
             commands.entity(key_entity).remove::<CanPickup>();
+            key_transform.translation.z = -10.;
         }
     }
 }
 
 pub fn on_death_drop_key(
-    _trigger: Trigger<OnDeath>,
+    trigger: Trigger<OnDeath>,
     mut keys: Query<(Entity, &mut Transform), (With<Key>, Without<CanPickup>)>,
-    player_pos: Query<&GridPosition, With<Player>>,
     mut commands: Commands,
 ) {
-    let player_pos = player_pos.single();
-    for (mut key_entity, mut transform) in keys.iter_mut() {
-        key_entity = commands
-            .spawn(KeyBundle::new(
-                player_pos.coordinates.x,
-                player_pos.coordinates.y,
-            ))
-            .id();
+    let death = trigger.event();
 
-        commands.entity(key_entity).insert(CanPickup);
+    for (key_entity, mut transform) in &mut keys {
+        commands
+            .entity(key_entity)
+            .insert(KeyBundle::new(death.0.x, death.0.y));
 
-        transform.scale = Vec3::splat(1.0);
-        transform.translation =
-            player_pos.actual_coordinates().extend(0.0) - Vec3::new(0., 0.5, 0.);
+        transform.translation = Vec3::ZERO;
 
         commands.trigger(Sfx::KeyDrop);
     }
