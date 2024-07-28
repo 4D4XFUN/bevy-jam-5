@@ -18,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
     app.register_ldtk_entity::<LdtkEntityBundle>("Goal");
     app.register_ldtk_int_cell::<WallBundle>(1);
+    app.register_ldtk_int_cell::<GroundBundle>(2);
     app.init_resource::<LevelWalls>();
     app.add_systems(Update, cache_wall_locations);
 
@@ -34,6 +35,8 @@ pub struct Wall;
 struct WallBundle {
     wall: Wall,
 }
+#[derive(Default, Bundle, LdtkIntCell)]
+struct GroundBundle {}
 
 #[derive(Default, Resource, Reflect)]
 #[reflect(Resource)]

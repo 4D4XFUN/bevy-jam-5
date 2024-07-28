@@ -42,8 +42,8 @@ fn spawn_camera(mut commands: Commands) {
             camera_zoom_snappiness: 20.0,
             zoom_sensitivity: 1.0,
             mouse_wheel_sensitivity_multiplier: 5.0,
-            camera_zoom_max: 1.1,
-            camera_zoom_min: 0.2,
+            camera_zoom_max: 0.7,
+            camera_zoom_min: 0.1,
             camera_zoom_buffer: 0.01,
             camera_follow_snappiness: 7.0,
         },
@@ -51,7 +51,7 @@ fn spawn_camera(mut commands: Commands) {
     ));
 }
 
-const INITIAL_CAMERA_ZOOM: f32 = 0.3;
+const INITIAL_CAMERA_ZOOM: f32 = 0.23;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Default, Reflect)]
 pub struct CameraProperties {

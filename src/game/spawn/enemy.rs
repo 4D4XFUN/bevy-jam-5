@@ -1,9 +1,13 @@
-use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
-use rand::Rng;
+use std::time::Duration;
 
-use crate::game::ai::Hunter;
+use bevy::prelude::*;
+use bevy_ecs_ldtk::ldtk::FieldValue;
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+
+use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
+use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::game::ai::{AiState, HasAiState, Hunter};
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
@@ -13,19 +17,20 @@ use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
+use crate::screen::Screen;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
     app.register_ldtk_entity::<LdtkEnemyBundle>("Enemy");
 
-    #[cfg(feature = "dev")]
-    app.observe(spawn_oneshot_enemy);
-
     // systems
-    app.add_systems(Update, fix_loaded_ldtk_entities);
     app.add_systems(
         Update,
-        (rotate_facing, return_to_post, detect_player, follow_player).chain(),
+        (detect_player, return_to_post, follow_player, rotate_facing)
+            .chain()
+            .run_if(in_state(Screen::Playing))
+            .in_set(AppSet::Update),
     );
 
     // reflection
@@ -53,18 +58,26 @@ pub struct LdtkEnemy;
 // This is ldtk-specific stuff for loading enemy assets.
 // These should be transformed into an enemy type internal to our app
 #[derive(Default, Bundle, LdtkEntity)]
-struct LdtkEnemyBundle {
+pub struct LdtkEnemyBundle {
     tag: LdtkEnemy,
     #[sprite_sheet_bundle]
     sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]
     grid_coords: GridCoords,
+    #[with(fix_loaded_ldtk_entities)]
+    enemy_bundle: EnemyBundle,
+}
+
+/// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
+fn fix_loaded_ldtk_entities(instance: &EntityInstance) -> EnemyBundle {
+    EnemyBundle::new(instance)
 }
 
 // This is what our game needs to make an enemy work, separate from LDTK
 // Keeping the stuff we need to work separate from LDTK lets us instantiate enemies in code, if we want/need to.
-#[derive(Bundle)]
+#[derive(Bundle, Default, Clone)]
 struct EnemyBundle {
+    name: Name,
     spawn_coords: SpawnCoords,
     grid_position: GridPosition,
     grid_movement: GridMovement,
@@ -72,90 +85,112 @@ struct EnemyBundle {
     marker: Enemy,
     vision: VisionBundle,
     role: Hunter,
+    ai_state: HasAiState,
+    patrol_bundle: PatrolBundle,
 }
 
 impl EnemyBundle {
-    pub fn new(x: i32, y: i32) -> Self {
+    pub fn new(instance: &EntityInstance) -> Self {
+        const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(1, 0);
         // todo delete this it's for testing - randomize types of enemies
-        let mut rng = rand::thread_rng();
-        let is_sniper = rng.gen_ratio(1, 3);
+        //let mut rng = rand::thread_rng();
+        let is_sniper = false; //rng.gen_ratio(1, 3);
         let vision_archetype = if is_sniper {
             VisionArchetype::Sniper
         } else {
             VisionArchetype::Patrol
         };
 
+        let grid_position =
+            GridPosition::new(instance.grid.x as f32, 64.0 - instance.grid.y as f32 - 1.0);
+
+        let mut ai = AiState::Idle;
+
+        let mut patrol_nodes: Vec<PatrolWaypoint> = vec![];
+        for field in instance.field_instances.clone() {
+            if let FieldValue::Points(points) = field.value {
+                let mut next_waypoint: Option<IVec2>;
+                if points.is_empty() {
+                    ai = AiState::Idle;
+                    break;
+                }
+                for (i, point) in points.iter().enumerate() {
+                    let p = point.unwrap();
+                    if points.len() > i + 1 {
+                        next_waypoint = points[i];
+                    } else {
+                        next_waypoint = points[0];
+                    }
+                    let facing = match next_waypoint {
+                        None => Facing::default(),
+                        Some(last_point) => Facing((last_point - p).as_vec2()),
+                    };
+                    patrol_nodes.push(PatrolWaypoint {
+                        position: GridPosition::new(p.x as f32, 64.0 - p.y as f32 - 1.),
+                        facing,
+                        wait_time: DEFAULT_WAYPOINT_WAIT_TIME,
+                    });
+                    ai = AiState::Patrolling;
+                }
+            }
+        }
         Self {
+            name: Name::new("LdtkEnemy"),
             marker: Enemy,
             can_damage: CanApplyDamage,
-            spawn_coords: SpawnCoords(GridPosition::new(x as f32, y as f32)),
-            grid_position: GridPosition::new(x as f32, y as f32),
+            spawn_coords: SpawnCoords(grid_position),
+            grid_position,
             grid_movement: GridMovement::default(),
             vision: VisionBundle {
                 vision_ability: VisionAbility::of(vision_archetype),
                 ..default()
             },
             role: Hunter,
+            ai_state: HasAiState {
+                current_state: ai,
+                previous_state: Default::default(),
+                can_patrol: !patrol_nodes.is_empty(),
+                is_away_from_post: false,
+            },
+            patrol_bundle: PatrolBundle {
+                state: PatrolState {
+                    current_waypoint: 0,
+                    wait_timer: Timer::new(DEFAULT_WAYPOINT_WAIT_TIME, TimerMode::Once),
+                    direction: 1,
+                },
+                route: PatrolRoute {
+                    waypoints: patrol_nodes,
+                    mode: PatrolMode::Cycle,
+                },
+            },
         }
-    }
-}
-
-/// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
-fn fix_loaded_ldtk_entities(
-    query: Query<(Entity, &GridCoords), With<LdtkEnemy>>,
-    mut commands: Commands,
-) {
-    for (ldtk_entity, grid_coords) in query.iter() {
-        commands
-            .entity(ldtk_entity)
-            .remove::<LdtkEnemy>() // we have to remove it because it's used as the query for this function
-            .insert((
-                Name::new("LdtkEnemy"),
-                EnemyBundle::new(grid_coords.x, grid_coords.y),
-            ));
     }
 }
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
 
-#[cfg(feature = "dev")]
-fn spawn_oneshot_enemy(
-    _trigger: Trigger<SpawnEnemyTrigger>,
-    mut commands: Commands,
-    images: Res<crate::game::assets::ImageAssets>,
-) {
-    info!("Spawning a dev-only gargoyle next to player to test non-ldtk enemy functionality");
-    commands.spawn((
-        Name::new("custom_gargoyle"),
-        EnemyBundle::new(42, 24), // right next to player
-        SpriteBundle {
-            texture: images[&crate::game::assets::ImageAsset::Gargoyle].clone_weak(),
-            transform: Transform::from_translation(Vec3::default().with_z(100.)),
-            ..Default::default()
-        },
-    ));
-}
-
 fn rotate_facing(
-    mut query: Query<&mut Facing, (With<Enemy>, Without<CanSeePlayer>)>,
+    mut query: Query<(&mut Facing, &HasAiState), (With<Enemy>, Without<CanSeePlayer>)>,
     time: Res<Time>,
 ) {
     const SECONDS_TO_ROTATE: f32 = 10.;
     const RADIANS_PER_SEC: f32 = 2.0 * std::f32::consts::PI / SECONDS_TO_ROTATE;
-    for mut facing in query.iter_mut() {
-        let dt = time.delta_seconds();
-        let mut f: Vec2 = facing.direction;
+    for (mut facing, ai) in query.iter_mut() {
+        if ai.current_state == AiState::Idle {
+            let dt = time.delta_seconds();
+            let mut f: Vec2 = facing.0;
 
-        let angle = RADIANS_PER_SEC * dt;
-        f = Vec2::new(
-            f.x * angle.cos() - f.y * angle.sin(),
-            f.x * angle.sin() + f.y * angle.cos(),
-        );
+            let angle = RADIANS_PER_SEC * dt;
+            f = Vec2::new(
+                f.x * angle.cos() - f.y * angle.sin(),
+                f.x * angle.sin() + f.y * angle.cos(),
+            );
 
-        f = f.normalize();
+            f = f.normalize();
 
-        facing.direction = f;
+            facing.0 = f;
+        }
     }
 }
 
@@ -196,29 +231,40 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 0.5;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 0.3;
-const ENEMY_CHASE_RANGE: f32 = 100.0;
+pub const ENEMY_CHASE_SPEED: f32 = 0.5;
+pub const ENEMY_PATROL_SPEED: f32 = 0.3;
+pub const ENEMY_RETURN_TO_POST_SPEED: f32 = 0.3;
+pub const ENEMY_CHASE_RANGE: f32 = 100.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
-        (&mut GridMovement, &GridPosition, &SpawnCoords),
+        (
+            &mut GridMovement,
+            &GridPosition,
+            &SpawnCoords,
+            &mut HasAiState,
+        ),
         (With<Enemy>, Without<CanSeePlayer>),
     >,
 ) {
-    for (mut movement, &position, spawn) in &mut unaware_enemies {
-        let direction = position.direction_to(&spawn.0);
-        if direction.length() < 1.0 {
-            movement.acceleration_player_force = Vec2::ZERO;
-        } else {
-            movement.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+    for (mut movement, &position, spawn, mut ai) in &mut unaware_enemies {
+        if ai.current_state == AiState::ReturningToPost {
+            let direction = position.direction_to(&spawn.0);
+            if direction.length() < 1.0 {
+                movement.acceleration_player_force = Vec2::ZERO;
+                println!("RETURNED");
+                ai.current_state = ReturnedToPost;
+            } else {
+                movement.acceleration_player_force =
+                    direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+            }
         }
     }
 }
 
 pub(crate) fn follow_player(
     mut enemy_movement_controllers: Query<
-        (&mut GridMovement, &mut Facing, &GridPosition),
+        (&mut GridMovement, &mut Facing, &GridPosition, &HasAiState),
         (With<Enemy>, With<CanSeePlayer>),
     >,
     player: Query<&GridPosition, With<Player>>,
@@ -227,10 +273,12 @@ pub(crate) fn follow_player(
         return;
     };
 
-    for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
-        let direction = enemy_pos.direction_to(player_pos);
-        facing.direction = direction;
-        controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
+    for (mut controller, mut facing, enemy_pos, ai) in &mut enemy_movement_controllers {
+        if ai.current_state == Chasing {
+            let direction = enemy_pos.direction_to(player_pos);
+            facing.0 = direction;
+            controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
+        }
     }
 }
 
@@ -241,7 +289,7 @@ fn on_death_reset_enemies(
 ) {
     for (enemy, mut pos, spawn_point, mut facing) in &mut query {
         *pos = spawn_point.0;
-        facing.direction = Vec2::new(1., 0.);
+        facing.0 = Vec2::new(1., 0.);
         commands.entity(enemy).remove::<CanSeePlayer>();
     }
 }

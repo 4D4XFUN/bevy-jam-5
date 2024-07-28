@@ -1,12 +1,13 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
-pub mod grid_overlay;
-
-use crate::input::DevActionToggles;
-use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use leafwing_input_manager::prelude::*;
+
+use crate::input::DevActionToggles;
+use crate::screen::Screen;
+
+pub mod grid_overlay;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<DebugOverlaysState>();
@@ -78,13 +79,14 @@ pub fn toggle_debug_overlays(
 }
 
 mod enemy_vision {
+    use bevy::app::App;
+    use bevy::prelude::*;
+
     use crate::game::ai::Hunter;
     use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::VisibleSquares;
     use crate::AppSet;
-    use bevy::app::App;
-    use bevy::prelude::*;
 
     pub(super) fn plugin(app: &mut App) {
         app.add_systems(Update, render_enemy_vision_cones.in_set(AppSet::UpdateFog));
@@ -92,21 +94,27 @@ mod enemy_vision {
 
     pub fn render_enemy_vision_cones(
         mut gizmos: Gizmos,
-        query: Query<&VisibleSquares, With<Hunter>>,
+        query: Query<(&GridPosition, &VisibleSquares), With<Hunter>>,
         grid: Res<GridLayout>,
     ) {
-        for h in query.iter() {
+        for (position, h) in query.iter() {
             let squares: Vec<_> = h
                 .visible_squares
                 .iter()
                 .map(GridPosition::from_ivec)
                 .collect();
             for square in squares {
+                let distance_from_enemy = position.coordinates.distance(square.coordinates);
                 gizmos.rect_2d(
                     grid.grid_to_world(&square),
                     0.,
-                    Vec2::splat(10.),
-                    Color::srgba(0.5, 0.1, 0.1, 0.5),
+                    Vec2::splat(4.),
+                    Color::srgba(
+                        0.2 + 1.0 / distance_from_enemy,
+                        0.1 + distance_from_enemy / 20.0,
+                        0.2,
+                        1.0,
+                    ),
                 )
             }
         }

@@ -118,7 +118,7 @@ impl GridLayout {
     }
 
     pub fn neighbors(&self, pos: &GridPosition) -> Vec<Vec2> {
-        let bb = self.bounding_box(pos, 1.);
+        let bb = self.bounding_box(pos, 2.);
         bb.coords_range()
     }
 }
