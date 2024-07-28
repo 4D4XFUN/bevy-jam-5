@@ -9,12 +9,15 @@ use crate::{
     screen::Screen,
 };
 
-use super::player::Player;
+use super::{
+    keys::{CanPickup, Key},
+    player::Player,
+};
 
 pub fn plugin(app: &mut App) {
     app.observe(spawn_exit);
 
-    app.add_systems(Update, check_exit.run_if(in_state(Screen::Playing)));
+    app.add_systems(Update, check_exit);
 }
 
 #[derive(Event)]
@@ -22,6 +25,9 @@ pub struct SpawnExitTrigger;
 
 #[derive(Component)]
 struct Exit;
+
+#[derive(Component)]
+pub struct CanBeUnlocked;
 
 const LADDER_INDEX: usize = 6 + 9 * 23;
 
@@ -47,13 +53,14 @@ fn spawn_exit(
             index: LADDER_INDEX,
         },
         GridPosition::new(20., 52.),
+        CanBeUnlocked,
         // GridCollider::default(),
     ));
 }
 
 fn check_exit(
     exits: Query<(&Transform, &Aabb), With<Exit>>,
-    players: Query<(&Transform, &Aabb), With<Player>>,
+    players: Query<(&Transform, &Aabb), (With<Player>, (With<Key>, Without<CanPickup>))>,
     mut commands: Commands,
 ) {
     let Ok((exit_transform, exit)) = exits.get_single() else {

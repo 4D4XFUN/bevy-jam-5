@@ -58,6 +58,8 @@ pub enum SfxAsset {
     Roll,
     Death,
     Detected,
+    KeyPickup,
+    KeyDrop,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -85,6 +87,15 @@ impl SfxAssets {
         assets.insert(
             SfxAsset::Detected,
             asset_server.load("audio/sfx/enemy_detect.ogg"),
+        );
+
+        assets.insert(
+            SfxAsset::KeyPickup,
+            asset_server.load("audio/sfx/key_collect.ogg"),
+        );
+        assets.insert(
+            SfxAsset::KeyDrop,
+            asset_server.load("audio/sfx/key_drop.ogg"),
         );
 
         Self(assets)

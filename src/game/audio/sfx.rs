@@ -12,6 +12,8 @@ pub(super) fn play_sfx(trigger: Trigger<Sfx>, mut commands: Commands, sfxs: Res<
         Sfx::Roll => &sfxs[&SfxAsset::Roll],
         Sfx::Death => &sfxs[&SfxAsset::Death],
         Sfx::Detected => &sfxs[&SfxAsset::Detected],
+        Sfx::KeyPickup => &sfxs[&SfxAsset::KeyPickup],
+        Sfx::KeyDrop => &sfxs[&SfxAsset::KeyDrop],
     }
     .clone_weak();
     let settings = PlaybackSettings {
@@ -30,6 +32,8 @@ pub enum Sfx {
     Roll,
     Death,
     Detected,
+    KeyPickup,
+    KeyDrop,
 }
 
 fn random_step(sfxs: &SfxAssets) -> &Handle<AudioSource> {
