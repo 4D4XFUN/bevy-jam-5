@@ -30,6 +30,7 @@ impl Plugin for AppPlugin {
                 AppSet::RecordInput,
                 AppSet::UpdateVirtualGrid,
                 AppSet::Update,
+                AppSet::UpdateAi,
                 AppSet::UpdateWorld,
                 AppSet::UpdateFog,
             )

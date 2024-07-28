@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use rand::Rng;
 
-use crate::game::ai::Hunter;
+use crate::game::ai::{AiBehavior, HasAiBehavior, Hunter};
+use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
@@ -23,10 +26,7 @@ pub(super) fn plugin(app: &mut App) {
 
     // systems
     app.add_systems(Update, fix_loaded_ldtk_entities);
-    app.add_systems(
-        Update,
-        (rotate_facing, return_to_post, detect_player, follow_player).chain(),
-    );
+    app.add_systems(Update, detect_player);
 
     // reflection
     app.register_type::<Enemy>();
@@ -72,6 +72,8 @@ struct EnemyBundle {
     marker: Enemy,
     vision: VisionBundle,
     role: Hunter,
+    ai_state: HasAiBehavior,
+    can_patrol: PatrolBundle,
 }
 
 impl EnemyBundle {
@@ -85,17 +87,61 @@ impl EnemyBundle {
             VisionArchetype::Patrol
         };
 
+        let grid_position = GridPosition::new(x as f32, y as f32);
+
         Self {
             marker: Enemy,
             can_damage: CanApplyDamage,
-            spawn_coords: SpawnCoords(GridPosition::new(x as f32, y as f32)),
-            grid_position: GridPosition::new(x as f32, y as f32),
+            spawn_coords: SpawnCoords(grid_position),
+            grid_position,
             grid_movement: GridMovement::default(),
             vision: VisionBundle {
                 vision_ability: VisionAbility::of(vision_archetype),
                 ..default()
             },
             role: Hunter,
+            ai_state: HasAiBehavior(AiBehavior::Patrolling),
+            can_patrol: PatrolBundle {
+                state: PatrolState {
+                    current_waypoint: 0,
+                    wait_timer: Timer::new(Duration::new(1, 0), TimerMode::Once),
+                    direction: 1,
+                },
+                route: PatrolRoute {
+                    waypoints: vec![
+                        PatrolWaypoint {
+                            position: grid_position,
+                            facing: Facing::default(),
+                            wait_time: Duration::new(1, 0),
+                        },
+                        PatrolWaypoint {
+                            position: GridPosition::new(
+                                grid_position.coordinates.x + 3.0,
+                                grid_position.coordinates.y,
+                            ),
+                            facing: Facing::default(),
+                            wait_time: Duration::new(1, 0),
+                        },
+                        PatrolWaypoint {
+                            position: GridPosition::new(
+                                grid_position.coordinates.x + 3.0,
+                                grid_position.coordinates.y + 3.0,
+                            ),
+                            facing: Facing::default(),
+                            wait_time: Duration::new(1, 0),
+                        },
+                        PatrolWaypoint {
+                            position: GridPosition::new(
+                                grid_position.coordinates.x,
+                                grid_position.coordinates.y + 3.0,
+                            ),
+                            facing: Facing::default(),
+                            wait_time: Duration::new(1, 0),
+                        },
+                    ],
+                    mode: PatrolMode::Cycle,
+                },
+            },
         }
     }
 }
@@ -196,9 +242,10 @@ fn detect_player(
     }
 }
 
-const ENEMY_CHASE_SPEED: f32 = 0.5;
-const ENEMY_RETURN_TO_POST_SPEED: f32 = 0.3;
-const ENEMY_CHASE_RANGE: f32 = 100.0;
+pub const ENEMY_CHASE_SPEED: f32 = 0.5;
+pub const ENEMY_PATROL_SPEED: f32 = 0.3;
+pub const ENEMY_RETURN_TO_POST_SPEED: f32 = 0.3;
+pub const ENEMY_CHASE_RANGE: f32 = 100.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<

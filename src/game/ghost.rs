@@ -2,13 +2,13 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::game::line_of_sight::vision::VisionArchetype;
-use crate::game::line_of_sight::CanRevealFog;
-use crate::game::movement::Roll;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
 };
+use crate::game::line_of_sight::CanRevealFog;
+use crate::game::line_of_sight::vision::VisionArchetype;
+use crate::game::movement::Roll;
 
 use super::{
     animation::PlayerAnimationState,
@@ -65,7 +65,9 @@ fn ghost_visibility(
     mut commands: Commands,
 ) {
     for (entity, mut sprite, ghost_record_queue) in query.iter_mut() {
-        if ghost_record_queue.records[ghost_record_queue.current_record - 1].is_alive {
+        if ghost_record_queue.current_record > 0
+            && ghost_record_queue.records[ghost_record_queue.current_record - 1].is_alive
+        {
             sprite.color = sprite.color.with_alpha(GHOST_DEFAULT_ALPHA);
         } else if sprite.color.alpha() > 0.0 {
             sprite.color = sprite

@@ -2,6 +2,7 @@ use bevy::app::App;
 use bevy::prelude::*;
 
 use crate::AppSet;
+use crate::game::ai::patrol::Patrolling;
 use crate::screen::Screen;
 
 pub fn plugin(app: &mut App) {
@@ -28,30 +29,46 @@ pub struct _Prey;
 
 // It's wrapping an enum to ensure we only have one of these at a time
 #[derive(Component)]
-pub struct AiBehaviorState(Behavior);
-pub enum Behavior {
+pub struct HasAiBehavior(pub AiBehavior);
+
+pub enum AiBehavior {
+    Idle,
     Patrolling,
     Chasing,
     Searching,
     ReturningToPatrol,
 }
 
-pub fn main_ai_behavior_system(mut query: Query<(), ()>) {}
+pub fn main_ai_behavior_system(
+    mut query: Query<(Entity, &mut HasAiBehavior), (Without<Patrolling>)>,
+    mut commands: Commands,
+) {
+    for (entity, ai_behavior) in query.iter_mut() {
+        commands.entity(entity).insert(Patrolling);
+    }
+}
 
-mod patrol {
+pub mod patrol {
     use std::time::Duration;
 
     use bevy::app::App;
-    use bevy::math::NormedVectorSpace;
     use bevy::prelude::*;
 
+    use crate::AppSet::UpdateAi;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
     use crate::game::movement::GridMovement;
-    use crate::game::spawn::enemy::Enemy;
+    use crate::game::spawn::enemy::{Enemy, ENEMY_PATROL_SPEED};
+    use crate::screen::Screen;
 
     pub fn plugin(app: &mut App) {
         // systems
+        app.add_systems(
+            Update,
+            follow_patrol_route
+                .run_if(in_state(Screen::Playing))
+                .in_set(UpdateAi),
+        );
 
         // reflection
         app.register_type::<PatrolWaypoint>();
@@ -59,7 +76,7 @@ mod patrol {
         app.register_type::<PatrolState>();
     }
 
-    pub fn follow_patrol_route(
+    fn follow_patrol_route(
         mut query: Query<
             (
                 &mut PatrolState,
@@ -68,18 +85,17 @@ mod patrol {
                 &mut Facing,
                 &mut GridMovement,
             ),
-            (With<(Enemy, Patrolling)>),
+            (With<Enemy>, With<Patrolling>),
         >,
         time: Res<Time>,
     ) {
         for (mut state, route, entity_position, mut facing, mut movement) in query.iter_mut() {
-            let current_waypoint: PatrolWaypoint = route.waypoints[&state.current_waypoint];
-
             // we're at the waypoint
-            let to_waypoint = entity_position.direction_to(&current_waypoint.position);
-            if to_waypoint.length() <= 1.0 {
+            let direction_to_waypoint =
+                entity_position.direction_to(&route.waypoints[state.current_waypoint].position);
+            if direction_to_waypoint.length() <= 1.0 {
                 state.wait_timer.tick(time.delta());
-                facing.direction = current_waypoint.facing.direction.clone();
+                facing.direction = route.waypoints[state.current_waypoint].facing.direction;
 
                 // we've waited here long enough, advance the waypoint
                 if state.wait_timer.finished() {
@@ -89,13 +105,13 @@ mod patrol {
             }
             // we're not at our target yet, so move towards it
             else {
-                const ACCEL: f32 = 30.;
-                movement.acceleration_player_force = to_waypoint.normalize() * ACCEL;
+                const ACCEL: f32 = ENEMY_PATROL_SPEED;
+                movement.acceleration_player_force = direction_to_waypoint.normalize() * ACCEL;
             }
         }
     }
 
-    #[derive(Component)]
+    #[derive(Component, Reflect, Debug, Clone)]
     pub struct Patrolling;
 
     #[derive(Component, Reflect, Debug, Clone)]
@@ -149,15 +165,15 @@ mod patrol {
 
     #[derive(Component, Reflect, Debug, Clone, Default)]
     #[reflect(Component)]
-    struct PatrolState {
-        current_waypoint: usize,
-        wait_timer: Timer,
-        direction: i8, // 1 for forward, -1 for backward along route
+    pub struct PatrolState {
+        pub current_waypoint: usize,
+        pub wait_timer: Timer,
+        pub direction: i8, // 1 for forward, -1 for backward along route
     }
 
     #[derive(Bundle, Default)]
     pub struct PatrolBundle {
-        state: PatrolState,
-        route: PatrolRoute,
+        pub state: PatrolState,
+        pub route: PatrolRoute,
     }
 }
