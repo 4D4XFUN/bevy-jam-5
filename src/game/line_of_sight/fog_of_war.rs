@@ -6,11 +6,11 @@ use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
 use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle};
 
-use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::CanRevealFog;
 use crate::game::line_of_sight::vision::VisibleSquares;
+use crate::game::line_of_sight::CanRevealFog;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -101,7 +101,7 @@ fn setup_fog_of_war(
             depth_or_array_layers: 1,
         },
         bevy::render::render_resource::TextureDimension::D2,
-        &vec![255],
+        &[255],
         bevy::render::render_resource::TextureFormat::R8Unorm,
         RenderAssetUsages::all(),
     );

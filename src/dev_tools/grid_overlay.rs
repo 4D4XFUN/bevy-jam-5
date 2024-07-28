@@ -1,11 +1,11 @@
 use bevy::color::Color;
 use bevy::core::Name;
-use bevy::math::{Vec2, Vec3};
+use bevy::math::Vec2;
 use bevy::prelude::*;
 
 use crate::dev_tools::DebugOverlaysState;
-use crate::game::grid::{GridPosition, GridSprite};
 use crate::game::grid::grid_layout::GridLayout;
+use crate::game::grid::{GridPosition, GridSprite};
 use crate::game::spawn::player::Player;
 use crate::screen::Screen;
 
