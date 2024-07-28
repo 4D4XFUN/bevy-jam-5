@@ -108,16 +108,15 @@ fn pickup_key(
 }
 
 pub fn on_death_drop_key(
-    trigger: Trigger<OnDeath>,
-    mut keys: Query<(Entity, &mut Transform), (With<Key>, Without<CanPickup>)>,
+    _trigger: Trigger<OnDeath>,
+    mut keys: Query<(Entity, &mut Transform, &SpawnCoords), (With<Key>, Without<CanPickup>)>,
     mut commands: Commands,
 ) {
-    let death = trigger.event();
-
-    for (key_entity, mut transform) in &mut keys {
+    for (key_entity, mut transform, spawn_coords) in &mut keys {
+        let coordinates = spawn_coords.0.coordinates;
         commands
             .entity(key_entity)
-            .insert(KeyBundle::new(death.0.x, death.0.y));
+            .insert(KeyBundle::new(coordinates.x, coordinates.y));
 
         transform.translation = Vec3::ZERO;
 
