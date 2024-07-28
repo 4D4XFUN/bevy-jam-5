@@ -10,12 +10,17 @@ use crate::{
     screen::Screen,
 };
 
-use super::player::Player;
+use super::{
+    keys::{CanPickup, Key},
+    player::Player,
+};
 
 pub fn plugin(app: &mut App) {
     app.observe(spawn_exit);
 
     app.add_systems(Update, check_exit);
+    app.add_systems(Update, lose_unlockability_on_death);
+    app.add_systems(Update, gain_unlockability_on_pickup);
 }
 
 #[derive(Event)]
@@ -51,12 +56,35 @@ fn spawn_exit(
             index: LADDER_INDEX,
         },
         GridPosition::new(59., 31.),
-        CanBeUnlocked,
     ));
 }
 
+fn lose_unlockability_on_death(
+    mut commands: Commands,
+    q_keys: Query<Entity, (With<Key>, With<CanPickup>)>,
+    mut q_exit: Query<Entity, (With<Exit>, With<CanBeUnlocked>)>,
+) {
+    if q_keys.iter().count() == 0 {
+        for exit_entity in q_exit.iter_mut() {
+            commands.entity(exit_entity).remove::<CanBeUnlocked>();
+        }
+    }
+}
+
+fn gain_unlockability_on_pickup(
+    mut commands: Commands,
+    q_keys: Query<Entity, (With<Key>, Without<CanPickup>)>,
+    mut q_exit: Query<Entity, (With<Exit>, Without<CanBeUnlocked>)>,
+) {
+    for _ in q_keys.iter() {
+        for exit_entity in q_exit.iter_mut() {
+            commands.entity(exit_entity).insert(CanBeUnlocked);
+        }
+    }
+}
+
 fn check_exit(
-    exits: Query<(&Transform, &Aabb), With<Exit>>,
+    exits: Query<(&Transform, &Aabb), (With<Exit>, With<CanBeUnlocked>)>,
     players: Query<(&Transform, &Aabb), With<Player>>,
     mut commands: Commands,
 ) {
