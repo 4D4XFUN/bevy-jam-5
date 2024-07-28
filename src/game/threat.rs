@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy::time::Stopwatch;
 
 use crate::game::spawn::health::OnDeath;
 use crate::screen::Screen;
@@ -22,17 +23,16 @@ pub fn plugin(app: &mut App) {
         ),
         current_level: 0,
     });
-    app.insert_resource(PlayTimer(Timer::from_seconds(
-        settings.levels as f32 * settings.seconds_between_levels,
-        TimerMode::Once,
-    )));
+    app.insert_resource(PlayStopwatch(Stopwatch::new()));
     app.insert_resource(settings);
     app.add_systems(Update, tick.run_if(in_state(Screen::Playing)));
     app.observe(on_death_reset_timer);
 }
 
 #[derive(Resource)]
-pub struct PlayTimer(pub Timer);
+/// This stopwatch is started when the game starts
+/// and is used to show highscores
+pub struct PlayStopwatch(pub Stopwatch);
 
 /// Is triggered when the threat level increases.
 /// Property is the new threat level.
@@ -56,12 +56,12 @@ fn tick(
     time: Res<Time>,
     threat_settings: Res<ThreatTimerSettings>,
     mut threat_timer: ResMut<ThreatTimer>,
-    mut play_timer: ResMut<PlayTimer>,
+    mut play_stopwatch: ResMut<PlayStopwatch>,
     mut commands: Commands,
 ) {
     if threat_timer.current_level < threat_settings.levels - 1 {
         threat_timer.timer.tick(time.delta());
-        play_timer.0.tick(time.delta());
+        play_stopwatch.0.tick(time.delta());
         if threat_timer.timer.finished() {
             threat_timer.current_level += 1;
             commands.trigger(ThreatLevelIncreased(threat_timer.current_level));
@@ -69,12 +69,7 @@ fn tick(
     }
 }
 
-fn on_death_reset_timer(
-    _trigger: Trigger<OnDeath>,
-    mut threat_timer: ResMut<ThreatTimer>,
-    mut play_timer: ResMut<PlayTimer>,
-) {
+fn on_death_reset_timer(_trigger: Trigger<OnDeath>, mut threat_timer: ResMut<ThreatTimer>) {
     threat_timer.current_level = 0;
     threat_timer.timer.reset();
-    play_timer.0.reset();
 }
