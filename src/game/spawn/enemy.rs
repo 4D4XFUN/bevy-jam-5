@@ -111,7 +111,7 @@ impl EnemyBundle {
                     waypoints: vec![
                         PatrolWaypoint {
                             position: grid_position,
-                            facing: Facing::default(),
+                            facing: Facing(Vec2::X),
                             wait_time: Duration::new(1, 0),
                         },
                         PatrolWaypoint {
@@ -119,7 +119,7 @@ impl EnemyBundle {
                                 grid_position.coordinates.x + 3.0,
                                 grid_position.coordinates.y,
                             ),
-                            facing: Facing::default(),
+                            facing: Facing(Vec2::Y),
                             wait_time: Duration::new(1, 0),
                         },
                         PatrolWaypoint {
@@ -127,7 +127,7 @@ impl EnemyBundle {
                                 grid_position.coordinates.x + 3.0,
                                 grid_position.coordinates.y + 3.0,
                             ),
-                            facing: Facing::default(),
+                            facing: Facing(Vec2::NEG_X),
                             wait_time: Duration::new(1, 0),
                         },
                         PatrolWaypoint {
@@ -135,7 +135,7 @@ impl EnemyBundle {
                                 grid_position.coordinates.x,
                                 grid_position.coordinates.y + 3.0,
                             ),
-                            facing: Facing::default(),
+                            facing: Facing(Vec2::NEG_Y),
                             wait_time: Duration::new(1, 0),
                         },
                     ],
@@ -191,7 +191,7 @@ fn rotate_facing(
     const RADIANS_PER_SEC: f32 = 2.0 * std::f32::consts::PI / SECONDS_TO_ROTATE;
     for mut facing in query.iter_mut() {
         let dt = time.delta_seconds();
-        let mut f: Vec2 = facing.direction;
+        let mut f: Vec2 = facing.0;
 
         let angle = RADIANS_PER_SEC * dt;
         f = Vec2::new(
@@ -201,7 +201,7 @@ fn rotate_facing(
 
         f = f.normalize();
 
-        facing.direction = f;
+        facing.0 = f;
     }
 }
 
@@ -276,7 +276,7 @@ pub(crate) fn follow_player(
 
     for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
         let direction = enemy_pos.direction_to(player_pos);
-        facing.direction = direction;
+        facing.0 = direction;
         controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
     }
 }
@@ -288,7 +288,7 @@ fn on_death_reset_enemies(
 ) {
     for (enemy, mut pos, spawn_point, mut facing) in &mut query {
         *pos = spawn_point.0;
-        facing.direction = Vec2::new(1., 0.);
+        facing.0 = Vec2::new(1., 0.);
         commands.entity(enemy).remove::<CanSeePlayer>();
     }
 }

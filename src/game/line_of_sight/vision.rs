@@ -33,14 +33,10 @@ pub struct VisionBundle {
 /// Which direction an enemy is looking
 #[derive(Component, Reflect, Debug, Copy, Clone)]
 #[reflect(Component)]
-pub struct Facing {
-    pub direction: Vec2,
-}
+pub struct Facing(pub Vec2);
 impl Default for Facing {
     fn default() -> Self {
-        Self {
-            direction: Vec2::new(1., 0.),
-        }
+        Self(Vec2::new(1., 0.))
     }
 }
 
@@ -70,7 +66,7 @@ impl VisionAbility {
             },
             VisionArchetype::Ghost => VisionAbility {
                 field_of_view_radians: 2. * consts::PI,
-                range_in_grid_units: 5.0,
+                range_in_grid_units: 30.0,
             },
             VisionArchetype::Player => VisionAbility {
                 field_of_view_radians: 2. * consts::PI,
@@ -152,7 +148,9 @@ pub fn update_visible_squares(
 
             // too near
             if ray_end.distance(ray_start) <= 1.0 {
-                new_squares.push(ray_end);
+                if grid_position.coordinates + facing.0 == ray_end {
+                    new_squares.push(ray_end);
+                }
                 continue;
             }
 
@@ -167,7 +165,7 @@ pub fn update_visible_squares(
                 grid.grid_to_world(&GridPosition::new(ray_end.x, ray_end.y)),
             );
             // let ray = LineSegment::new(ray_start, ray_end);
-            let angle = ray.segment2d.direction.angle_between(facing.direction);
+            let angle = ray.segment2d.direction.angle_between(facing.0);
             if angle.abs() > vision.field_of_view_radians {
                 continue;
             }

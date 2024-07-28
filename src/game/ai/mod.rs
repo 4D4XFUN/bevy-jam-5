@@ -95,7 +95,7 @@ pub mod patrol {
                 entity_position.direction_to(&route.waypoints[state.current_waypoint].position);
             if direction_to_waypoint.length() <= 1.0 {
                 state.wait_timer.tick(time.delta());
-                facing.direction = route.waypoints[state.current_waypoint].facing.direction;
+                facing.0 = route.waypoints[state.current_waypoint].facing.0;
 
                 // we've waited here long enough, advance the waypoint
                 if state.wait_timer.finished() {
