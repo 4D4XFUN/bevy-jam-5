@@ -124,8 +124,11 @@ fn handle_show_dialog_event(
 ) {
     let font = asset_server.load("fonts/m3x6.ttf");
 
-    let ANTI_BLURINESS_MULTIPLIER = 4.;
-    let GRID_SIZE_FONT_SCALE_FRACTION = 0.5;
+    // fix for blurry font (since we're zooming way in on a tiny pixel font)
+    // Render at larger scale, then scale down using a transform by that same amount.
+    const ANTI_BLURINESS_MULTIPLIER: f32 = 4.;
+    // Finally, apply a multiplier to scale further, 1.0 is our grid size
+    const GRID_SIZE_FONT_SCALE_FRACTION: f32 = 0.5;
 
     let text_style = TextStyle {
         font,
