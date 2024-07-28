@@ -113,17 +113,6 @@ struct GhostRecord {
     is_alive: bool,
 }
 
-impl GhostRecord {
-    pub fn new() -> Self {
-        Self {
-            coord: Default::default(),
-            offset: Default::default(),
-            anim_state: PlayerAnimationState::Idling,
-            is_alive: true,
-        }
-    }
-}
-
 const GHOST_DEFAULT_ALPHA: f32 = 0.3;
 
 fn on_death_spawn_new_ghost(

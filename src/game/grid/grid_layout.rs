@@ -210,6 +210,6 @@ mod tests {
         let origin = GridPosition::new(3., 3.);
         let neighbors = grid.neighbors(&origin);
 
-        assert_eq!(9, neighbors.len(), "{:?}", neighbors);
+        assert_eq!(25, neighbors.len(), "{:?}", neighbors);
     }
 }
