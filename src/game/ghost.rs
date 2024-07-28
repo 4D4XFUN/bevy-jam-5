@@ -3,6 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::game::line_of_sight::vision::VisionArchetype;
+use crate::game::line_of_sight::CanRevealFog;
 use crate::game::movement::Roll;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
@@ -34,10 +35,11 @@ pub fn plugin(app: &mut App) {
     });
     app.add_systems(
         FixedUpdate,
-        (record_intent, replay_ghost, animate_ghost).run_if(in_state(Screen::Playing)),
+        (record_intent, replay_ghost, animate_ghost, ghost_visibility)
+            .run_if(in_state(Screen::Playing)),
     );
-    app.observe(spawn_ghost);
-    app.observe(reset_ghosts);
+    app.observe(on_death_spawn_new_ghost);
+    app.observe(on_death_reset_ghosts);
     app.observe(clean_up);
 }
 
@@ -55,6 +57,23 @@ fn record_intent(
         anim_state: animation.get_current_state(),
         is_alive: true,
     });
+}
+
+const DEAD_GHOST_FADE_SPEED: f32 = 0.03;
+fn ghost_visibility(
+    mut query: Query<(Entity, &mut Sprite, &GhostRecordQueue), With<Ghost>>,
+    mut commands: Commands,
+) {
+    for (entity, mut sprite, ghost_record_queue) in query.iter_mut() {
+        if ghost_record_queue.records[ghost_record_queue.current_record - 1].is_alive {
+            sprite.color = sprite.color.with_alpha(GHOST_DEFAULT_ALPHA);
+        } else if sprite.color.alpha() > 0.0 {
+            sprite.color = sprite
+                .color
+                .with_alpha(sprite.color.alpha() - DEAD_GHOST_FADE_SPEED);
+            commands.entity(entity).remove::<CanRevealFog>();
+        }
+    }
 }
 
 #[derive(Resource)]
@@ -102,7 +121,10 @@ impl GhostRecord {
         }
     }
 }
-fn spawn_ghost(
+
+const GHOST_DEFAULT_ALPHA: f32 = 0.3;
+
+fn on_death_spawn_new_ghost(
     _trigger: Trigger<OnDeath>,
     mut ghost_queue: ResMut<GhostQueue>,
     mut current_record_queue: ResMut<CurrentRecordQueue>,
@@ -114,7 +136,6 @@ fn spawn_ghost(
     let Ok(spawn_point) = spawn_points.get_single() else {
         return;
     };
-
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 7, 6, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     let player_animation = PlayerAnimation::new();
@@ -122,6 +143,7 @@ fn spawn_ghost(
     // if you die rolling, your ghost rolls infinitely, so we reset the last frame to Idling
     if let Some(mut entry) = current_record_queue.0.records.pop() {
         entry.anim_state = PlayerAnimationState::Idling;
+        entry.is_alive = false;
         current_record_queue.0.records.push(entry);
     }
 
@@ -132,7 +154,7 @@ fn spawn_ghost(
             SpriteBundle {
                 texture: images[&ImageAsset::Player].clone_weak(),
                 sprite: Sprite {
-                    color: Color::srgba(0.5, 0.5, 0.5, 0.3),
+                    color: Color::srgba(0.5, 0.5, 0.5, GHOST_DEFAULT_ALPHA),
                     ..default()
                 },
                 transform: Transform::from_xyz(0.0, 0.0, 1.0),
@@ -163,18 +185,34 @@ fn spawn_ghost(
     current_record_queue.0.records.clear();
 }
 
-fn reset_ghosts(
+fn on_death_reset_ghosts(
     _trigger: Trigger<OnDeath>,
     spawn_points: Query<&SpawnPointGridPosition>,
-    mut query: Query<(&mut GridPosition, &mut GhostRecordQueue), With<Ghost>>,
+    mut alive_ghosts: Query<
+        (&mut GridPosition, &mut GhostRecordQueue),
+        (With<Ghost>, With<CanRevealFog>),
+    >,
+    mut dead_ghosts: Query<
+        (Entity, &mut GridPosition, &mut GhostRecordQueue),
+        (With<Ghost>, Without<CanRevealFog>),
+    >,
+    mut commands: Commands,
 ) {
     let Ok(spawn_point) = spawn_points.get_single() else {
         return;
     };
-    for (mut pos, mut velocities) in &mut query {
+
+    for (mut pos, mut velocities) in &mut alive_ghosts {
         velocities.current_record = 0;
         pos.coordinates.x = spawn_point.0.x;
         pos.coordinates.y = spawn_point.0.y;
+    }
+
+    for (ghost, mut pos, mut velocities) in &mut dead_ghosts {
+        velocities.current_record = 0;
+        pos.coordinates.x = spawn_point.0.x;
+        pos.coordinates.y = spawn_point.0.y;
+        commands.entity(ghost).insert(CanRevealFog);
     }
 }
 
