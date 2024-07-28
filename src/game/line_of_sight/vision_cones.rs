@@ -4,11 +4,11 @@ use bevy::app::App;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::VisibleSquares;
 use crate::game::line_of_sight::vision_cones::handles::VisionConeRenderingHandles;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // plugins
@@ -88,8 +88,6 @@ pub fn draw_line_of_sight(
         overlay.squares.insert(*s, child_id);
         commands.entity(overlay_entity).add_child(child_id);
     }
-
-    
 }
 
 /// Cache handles to a mesh/material that is instanced and used to render all cones of vision to save on performance vs. making new sprites for each one.
