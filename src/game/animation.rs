@@ -127,7 +127,10 @@ pub enum PlayerAnimationState {
 impl PlayerAnimation {
     pub fn new(frames: HashMap<PlayerAnimationState, (usize, usize, Duration)>) -> Self {
         Self {
-            timer: Timer::new(frames[&PlayerAnimationState::Idling].2, TimerMode::Repeating),
+            timer: Timer::new(
+                frames[&PlayerAnimationState::Idling].2,
+                TimerMode::Repeating,
+            ),
             frame: 0,
             state: PlayerAnimationState::Idling,
             frames,
@@ -140,8 +143,7 @@ impl PlayerAnimation {
         if !self.timer.finished() {
             return;
         }
-        self.frame = (self.frame + 1)
-            % self.frames[&self.state].1;
+        self.frame = (self.frame + 1) % self.frames[&self.state].1;
     }
 
     /// Update animation state if it changes.
