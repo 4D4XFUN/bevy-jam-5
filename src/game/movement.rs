@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::game::grid::GridPosition;
+use crate::game::spawn::health::CanReceiveDamage;
 use crate::game::spawn::level::LevelWalls;
 use crate::game::spawn::player::Player;
 /// Grid-based movement
@@ -39,17 +40,17 @@ pub struct GridMovement {
 
 #[derive(Component, Reflect, Debug, PartialEq)]
 #[reflect(Component)]
-pub struct Roll {
+pub struct RollState {
     pub timer: Timer,
     pub velocity_multiplier: f32,
     cooldown: Timer,
 }
 
-impl Roll {
+impl RollState {
     pub const ROLL_TIME: Duration = Duration::from_millis(300);
 }
 
-impl Default for Roll {
+impl Default for RollState {
     fn default() -> Self {
         Self {
             timer: Timer::from_seconds(0.25, TimerMode::Once),
@@ -114,7 +115,7 @@ pub fn respond_to_input(mut query: Query<(&ActionState<PlayerAction>, &mut GridM
 }
 
 pub fn apply_movement(
-    mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&Roll>)>,
+    mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&RollState>)>,
     time: Res<Time>,
     walls: Res<LevelWalls>,
     mut commands: Commands,
@@ -200,21 +201,31 @@ pub fn apply_movement(
 
 fn update_roll_timer(
     time: Res<Time>,
-    mut query: Query<(&mut Roll, &mut GridMovement, &ActionState<PlayerAction>)>,
+    mut commands: Commands,
+    mut query: Query<(
+        Entity,
+        &mut RollState,
+        &mut GridMovement,
+        &ActionState<PlayerAction>,
+    )>,
     mut player_sprite: Query<&mut Sprite, With<Player>>,
 ) {
-    let dt = time.delta_seconds();
+    let dt = time.delta();
     if let Ok(mut sprite) = player_sprite.get_single_mut() {
-        for (mut roll, mut movement, action_state) in query.iter_mut() {
-            roll.timer.tick(Duration::from_secs_f32(dt));
+        for (e, mut roll, mut movement, action_state) in query.iter_mut() {
+            roll.timer.tick(dt);
+
+            if roll.timer.just_finished() {
+                movement.is_rolling = false;
+                commands.entity(e).insert(CanReceiveDamage);
+            }
 
             if roll.timer.finished() {
-                movement.is_rolling = false;
-                roll.cooldown.tick(Duration::from_secs_f32(dt));
+                roll.cooldown.tick(dt);
             }
 
             if !roll.cooldown.finished() {
-                if sprite.color.luminance() > 0.1 {
+                if sprite.color.luminance() > 0.2 {
                     sprite.color = sprite.color.darker(0.1);
                 }
             } else {
@@ -222,6 +233,7 @@ fn update_roll_timer(
             }
 
             if roll.cooldown.finished() && action_state.pressed(&PlayerAction::Roll) {
+                commands.entity(e).remove::<CanReceiveDamage>();
                 movement.is_rolling = true;
                 roll.cooldown.reset();
                 roll.timer.reset();
@@ -232,7 +244,7 @@ fn update_roll_timer(
 
 fn reset_roll_timer_on_death(
     _trigger: Trigger<OnDeath>,
-    mut query: Query<(&mut Roll, &mut GridMovement)>,
+    mut query: Query<(&mut RollState, &mut GridMovement)>,
 ) {
     for (mut roll, mut movement) in &mut query {
         let timer_duration = roll.timer.duration();
