@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::game::line_of_sight::vision::VisionArchetype;
 use crate::game::line_of_sight::CanRevealFog;
-use crate::game::movement::Roll;
+pub use crate::game::movement::RollState;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
@@ -156,7 +156,7 @@ fn on_death_spawn_new_ghost(
                 index: player_animation.get_atlas_index(),
             },
             GridPosition::new(spawn_point.0.x, spawn_point.0.y),
-            Roll::default(),
+            RollState::default(),
             GhostRecordQueue {
                 records: current_record_queue.0.records.clone(),
                 current_record: 0,
