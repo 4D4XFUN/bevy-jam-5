@@ -12,6 +12,7 @@ pub enum ImageAsset {
     Player,
     Gargoyle,
     Decoration,
+    Skeleton,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -27,6 +28,7 @@ impl ImageAssets {
             ("images/robo_crab.png", ImageAsset::RoboCrab),
             ("images/character_animated.png", ImageAsset::Player),
             ("images/gargoyle.png", ImageAsset::Gargoyle),
+            ("images/skeleton.png", ImageAsset::Skeleton),
             ("atlas/Dungeon_item_props_v2.png", ImageAsset::Decoration),
         ] {
             assets.insert(

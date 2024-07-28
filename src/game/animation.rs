@@ -7,9 +7,10 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 
 use super::audio::sfx::Sfx;
-use crate::game::movement::{GridMovement, Roll};
+use crate::game::movement::GridMovement;
 use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
@@ -109,9 +110,11 @@ pub struct PlayerAnimation {
     timer: Timer,
     frame: usize,
     state: PlayerAnimationState,
+    /// frames contains a hashmap of animation state, start frame, frame length and duration
+    frames: HashMap<PlayerAnimationState, (usize, usize, Duration)>,
 }
 
-#[derive(Clone, Copy, Reflect, PartialEq, Debug)]
+#[derive(Clone, Copy, Reflect, PartialEq, Debug, Eq, Hash)]
 pub enum PlayerAnimationState {
     Idling,
     Walking,
@@ -122,67 +125,16 @@ pub enum PlayerAnimationState {
 }
 
 impl PlayerAnimation {
-    /// The number of idle frames.
-    const IDLE_FRAMES: usize = 4;
-    /// The duration of each idle frame.
-    const IDLE_INTERVAL: Duration = Duration::from_millis(500);
-    fn idling() -> Self {
+    pub fn new(frames: HashMap<PlayerAnimationState, (usize, usize, Duration)>) -> Self {
         Self {
-            timer: Timer::new(Self::IDLE_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(
+                frames[&PlayerAnimationState::Idling].2,
+                TimerMode::Repeating,
+            ),
             frame: 0,
             state: PlayerAnimationState::Idling,
+            frames,
         }
-    }
-    fn idling_front() -> Self {
-        Self {
-            timer: Timer::new(Self::IDLE_INTERVAL, TimerMode::Repeating),
-            frame: 0,
-            state: PlayerAnimationState::FrontIdling,
-        }
-    }
-
-    /// The number of walking frames.
-    const WALKING_FRAMES: usize = 4;
-    /// The duration of each walking frame.
-    const WALKING_INTERVAL: Duration = Duration::from_millis(100);
-
-    fn walking() -> Self {
-        Self {
-            timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
-            frame: 0,
-            state: PlayerAnimationState::Walking,
-        }
-    }
-    fn walking_front() -> Self {
-        Self {
-            timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
-            frame: 0,
-            state: PlayerAnimationState::FrontWalking,
-        }
-    }
-
-    const ROLLING_FRAMES: usize = 7;
-    fn rolling_interval() -> Duration {
-        Roll::ROLL_TIME / Self::ROLLING_FRAMES as u32
-    }
-
-    fn rolling() -> Self {
-        Self {
-            timer: Timer::new(Self::rolling_interval(), TimerMode::Repeating),
-            frame: 0,
-            state: PlayerAnimationState::Rolling,
-        }
-    }
-    fn rolling_front() -> Self {
-        Self {
-            timer: Timer::new(Self::rolling_interval(), TimerMode::Repeating),
-            frame: 0,
-            state: PlayerAnimationState::FrontRolling,
-        }
-    }
-
-    pub fn new() -> Self {
-        Self::idling()
     }
 
     /// Update animation timers.
@@ -191,28 +143,15 @@ impl PlayerAnimation {
         if !self.timer.finished() {
             return;
         }
-        self.frame = (self.frame + 1)
-            % match self.state {
-                PlayerAnimationState::Idling => Self::IDLE_FRAMES,
-                PlayerAnimationState::Walking => Self::WALKING_FRAMES,
-                PlayerAnimationState::Rolling => Self::ROLLING_FRAMES,
-                PlayerAnimationState::FrontIdling => Self::IDLE_FRAMES,
-                PlayerAnimationState::FrontWalking => Self::WALKING_FRAMES,
-                PlayerAnimationState::FrontRolling => Self::ROLLING_FRAMES,
-            };
+        self.frame = (self.frame + 1) % self.frames[&self.state].1;
     }
 
     /// Update animation state if it changes.
-    pub fn update_state(&mut self, state: PlayerAnimationState) {
-        if self.state != state {
-            match state {
-                PlayerAnimationState::Idling => *self = Self::idling(),
-                PlayerAnimationState::Walking => *self = Self::walking(),
-                PlayerAnimationState::Rolling => *self = Self::rolling(),
-                PlayerAnimationState::FrontIdling => *self = Self::idling_front(),
-                PlayerAnimationState::FrontWalking => *self = Self::walking_front(),
-                PlayerAnimationState::FrontRolling => *self = Self::rolling_front(),
-            }
+    pub fn update_state(&mut self, new_state: PlayerAnimationState) {
+        if self.state != new_state {
+            self.state = new_state;
+            self.frame = 0;
+            self.timer = Timer::new(self.frames[&new_state].2, TimerMode::Repeating);
         }
     }
 
@@ -223,14 +162,7 @@ impl PlayerAnimation {
 
     /// Return sprite index in the atlas.
     pub fn get_atlas_index(&self) -> usize {
-        match self.state {
-            PlayerAnimationState::FrontIdling => self.frame,
-            PlayerAnimationState::FrontWalking => 7 + self.frame,
-            PlayerAnimationState::FrontRolling => 7 * 2 + self.frame,
-            PlayerAnimationState::Idling => 7 * 3 + self.frame,
-            PlayerAnimationState::Walking => 7 * 4 + self.frame,
-            PlayerAnimationState::Rolling => 7 * 5 + self.frame,
-        }
+        self.frames[&self.state].0 + self.frame
     }
 
     pub fn get_current_state(&self) -> PlayerAnimationState {
