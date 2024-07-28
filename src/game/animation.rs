@@ -9,10 +9,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
-use super::audio::sfx::Sfx;
-use super::movement::Roll;
-use crate::game::movement::GridMovement;
 use crate::AppSet;
+use crate::game::movement::GridMovement;
+
+use super::audio::sfx::Sfx;
+use super::movement::RollState;
 
 pub(super) fn plugin(app: &mut App) {
     // Animate and play sound effects based on controls.
@@ -191,7 +192,7 @@ impl Default for PlayerAnimation {
         );
         frames.insert(
             PlayerAnimationState::FrontRolling,
-            (14, 7, Roll::ROLL_TIME / 7),
+            (14, 7, RollState::ROLL_TIME / 7),
         );
         frames.insert(
             PlayerAnimationState::Idling,
@@ -201,7 +202,10 @@ impl Default for PlayerAnimation {
             PlayerAnimationState::Walking,
             (28, 4, Duration::from_millis(100)),
         );
-        frames.insert(PlayerAnimationState::Rolling, (35, 7, Roll::ROLL_TIME / 7));
+        frames.insert(
+            PlayerAnimationState::Rolling,
+            (35, 7, RollState::ROLL_TIME / 7),
+        );
 
         Self {
             timer: Timer::new(

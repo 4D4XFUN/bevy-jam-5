@@ -1,9 +1,9 @@
-use bevy::window::WindowResolution;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
+use bevy::window::WindowResolution;
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
 
 #[cfg(feature = "dev")]
