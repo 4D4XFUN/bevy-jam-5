@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use leafwing_input_manager::InputManagerBundle;
 
+use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::PlayerLineOfSightBundle;
 use crate::game::movement::GridMovement;
@@ -49,27 +50,34 @@ fn spawn_player(
     let mut player_transform = Transform::from_scale(Vec2::splat(1.).extend(1.0));
     player_transform.translation.z = 10.; // ensure player goes above level
 
-    commands.spawn((
-        Name::new("Player"),
-        StateScoped(Screen::Playing),
-        Player,
-        CameraFollowTarget,
-        SpriteBundle {
-            texture: images[&ImageAsset::Player].clone_weak(),
-            transform: player_transform,
-            ..Default::default()
-        },
-        TextureAtlas {
-            layout: texture_atlas_layout.clone(),
-            index: player_animation.get_atlas_index(),
-        },
-        SpawnPointGridPosition(Vec2::new(32., 64. - 33.)),
-        CanReceiveDamage,
-        GridPosition::new(32., 64. - 33.),
-        GridMovement::default(),
-        RollState::default(),
-        InputManagerBundle::with_map(PlayerAction::default_input_map()),
-        player_animation,
-        PlayerLineOfSightBundle { ..default() },
-    ));
+    let entity_id = commands
+        .spawn((
+            Name::new("Player"),
+            StateScoped(Screen::Playing),
+            Player,
+            CameraFollowTarget,
+            SpriteBundle {
+                texture: images[&ImageAsset::Player].clone_weak(),
+                transform: player_transform,
+                ..Default::default()
+            },
+            TextureAtlas {
+                layout: texture_atlas_layout.clone(),
+                index: player_animation.get_atlas_index(),
+            },
+            SpawnPointGridPosition(Vec2::new(32., 64. - 33.)),
+            CanReceiveDamage,
+            GridPosition::new(32., 64. - 33.),
+            GridMovement::default(),
+            RollState::default(),
+            InputManagerBundle::with_map(PlayerAction::default_input_map()),
+            player_animation,
+            PlayerLineOfSightBundle { ..default() },
+        ))
+        .id();
+
+    commands.trigger(ShowDialogEvent {
+        entity: entity_id,
+        dialog_type: ShowDialogType::Custom("hello world".to_owned(), 60.0),
+    });
 }
