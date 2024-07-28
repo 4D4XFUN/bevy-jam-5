@@ -106,10 +106,11 @@ fn pickup_key(
     };
 
     for (key_entity, key_transform, key) in keys.iter_mut() {
-        let key_min =
-            Vec3::from(key.center) - Vec3::from(key.half_extents) + key_transform.coordinates.extend(0.0);
-        let key_max =
-            Vec3::from(key.center) + Vec3::from(key.half_extents) + key_transform.coordinates.extend(0.0);
+        let key_min = Vec3::from(key.center) - Vec3::from(key.half_extents)
+            + key_transform.coordinates.extend(0.0);
+        let key_max = Vec3::from(key.center)
+            + Vec3::from(key.half_extents)
+            + key_transform.coordinates.extend(0.0);
 
         let x_min = player_min.x >= key_min.x && player_min.x <= key_max.x;
         let x_max = player_max.x >= key_min.x && player_max.x <= key_max.x;
@@ -148,5 +149,3 @@ pub fn on_death_drop_key(
         commands.trigger(Sfx::KeyDrop);
     }
 }
-
-
