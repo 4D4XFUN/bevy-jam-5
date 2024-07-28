@@ -121,7 +121,7 @@ mod handles {
 
             // materials
             let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
-            let material = materials.add(ColorMaterial::from(Color::srgba(1.0, 1.0, 0.0, 0.065)));
+            let material = materials.add(ColorMaterial::from(Color::srgba(1.0, 1.0, 0.0, 0.015)));
 
             VisionConeRenderingHandles {
                 mesh: mesh_handle,
