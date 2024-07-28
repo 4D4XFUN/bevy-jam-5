@@ -256,7 +256,6 @@ fn return_to_post(
             let direction = position.direction_to(&spawn.0);
             if direction.length() < 1.0 {
                 movement.acceleration_player_force = Vec2::ZERO;
-                println!("RETURNED");
                 ai.current_state = ReturnedToPost;
             } else {
                 movement.acceleration_player_force =

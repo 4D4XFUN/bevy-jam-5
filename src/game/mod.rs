@@ -15,6 +15,8 @@ pub mod movement;
 pub mod spawn;
 pub mod threat;
 
+mod utilities;
+
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         animation::plugin,

@@ -7,7 +7,7 @@ use bevy::prelude::*;
 pub(crate) mod enemy;
 mod exit;
 pub mod health;
-mod keys;
+pub(crate) mod keys;
 mod ldtk;
 pub mod level;
 pub mod player;

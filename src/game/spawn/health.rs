@@ -33,7 +33,7 @@ pub struct SpawnPointGridPosition(pub Vec2);
 pub struct ReceiveDamage;
 
 #[derive(Event)]
-pub struct OnDeath;
+pub struct OnDeath(pub Vec2);
 
 const ENTITY_COLLISION_RADIUS: f32 = 15.0;
 
@@ -42,14 +42,13 @@ fn apply_damage_on_collision(
     receiver_transforms: Query<(&Name, Entity, &Transform), With<CanReceiveDamage>>,
     mut commands: Commands,
 ) {
-    for (attacker_name, attacker_transform) in &attacker_transforms {
-        for (receiver_name, receiver, receiver_transform) in &receiver_transforms {
+    for (_attacker_name, attacker_transform) in &attacker_transforms {
+        for (_receiver_name, receiver, receiver_transform) in &receiver_transforms {
             if attacker_transform
                 .translation
                 .distance(receiver_transform.translation)
                 <= ENTITY_COLLISION_RADIUS
             {
-                info!("{} killed by {}", &receiver_name, &attacker_name);
                 commands.trigger_targets(ReceiveDamage, receiver);
             }
         }
@@ -81,11 +80,11 @@ fn on_receive_damage(
     ) in &mut receiver_transforms
     {
         if id == receiver {
+            commands.trigger(OnDeath(receiver_grid_position.coordinates));
             receiver_grid_position.coordinates = spawn_point.0;
             receiver_grid_position.offset = Vec2::ZERO; // reset offset within the tile
             grid_movement.reset();
             player_animation.reset();
-            commands.trigger(OnDeath);
             commands.trigger(Sfx::Death);
         }
     }
