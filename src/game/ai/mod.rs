@@ -1,9 +1,9 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::AppSet;
 use crate::game::ai::patrol::Patrolling;
 use crate::screen::Screen;
+use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // plugins
@@ -56,13 +56,13 @@ pub mod patrol {
     use bevy::app::App;
     use bevy::prelude::*;
 
-    use crate::AppSet::UpdateAi;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
     use crate::game::movement::GridMovement;
     use crate::game::spawn::enemy::{Enemy, ENEMY_PATROL_SPEED};
     use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
     use crate::screen::Screen;
+    use crate::AppSet::UpdateAi;
 
     pub fn plugin(app: &mut App) {
         // systems
