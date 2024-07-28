@@ -5,14 +5,12 @@ use crate::{
         assets::{ImageAsset, ImageAssets},
         end_game::EndGameCondition,
         grid::GridPosition,
+        utilities::intersect,
     },
     screen::Screen,
 };
 
-use super::{
-    keys::{CanPickup, Key},
-    player::Player,
-};
+use super::player::Player;
 
 pub fn plugin(app: &mut App) {
     app.observe(spawn_exit);
@@ -29,7 +27,7 @@ struct Exit;
 #[derive(Component)]
 pub struct CanBeUnlocked;
 
-const LADDER_INDEX: usize = 6 + 9 * 23;
+const LADDER_INDEX: usize = 0 + 4 * 12;
 
 fn spawn_exit(
     _trigger: Trigger<SpawnExitTrigger>,
@@ -37,7 +35,7 @@ fn spawn_exit(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut commands: Commands,
 ) {
-    let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 23, 21, None, None);
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 12, 5, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     commands.spawn((
         Name::new("Exit"),
@@ -45,22 +43,21 @@ fn spawn_exit(
         Exit,
         SpriteBundle {
             texture: images[&ImageAsset::Decoration].clone_weak(),
-            transform: Transform::from_xyz(0.0, 0.0, 1.0),
+            transform: Transform::from_xyz(0.0, 0.0, 2.0),
             ..Default::default()
         },
         TextureAtlas {
             layout: texture_atlas_layout.clone(),
             index: LADDER_INDEX,
         },
-        GridPosition::new(20., 52.),
+        GridPosition::new(59., 31.),
         CanBeUnlocked,
-        // GridCollider::default(),
     ));
 }
 
 fn check_exit(
     exits: Query<(&Transform, &Aabb), With<Exit>>,
-    players: Query<(&Transform, &Aabb), (With<Player>, (With<Key>, Without<CanPickup>))>,
+    players: Query<(&Transform, &Aabb), With<Player>>,
     mut commands: Commands,
 ) {
     let Ok((exit_transform, exit)) = exits.get_single() else {
@@ -71,23 +68,7 @@ fn check_exit(
         return;
     };
 
-    let exit_min =
-        Vec3::from(exit.center) - Vec3::from(exit.half_extents) + exit_transform.translation;
-    let exit_max =
-        Vec3::from(exit.center) + Vec3::from(exit.half_extents) + exit_transform.translation;
-
-    let player_min =
-        Vec3::from(player.center) - Vec3::from(player.half_extents) + player_transform.translation;
-    let player_max =
-        Vec3::from(player.center) + Vec3::from(player.half_extents) + player_transform.translation;
-
-    let x_min = player_min.x >= exit_min.x && player_min.x <= exit_max.x;
-    let x_max = player_max.x >= exit_min.x && player_max.x <= exit_max.x;
-
-    let y_min = player_min.y >= exit_min.y && player_min.y <= exit_max.y;
-    let y_max = player_max.y >= exit_min.y && player_max.y <= exit_max.y;
-
-    if (x_min || x_max) && (y_min || y_max) {
+    if intersect((exit_transform, exit), (player_transform, player)) {
         commands.trigger(EndGameCondition::Win);
     }
 }

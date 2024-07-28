@@ -27,7 +27,7 @@ impl ImageAssets {
             ("images/robo_crab.png", ImageAsset::RoboCrab),
             ("images/character_animated.png", ImageAsset::Player),
             ("images/gargoyle.png", ImageAsset::Gargoyle),
-            ("atlas/Dungeon_Tileset_v2.png", ImageAsset::Decoration),
+            ("atlas/Dungeon_item_props_v2.png", ImageAsset::Decoration),
         ] {
             assets.insert(
                 image_asset_tag,
