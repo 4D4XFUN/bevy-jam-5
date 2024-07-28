@@ -81,9 +81,17 @@ pub struct ShowDialogEvent {
 
 #[derive(Debug)]
 pub enum ShowDialogType {
+    /// Just show any arbitrary string
     Custom(String, f32),
+
+    /// Show the next line in the list, going in order. Stops showing once we reach the end.
+    /// we can use this for tutorialization or longer "cutscenes"
     NextLine(DialogLineType),
+
+    /// Just pick a line at random from the list and show it
     RandomLine(DialogLineType),
+
+    /// Show a specific line from the pool by index
     SpecificLine(DialogLineType, usize),
 }
 
@@ -92,7 +100,7 @@ fn setup_dialog_system(mut commands: Commands) {
         store: HashMap::new(),
     };
 
-    // Here's an example of how to add dialog lines from a rust vec
+    // Here's an example of how to add dialog lines from a rust vec.
     dialog_line_resource.store.insert(
         DialogLineType::PlayerSpawn,
         DialogLines::from(vec![
