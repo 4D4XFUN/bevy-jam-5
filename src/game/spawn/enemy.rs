@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
@@ -8,6 +9,8 @@ use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundl
 use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
 use crate::game::ai::AiState::{Chasing, ReturnedToPost};
 use crate::game::ai::{AiState, HasAiState, Hunter};
+use crate::game::animation::{PlayerAnimation, PlayerAnimationState};
+use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
@@ -38,6 +41,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<CanSeePlayer>();
     app.register_type::<SpawnCoords>();
     app.observe(on_death_reset_enemies);
+    app.observe(attach_anim_component);
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -291,4 +295,45 @@ fn on_death_reset_enemies(
         facing.0 = Vec2::new(1., 0.);
         commands.entity(enemy).remove::<CanSeePlayer>();
     }
+}
+
+fn attach_anim_component(
+    trigger: Trigger<OnAdd, Enemy>,
+    images: Res<ImageAssets>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut commands: Commands,
+) {
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 32, 4, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+    let mut frames = HashMap::new();
+
+    frames.insert(
+        PlayerAnimationState::Idling,
+        (0, 3, Duration::from_millis(500)),
+    );
+    frames.insert(
+        PlayerAnimationState::FrontIdling,
+        (3, 3, Duration::from_millis(500)),
+    );
+    frames.insert(
+        PlayerAnimationState::FrontWalking,
+        (6, 3, Duration::from_millis(100)),
+    );
+    frames.insert(
+        PlayerAnimationState::Walking,
+        (12, 3, Duration::from_millis(100)),
+    );
+    let enemy_animation = PlayerAnimation::new(frames);
+    commands.entity(trigger.entity()).insert((
+        SpriteBundle {
+            texture: images[&ImageAsset::Skeleton].clone_weak(),
+            transform: Transform::from_xyz(0.0, 0.0, 2.0),
+            ..Default::default()
+        },
+        TextureAtlas {
+            layout: texture_atlas_layout.clone(),
+            index: enemy_animation.get_atlas_index(),
+        },
+        enemy_animation,
+    ));
 }
