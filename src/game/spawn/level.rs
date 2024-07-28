@@ -8,6 +8,7 @@ use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataA
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::front_facing_edges::RebuildCache;
 use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::enemy::SpawnEnemyTrigger;
 use crate::game::spawn::ldtk::LdtkEntityBundle;
@@ -131,6 +132,7 @@ fn cache_vision_blocker_locations(
     vision_blocker_query: Query<&GridCoords, With<BlocksVision>>,
     ldtk_project_entities: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
+    mut commands: Commands,
 ) {
     for level_event in level_events.read() {
         let LevelEvent::Spawned(level_iid) = level_event else {
@@ -149,6 +151,7 @@ fn cache_vision_blocker_locations(
             level_height: level.px_hei / GRID_SIZE,
         };
         *level_vision_blocker = new_vision_blocker;
+        commands.trigger(RebuildCache);
     }
 }
 
