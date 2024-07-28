@@ -56,11 +56,11 @@ pub fn draw_line_of_sight(
     let mut visible_squares = HashSet::<IVec2>::new();
     for h in visible_query.iter() {
         for xy in h.visible_squares.iter() {
-            visible_squares.insert(xy.clone());
+            visible_squares.insert(*xy);
         }
     }
 
-    let illuminated_positions = HashSet::from_iter(overlay.squares.keys().map(|x| x.clone()));
+    let illuminated_positions = HashSet::from_iter(overlay.squares.keys().copied());
 
     let squares_to_remove = illuminated_positions.difference(&visible_squares);
     for s in squares_to_remove.into_iter() {
@@ -68,7 +68,7 @@ pub fn draw_line_of_sight(
         let Some(e) = overlay.squares.get(s) else {
             continue;
         };
-        commands.entity(e.clone()).despawn();
+        commands.entity(*e).despawn();
         overlay.squares.remove(s);
     }
 
@@ -85,11 +85,11 @@ pub fn draw_line_of_sight(
                 ..default()
             },))
             .id();
-        overlay.squares.insert(s.clone(), child_id);
+        overlay.squares.insert(*s, child_id);
         commands.entity(overlay_entity).add_child(child_id);
     }
 
-    ()
+    
 }
 
 /// Cache handles to a mesh/material that is instanced and used to render all cones of vision to save on performance vs. making new sprites for each one.
