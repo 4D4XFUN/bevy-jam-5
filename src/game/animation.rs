@@ -9,8 +9,8 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
-use crate::AppSet;
 use crate::game::movement::GridMovement;
+use crate::AppSet;
 
 use super::audio::sfx::Sfx;
 use super::movement::RollState;

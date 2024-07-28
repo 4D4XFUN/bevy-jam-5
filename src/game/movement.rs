@@ -3,13 +3,13 @@ use std::time::Duration;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
-use crate::AppSet;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::health::CanReceiveDamage;
 use crate::game::spawn::level::LevelWalls;
 use crate::game::spawn::player::Player;
 /// Grid-based movement
 use crate::input::PlayerAction;
+use crate::AppSet;
 
 use super::spawn::health::OnDeath;
 
