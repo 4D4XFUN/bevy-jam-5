@@ -10,6 +10,8 @@ use crate::game::spawn::player::Player;
 use crate::input::PlayerAction;
 use crate::AppSet;
 
+use super::spawn::health::OnDeath;
+
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, update_roll_timer.in_set(AppSet::TickTimers));
     app.add_systems(
@@ -20,6 +22,7 @@ pub fn plugin(app: &mut App) {
     );
 
     app.register_type::<GridMovement>();
+    app.observe(reset_roll_timer_on_death);
 }
 
 #[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
@@ -216,5 +219,20 @@ fn update_roll_timer(
                 roll.timer.reset();
             }
         }
+    }
+}
+
+fn reset_roll_timer_on_death(
+    _trigger: Trigger<OnDeath>,
+    mut query: Query<(&mut Roll, &mut GridMovement)>,
+) {
+    for (mut roll, mut movement) in &mut query {
+        let timer_duration = roll.timer.duration();
+        roll.timer.tick(timer_duration);
+
+        let cooldown_duration = roll.cooldown.duration();
+        roll.cooldown.tick(cooldown_duration);
+
+        movement.is_rolling = false;
     }
 }

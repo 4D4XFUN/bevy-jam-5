@@ -1,7 +1,6 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::game::animation::PlayerAnimation;
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
@@ -62,7 +61,6 @@ fn on_receive_damage(
             Entity,
             &mut GridPosition,
             &SpawnPointGridPosition,
-            &mut PlayerAnimation,
             &mut GridMovement,
         ),
         With<CanReceiveDamage>,
@@ -71,20 +69,14 @@ fn on_receive_damage(
 ) {
     let id = trigger.entity();
 
-    for (
-        receiver,
-        mut receiver_grid_position,
-        spawn_point,
-        mut player_animation,
-        mut grid_movement,
-    ) in &mut receiver_transforms
+    for (receiver, mut receiver_grid_position, spawn_point, mut grid_movement) in
+        &mut receiver_transforms
     {
         if id == receiver {
             commands.trigger(OnDeath(receiver_grid_position.coordinates));
             receiver_grid_position.coordinates = spawn_point.0;
             receiver_grid_position.offset = Vec2::ZERO; // reset offset within the tile
             grid_movement.reset();
-            player_animation.reset();
             commands.trigger(Sfx::Death);
         }
     }

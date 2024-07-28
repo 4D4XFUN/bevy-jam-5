@@ -11,6 +11,7 @@ use bevy::utils::HashMap;
 
 use super::audio::sfx::Sfx;
 use super::movement::Roll;
+use super::spawn::health::OnDeath;
 use crate::game::movement::GridMovement;
 use crate::AppSet;
 
@@ -31,6 +32,7 @@ pub(super) fn plugin(app: &mut App) {
         ),
     );
     app.register_type::<PlayerAnimation>();
+    app.observe(reset_on_death);
 }
 
 /// Update the sprite direction and animation state (idling/walking).
@@ -212,5 +214,15 @@ impl Default for PlayerAnimation {
             state: PlayerAnimationState::Idling,
             frames,
         }
+    }
+}
+
+fn reset_on_death(
+    _trigger: Trigger<OnDeath>,
+    mut query: Query<(&mut PlayerAnimation, &mut TextureAtlas)>,
+) {
+    for (mut animation, mut atlas) in &mut query {
+        animation.reset();
+        atlas.index = animation.get_atlas_index();
     }
 }
