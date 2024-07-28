@@ -4,10 +4,10 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
-use rand::Rng;
 
 use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
-use crate::game::ai::{AiBehavior, HasAiBehavior, Hunter};
+use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::game::ai::{AiState, HasAiState, Hunter};
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
@@ -85,7 +85,7 @@ struct EnemyBundle {
     marker: Enemy,
     vision: VisionBundle,
     role: Hunter,
-    ai_state: HasAiBehavior,
+    ai_state: HasAiState,
     patrol_bundle: PatrolBundle,
 }
 
@@ -93,8 +93,8 @@ impl EnemyBundle {
     pub fn new(instance: &EntityInstance) -> Self {
         const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(1, 0);
         // todo delete this it's for testing - randomize types of enemies
-        let mut rng = rand::thread_rng();
-        let is_sniper = rng.gen_ratio(1, 3);
+        //let mut rng = rand::thread_rng();
+        let is_sniper = false; //rng.gen_ratio(1, 3);
         let vision_archetype = if is_sniper {
             VisionArchetype::Sniper
         } else {
@@ -102,25 +102,37 @@ impl EnemyBundle {
         };
 
         let grid_position =
-            GridPosition::new(instance.grid.x as f32, 64.0 - instance.grid.y as f32);
+            GridPosition::new(instance.grid.x as f32, 64.0 - instance.grid.y as f32 - 1.0);
 
-        let mut ai = AiBehavior::Idle;
+        let mut ai = AiState::Idle;
 
         let mut patrol_nodes: Vec<PatrolWaypoint> = vec![];
         for field in instance.field_instances.clone() {
             if let FieldValue::Points(points) = field.value {
-                for point in points {
+                let mut next_waypoint: Option<IVec2>;
+                if points.is_empty() {
+                    ai = AiState::Idle;
+                    break;
+                }
+                for (i, point) in points.iter().enumerate() {
                     let p = point.unwrap();
+                    if points.len() > i + 1 {
+                        next_waypoint = points[i];
+                    } else {
+                        next_waypoint = points[0];
+                    }
+                    let facing = match next_waypoint {
+                        None => Facing::default(),
+                        Some(last_point) => Facing((last_point - p).as_vec2()),
+                    };
                     patrol_nodes.push(PatrolWaypoint {
-                        position: GridPosition::new(p.x as f32, 64.0 - p.y as f32),
-                        facing: Default::default(),
+                        position: GridPosition::new(p.x as f32, 64.0 - p.y as f32 - 1.),
+                        facing,
                         wait_time: DEFAULT_WAYPOINT_WAIT_TIME,
                     });
-                    ai = AiBehavior::Patrolling;
+                    ai = AiState::Patrolling;
                 }
-            } else {
-                ai = AiBehavior::Idle;
-            };
+            }
         }
         Self {
             name: Name::new("LdtkEnemy"),
@@ -134,7 +146,12 @@ impl EnemyBundle {
                 ..default()
             },
             role: Hunter,
-            ai_state: HasAiBehavior(ai),
+            ai_state: HasAiState {
+                current_state: ai,
+                previous_state: Default::default(),
+                can_patrol: !patrol_nodes.is_empty(),
+                is_away_from_post: false,
+            },
             patrol_bundle: PatrolBundle {
                 state: PatrolState {
                     current_waypoint: 0,
@@ -154,24 +171,26 @@ impl EnemyBundle {
 pub struct SpawnEnemyTrigger;
 
 fn rotate_facing(
-    mut query: Query<&mut Facing, (With<Enemy>, Without<CanSeePlayer>)>,
+    mut query: Query<(&mut Facing, &HasAiState), (With<Enemy>, Without<CanSeePlayer>)>,
     time: Res<Time>,
 ) {
     const SECONDS_TO_ROTATE: f32 = 10.;
     const RADIANS_PER_SEC: f32 = 2.0 * std::f32::consts::PI / SECONDS_TO_ROTATE;
-    for mut facing in query.iter_mut() {
-        let dt = time.delta_seconds();
-        let mut f: Vec2 = facing.0;
+    for (mut facing, ai) in query.iter_mut() {
+        if ai.current_state == AiState::Idle {
+            let dt = time.delta_seconds();
+            let mut f: Vec2 = facing.0;
 
-        let angle = RADIANS_PER_SEC * dt;
-        f = Vec2::new(
-            f.x * angle.cos() - f.y * angle.sin(),
-            f.x * angle.sin() + f.y * angle.cos(),
-        );
+            let angle = RADIANS_PER_SEC * dt;
+            f = Vec2::new(
+                f.x * angle.cos() - f.y * angle.sin(),
+                f.x * angle.sin() + f.y * angle.cos(),
+            );
 
-        f = f.normalize();
+            f = f.normalize();
 
-        facing.0 = f;
+            facing.0 = f;
+        }
     }
 }
 
@@ -219,23 +238,33 @@ pub const ENEMY_CHASE_RANGE: f32 = 100.0;
 
 fn return_to_post(
     mut unaware_enemies: Query<
-        (&mut GridMovement, &GridPosition, &SpawnCoords),
+        (
+            &mut GridMovement,
+            &GridPosition,
+            &SpawnCoords,
+            &mut HasAiState,
+        ),
         (With<Enemy>, Without<CanSeePlayer>),
     >,
 ) {
-    for (mut movement, &position, spawn) in &mut unaware_enemies {
-        let direction = position.direction_to(&spawn.0);
-        if direction.length() < 1.0 {
-            movement.acceleration_player_force = Vec2::ZERO;
-        } else {
-            movement.acceleration_player_force = direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+    for (mut movement, &position, spawn, mut ai) in &mut unaware_enemies {
+        if ai.current_state == AiState::ReturningToPost {
+            let direction = position.direction_to(&spawn.0);
+            if direction.length() < 1.0 {
+                movement.acceleration_player_force = Vec2::ZERO;
+                println!("RETURNED");
+                ai.current_state = ReturnedToPost;
+            } else {
+                movement.acceleration_player_force =
+                    direction.normalize() * ENEMY_RETURN_TO_POST_SPEED;
+            }
         }
     }
 }
 
 pub(crate) fn follow_player(
     mut enemy_movement_controllers: Query<
-        (&mut GridMovement, &mut Facing, &GridPosition),
+        (&mut GridMovement, &mut Facing, &GridPosition, &HasAiState),
         (With<Enemy>, With<CanSeePlayer>),
     >,
     player: Query<&GridPosition, With<Player>>,
@@ -244,10 +273,12 @@ pub(crate) fn follow_player(
         return;
     };
 
-    for (mut controller, mut facing, enemy_pos) in &mut enemy_movement_controllers {
-        let direction = enemy_pos.direction_to(player_pos);
-        facing.0 = direction;
-        controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
+    for (mut controller, mut facing, enemy_pos, ai) in &mut enemy_movement_controllers {
+        if ai.current_state == Chasing {
+            let direction = enemy_pos.direction_to(player_pos);
+            facing.0 = direction;
+            controller.acceleration_player_force = direction.normalize() * ENEMY_CHASE_SPEED;
+        }
     }
 }
 

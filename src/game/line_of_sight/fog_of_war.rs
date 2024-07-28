@@ -172,7 +172,9 @@ fn reveal_fog_of_war(
     grid: Res<GridLayout>,
     line_of_sight_query: Query<&VisibleSquares, With<CanRevealFog>>,
     mut fog_of_war_query: Query<&mut FogOfWar>,
+    time: Res<Time>,
 ) {
+    const REVEAL_SPEED: f32 = 12.0;
     let Ok(mut fog) = fog_of_war_query.get_single_mut() else {
         return;
     };
@@ -192,22 +194,18 @@ fn reveal_fog_of_war(
 
         for square in with_neighbors.iter() {
             let index = fog.index(square.x as u32, square.y as u32);
-            fog.data[index as usize] = (if without_neighbors.contains(square) {
-                0.0f32
-            } else {
-                0.2f32
-            })
-            .min(fog.data[index as usize]);
+            fog.data[index as usize] =
+                (fog.data[index as usize] - REVEAL_SPEED * time.delta_seconds()).max(0.0);
         }
     }
 }
 
-fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
-    const RECOVERY_SPEED: f32 = 0.02;
+fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>, time: Res<Time>) {
+    const RECOVERY_SPEED: f32 = 6.0;
     for mut s in fog_of_war_query.iter_mut() {
         let data = &mut s.data;
         for d in data.iter_mut() {
-            *d = (*d + RECOVERY_SPEED).min(1.0);
+            *d = (*d + RECOVERY_SPEED * time.delta_seconds()).min(1.0);
         }
     }
 }

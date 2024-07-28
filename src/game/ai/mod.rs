@@ -1,6 +1,7 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
+use crate::game::ai::AiState::{Idle, Patrolling, ReturnedToPost, ReturningToPost};
 use crate::game::spawn::enemy::CanSeePlayer;
 use crate::screen::Screen;
 use crate::AppSet;
@@ -17,6 +18,9 @@ pub fn plugin(app: &mut App) {
             .run_if(in_state(Screen::Playing))
             .in_set(AppSet::UpdateAi),
     );
+
+    app.register_type::<HasAiState>();
+    app.register_type::<AiState>();
 }
 
 /// Hunters have vision, movement, and look for prey. When they see one, they chase it.
@@ -28,36 +32,56 @@ pub struct Hunter;
 pub struct _Prey;
 
 // It's wrapping an enum to ensure we only have one of these at a time
-#[derive(Component, Default, Copy, Clone, Eq, PartialEq)]
-pub struct HasAiBehavior(pub AiBehavior);
+#[derive(Component, Default, Copy, Clone, Eq, PartialEq, Reflect)]
+pub struct HasAiState {
+    pub current_state: AiState,
+    pub previous_state: AiState,
+    pub can_patrol: bool,
+    pub is_away_from_post: bool,
+}
 
-#[derive(Default, Copy, Clone, Eq, PartialEq)]
-pub enum AiBehavior {
+#[derive(Default, Copy, Clone, Eq, PartialEq, Reflect)]
+pub enum AiState {
     #[default]
     Idle,
     Patrolling,
     Chasing,
     Searching,
-    ReturningToPatrol,
+    ReturningToPost,
+    ReturnedToPost,
 }
 
 pub fn main_ai_behavior_system(
-    mut aware_ais: Query<&mut HasAiBehavior, With<CanSeePlayer>>,
-    mut unaware_ais: Query<&mut HasAiBehavior, Without<CanSeePlayer>>,
+    mut aware_ais: Query<&mut HasAiState, Added<CanSeePlayer>>,
+    mut unaware_ais: Query<&mut HasAiState, Without<CanSeePlayer>>,
 ) {
     for mut ai in aware_ais.iter_mut() {
-        if ai.0 != AiBehavior::Chasing {
-            ai.0 = AiBehavior::Chasing;
+        if ai.current_state != AiState::Chasing {
+            ai.previous_state = ai.current_state;
+            ai.current_state = AiState::Chasing;
+            ai.is_away_from_post = true;
         }
     }
     for mut ai in unaware_ais.iter_mut() {
-        if ai.0 != AiBehavior::Patrolling {
-            ai.0 = AiBehavior::Patrolling;
+        if ai.is_away_from_post
+            && ai.current_state != ReturningToPost
+            && ai.current_state != ReturnedToPost
+        {
+            ai.previous_state = ai.current_state;
+            ai.current_state = ReturningToPost;
+        } else if ai.current_state == ReturnedToPost {
+            if ai.can_patrol {
+                ai.previous_state = ai.current_state;
+                ai.current_state = Patrolling;
+                ai.is_away_from_post = false;
+            } else {
+                ai.previous_state = ai.current_state;
+                ai.current_state = Idle;
+                ai.is_away_from_post = false;
+            }
         }
     }
-    //TODO return to idle if no patrol route
     //TODO search for player
-    //TODO return to patrol route
 }
 
 pub mod patrol {
@@ -66,7 +90,7 @@ pub mod patrol {
     use bevy::app::App;
     use bevy::prelude::*;
 
-    use crate::game::ai::{AiBehavior, HasAiBehavior};
+    use crate::game::ai::{AiState, HasAiState};
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
     use crate::game::movement::GridMovement;
@@ -98,16 +122,16 @@ pub mod patrol {
                 &GridPosition,
                 &mut Facing,
                 &mut GridMovement,
-                &HasAiBehavior,
+                &HasAiState,
             ),
-            (With<Enemy>),
+            With<Enemy>,
         >,
         threat_settings: Res<ThreatTimerSettings>,
         threat_timer: ResMut<ThreatTimer>,
         time: Res<Time>,
     ) {
         for (mut state, route, entity_position, mut facing, mut movement, ai) in query.iter_mut() {
-            if ai.0 != AiBehavior::Patrolling || route.waypoints.is_empty() {
+            if ai.current_state != AiState::Patrolling || route.waypoints.is_empty() {
                 continue;
             }
             // we're at the waypoint

@@ -27,7 +27,7 @@ use super::{
 /// Records ghost data (player movement intent) during FixedUpdate.
 /// Replays
 pub fn plugin(app: &mut App) {
-    app.insert_resource(Time::<Fixed>::from_hz(30.0));
+    app.insert_resource(Time::<Fixed>::from_hz(60.0));
     app.insert_resource(CurrentRecordQueue::new());
     app.insert_resource(GhostQueue {
         ghosts: VecDeque::new(),
