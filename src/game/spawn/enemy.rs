@@ -16,6 +16,7 @@ use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
     Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
 };
+use crate::game::line_of_sight::vision_cones::RenderedFieldOfView;
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
@@ -88,6 +89,7 @@ struct EnemyBundle {
     can_damage: CanApplyDamage,
     marker: Enemy,
     vision: VisionBundle,
+    rendered_field_of_view: RenderedFieldOfView,
     role: Hunter,
     ai_state: HasAiState,
     patrol_bundle: PatrolBundle,
@@ -149,6 +151,7 @@ impl EnemyBundle {
                 vision_ability: VisionAbility::of(vision_archetype),
                 ..default()
             },
+            rendered_field_of_view: RenderedFieldOfView,
             role: Hunter,
             ai_state: HasAiState {
                 current_state: ai,

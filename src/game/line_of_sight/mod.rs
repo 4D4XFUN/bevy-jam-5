@@ -7,10 +7,15 @@ pub mod fog_of_war;
 pub mod vision;
 
 pub mod front_facing_edges;
+pub mod vision_cones;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
-    app.add_plugins(vision::plugin);
+    app.add_plugins((
+        fog_of_war::plugin,
+        front_facing_edges::plugin,
+        vision::plugin,
+        vision_cones::plugin,
+    ));
 }
 
 #[derive(Component)]
