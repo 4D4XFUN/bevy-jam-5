@@ -1,11 +1,11 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::AppSet;
 use crate::game::animation::PlayerAnimation;
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
+use crate::AppSet;
 
 /// Handles all health code.
 ///

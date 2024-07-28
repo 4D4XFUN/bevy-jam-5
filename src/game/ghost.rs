@@ -2,13 +2,13 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
+use crate::game::line_of_sight::vision::VisionArchetype;
+use crate::game::line_of_sight::CanRevealFog;
+pub use crate::game::movement::RollState;
 use crate::{
     game::{animation::PlayerAnimation, assets::ImageAsset},
     screen::Screen,
 };
-use crate::game::line_of_sight::CanRevealFog;
-use crate::game::line_of_sight::vision::VisionArchetype;
-pub use crate::game::movement::RollState;
 
 use super::{
     animation::PlayerAnimationState,
