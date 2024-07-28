@@ -4,8 +4,8 @@ use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
 
 use crate::dev_tools::DebugOverlaysState;
-use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::{GridPosition, GridSprite};
+use crate::game::grid::grid_layout::GridLayout;
 use crate::game::spawn::player::Player;
 use crate::screen::Screen;
 
@@ -21,44 +21,21 @@ pub fn plugin(app: &mut App) {
 #[reflect(Component)]
 struct GridOverlay;
 
-#[derive(Component, Reflect, Debug, Copy, Clone, PartialEq)]
-#[reflect(Component)]
-struct PlayerGridSquareOverlay;
-
 fn update_player_grid_debug_overlay(
-    mut commands: Commands,
+    mut gizmos: Gizmos,
     grid: Res<GridLayout>,
-    query: Query<
-        &GridPosition,
-        (
-            With<Player>,
-            Changed<GridPosition>,
-            Without<PlayerGridSquareOverlay>,
-        ),
-    >,
-    mut overlay_sprite: Query<&mut GridPosition, (With<PlayerGridSquareOverlay>, Without<Player>)>,
+    query: Query<&GridPosition, (With<Player>,)>,
 ) {
     for player_pos in query.iter() {
-        if overlay_sprite.is_empty() {
-            commands.spawn((
-                Name::new("DebugPlayerGridSquareMarker"),
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::srgba(0.9, 0.0, 0.0, 0.2),
-                        custom_size: Some(Vec2::splat(grid.square_size)),
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(0., 0., 50.)),
-                    ..default()
-                },
-                *player_pos,             // grid position
-                PlayerGridSquareOverlay, // marker
-            ));
-        } else {
-            for mut gp in overlay_sprite.iter_mut().take(1) {
-                gp.coordinates = player_pos.coordinates;
-            }
-        }
+        gizmos.rect_2d(
+            grid.grid_to_world(&GridPosition::new(
+                player_pos.coordinates.x,
+                player_pos.coordinates.y,
+            )),
+            0.,
+            Vec2::splat(15.),
+            Color::srgba(1.0, 0.0, 0.0, 1.0),
+        );
     }
 }
 

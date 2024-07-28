@@ -6,11 +6,11 @@ use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
 use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle};
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::vision::VisibleSquares;
 use crate::game::line_of_sight::CanRevealFog;
-use crate::AppSet;
+use crate::game::line_of_sight::vision::VisibleSquares;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -94,14 +94,6 @@ fn setup_fog_of_war(
     // Create a texture for fog of war data
     let num_grid_squares = width * height;
 
-    let pixels: Vec<u8> = (0..num_grid_squares)
-        .map(|i| {
-            let step = 255. / num_grid_squares as f32;
-            let value = step * i as f32;
-            value.floor() as u8
-        })
-        .collect();
-
     let mut fog_texture = Image::new_fill(
         bevy::render::render_resource::Extent3d {
             width,
@@ -109,8 +101,7 @@ fn setup_fog_of_war(
             depth_or_array_layers: 1,
         },
         bevy::render::render_resource::TextureDimension::D2,
-        // &vec![255; num_grid_squares as usize],
-        &pixels[..],
+        &vec![255],
         bevy::render::render_resource::TextureFormat::R8Unorm,
         RenderAssetUsages::all(),
     );
