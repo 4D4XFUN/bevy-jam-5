@@ -13,6 +13,9 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins(vision::plugin);
 }
 
+#[derive(Component, Default)]
+pub struct BlocksVision;
+
 #[derive(Component)]
 pub struct CanRevealFog;
 

@@ -1,7 +1,7 @@
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::VisionAbility;
-use crate::game::spawn::level::LevelWalls;
+use crate::game::spawn::level::LevelVisionBlockers;
 use crate::geometry_2d::line_segment::LineSegment;
 use crate::AppSet;
 /// Finds front facing edges of walls (from player's perspective)
@@ -34,7 +34,7 @@ impl FacingWallsCache {
 /// Whenever the player moves a whole tile, we have to recompute which parts of walls are facing them
 pub fn update_front_facing_edges_when_grid_pos_changes(
     mut query: Query<(&GridPosition, &VisionAbility, &mut FacingWallsCache), Changed<GridPosition>>,
-    walls: Res<LevelWalls>,
+    walls: Res<LevelVisionBlockers>,
     grid: Res<GridLayout>,
 ) {
     for (&player_position, vision_ability, mut facing_walls_cache) in query.iter_mut() {
@@ -50,7 +50,7 @@ pub fn update_front_facing_edges_when_grid_pos_changes(
         let pc = player_position.coordinates;
 
         // todo we can use a grid bounding box and iterate x,y over the vision radius instead to do less work when there's lots of entities with LOS
-        for wall in walls.wall_locations.iter() {
+        for wall in walls.vision_blocker_locations.iter() {
             let wall_pos =
                 GridPosition::new(wall.x as f32, wall.y as f32).with_offset(Vec2::new(-0.5, -0.5));
 

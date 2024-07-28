@@ -8,6 +8,7 @@ use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataA
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::enemy::SpawnEnemyTrigger;
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 
@@ -20,23 +21,46 @@ pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_int_cell::<WallBundle>(1);
     app.register_ldtk_int_cell::<GroundBundle>(2);
     app.init_resource::<LevelWalls>();
+    app.init_resource::<LevelVisionBlockers>();
     app.add_systems(Update, cache_wall_locations);
+    app.add_systems(Update, cache_vision_blocker_locations);
 
     // reflection
     app.register_type::<LevelWalls>();
+    app.register_type::<LevelVisionBlockers>();
 }
 
 pub const GRID_SIZE: i32 = 16;
 
 #[derive(Default, Component)]
-pub struct Wall;
+pub struct BlocksMovement;
 
 #[derive(Default, Bundle, LdtkIntCell)]
 struct WallBundle {
-    wall: Wall,
+    wall: BlocksMovement,
+    vision: BlocksVision,
 }
+
 #[derive(Default, Bundle, LdtkIntCell)]
 struct GroundBundle {}
+
+#[derive(Default, Resource, Reflect)]
+#[reflect(Resource)]
+pub struct LevelVisionBlockers {
+    pub vision_blocker_locations: HashSet<GridCoords>,
+    pub level_width: i32,
+    pub level_height: i32,
+}
+
+impl LevelVisionBlockers {
+    pub fn collides(&self, x: i32, y: i32) -> bool {
+        x < 0
+            || y < 0
+            || x >= self.level_width
+            || y >= self.level_height
+            || self.vision_blocker_locations.contains(&GridCoords::new(x, y))
+    }
+}
 
 #[derive(Default, Resource, Reflect)]
 #[reflect(Resource)]
@@ -74,25 +98,53 @@ fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
 fn cache_wall_locations(
     mut level_walls: ResMut<LevelWalls>,
     mut level_events: EventReader<LevelEvent>,
-    walls_query: Query<&GridCoords, With<Wall>>,
+    walls_query: Query<&GridCoords, With<BlocksMovement>>,
     ldtk_project_entities: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     for level_event in level_events.read() {
-        if let LevelEvent::Spawned(level_iid) = level_event {
-            let ldtk_project = ldtk_project_assets
-                .get(ldtk_project_entities.single())
-                .expect("LdtkProject should be loaded when level is spawned");
-            let level = ldtk_project
-                .get_raw_level_by_iid(level_iid.get())
-                .expect("spawned level should exist in project");
-            let wall_locations = walls_query.iter().copied().collect();
-            let new_level_walls = LevelWalls {
-                wall_locations,
-                level_width: level.px_wid / GRID_SIZE,
-                level_height: level.px_hei / GRID_SIZE,
-            };
-            *level_walls = new_level_walls;
-        }
+        let LevelEvent::Spawned(level_iid) = level_event else {
+            return;
+        };
+        let ldtk_project = ldtk_project_assets
+            .get(ldtk_project_entities.single())
+            .expect("LdtkProject should be loaded when level is spawned");
+        let level = ldtk_project
+            .get_raw_level_by_iid(level_iid.get())
+            .expect("spawned level should exist in project");
+        let wall_locations = walls_query.iter().copied().collect();
+        let new_level_walls = LevelWalls {
+            wall_locations,
+            level_width: level.px_wid / GRID_SIZE,
+            level_height: level.px_hei / GRID_SIZE,
+        };
+        *level_walls = new_level_walls;
+    }
+}
+
+fn cache_vision_blocker_locations(
+    mut level_vision_blocker: ResMut<LevelVisionBlockers>,
+    mut level_events: EventReader<LevelEvent>,
+    vision_blocker_query: Query<&GridCoords, With<BlocksVision>>,
+    ldtk_project_entities: Query<&Handle<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    for level_event in level_events.read() {
+        let LevelEvent::Spawned(level_iid) = level_event else {
+            return;
+        };
+        let ldtk_project = ldtk_project_assets
+            .get(ldtk_project_entities.single())
+            .expect("LdtkProject should be loaded when level is spawned");
+        let level = ldtk_project
+            .get_raw_level_by_iid(level_iid.get())
+            .expect("spawned level should exist in project");
+        let blocker_locations = vision_blocker_query.iter().copied().collect();
+        let new_vision_blocker = LevelVisionBlockers {
+            vision_blocker_locations: blocker_locations,
+            level_width: level.px_wid / GRID_SIZE,
+            level_height: level.px_hei / GRID_SIZE,
+        };
+        *level_vision_blocker = new_vision_blocker;
     }
 }
