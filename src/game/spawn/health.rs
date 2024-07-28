@@ -31,6 +31,7 @@ pub struct SpawnPointGridPosition(pub Vec2);
 #[derive(Event)]
 pub struct ReceiveDamage;
 
+#[allow(dead_code)]
 #[derive(Event)]
 pub struct OnDeath(pub Vec2);
 
