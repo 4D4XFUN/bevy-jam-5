@@ -82,12 +82,12 @@ mod enemy_vision {
     use bevy::app::App;
     use bevy::prelude::*;
 
-    use crate::AppSet;
     use crate::dev_tools::DebugOverlaysState;
     use crate::game::ai::Hunter;
     use crate::game::grid::grid_layout::GridLayout;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::VisibleSquares;
+    use crate::AppSet;
 
     pub(super) fn plugin(app: &mut App) {
         app.add_systems(

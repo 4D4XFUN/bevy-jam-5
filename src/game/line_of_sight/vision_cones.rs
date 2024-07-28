@@ -4,11 +4,11 @@ use bevy::app::App;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
-use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::VisibleSquares;
 use crate::game::line_of_sight::vision_cones::handles::VisionConeRenderingHandles;
+use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // plugins
