@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::ldtk::{FieldValue, GridPoint};
+use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
@@ -17,13 +17,21 @@ use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
+use crate::screen::Screen;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
     app.register_ldtk_entity::<LdtkEnemyBundle>("Enemy");
 
     // systems
-    app.add_systems(Update, detect_player);
+    app.add_systems(
+        Update,
+        (detect_player, return_to_post, follow_player, rotate_facing)
+            .chain()
+            .run_if(in_state(Screen::Playing))
+            .in_set(AppSet::Update),
+    );
 
     // reflection
     app.register_type::<Enemy>();
@@ -96,6 +104,8 @@ impl EnemyBundle {
         let grid_position =
             GridPosition::new(instance.grid.x as f32, 64.0 - instance.grid.y as f32);
 
+        let mut ai = AiBehavior::Idle;
+
         let mut patrol_nodes: Vec<PatrolWaypoint> = vec![];
         for field in instance.field_instances.clone() {
             if let FieldValue::Points(points) = field.value {
@@ -106,11 +116,10 @@ impl EnemyBundle {
                         facing: Default::default(),
                         wait_time: DEFAULT_WAYPOINT_WAIT_TIME,
                     });
-
-                    println!("found a point!");
+                    ai = AiBehavior::Patrolling;
                 }
             } else {
-                println!("couldn't find points");
+                ai = AiBehavior::Idle;
             };
         }
         Self {
@@ -125,7 +134,7 @@ impl EnemyBundle {
                 ..default()
             },
             role: Hunter,
-            ai_state: HasAiBehavior(AiBehavior::Patrolling),
+            ai_state: HasAiBehavior(ai),
             patrol_bundle: PatrolBundle {
                 state: PatrolState {
                     current_waypoint: 0,

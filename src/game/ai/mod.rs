@@ -1,7 +1,7 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
-use crate::game::ai::patrol::Patrolling;
+use crate::game::spawn::enemy::CanSeePlayer;
 use crate::screen::Screen;
 use crate::AppSet;
 
@@ -28,10 +28,10 @@ pub struct Hunter;
 pub struct _Prey;
 
 // It's wrapping an enum to ensure we only have one of these at a time
-#[derive(Component, Default, Copy, Clone)]
+#[derive(Component, Default, Copy, Clone, Eq, PartialEq)]
 pub struct HasAiBehavior(pub AiBehavior);
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Copy, Clone, Eq, PartialEq)]
 pub enum AiBehavior {
     #[default]
     Idle,
@@ -42,12 +42,22 @@ pub enum AiBehavior {
 }
 
 pub fn main_ai_behavior_system(
-    mut query: Query<(Entity), (Without<Patrolling>)>,
-    mut commands: Commands,
+    mut aware_ais: Query<&mut HasAiBehavior, With<CanSeePlayer>>,
+    mut unaware_ais: Query<&mut HasAiBehavior, Without<CanSeePlayer>>,
 ) {
-    for entity in query.iter_mut() {
-        commands.entity(entity).insert(Patrolling);
+    for mut ai in aware_ais.iter_mut() {
+        if ai.0 != AiBehavior::Chasing {
+            ai.0 = AiBehavior::Chasing;
+        }
     }
+    for mut ai in unaware_ais.iter_mut() {
+        if ai.0 != AiBehavior::Patrolling {
+            ai.0 = AiBehavior::Patrolling;
+        }
+    }
+    //TODO return to idle if no patrol route
+    //TODO search for player
+    //TODO return to patrol route
 }
 
 pub mod patrol {
@@ -56,6 +66,7 @@ pub mod patrol {
     use bevy::app::App;
     use bevy::prelude::*;
 
+    use crate::game::ai::{AiBehavior, HasAiBehavior};
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
     use crate::game::movement::GridMovement;
@@ -87,15 +98,16 @@ pub mod patrol {
                 &GridPosition,
                 &mut Facing,
                 &mut GridMovement,
+                &HasAiBehavior,
             ),
-            (With<Enemy>, With<Patrolling>),
+            (With<Enemy>),
         >,
         threat_settings: Res<ThreatTimerSettings>,
-        mut threat_timer: ResMut<ThreatTimer>,
+        threat_timer: ResMut<ThreatTimer>,
         time: Res<Time>,
     ) {
-        for (mut state, route, entity_position, mut facing, mut movement) in query.iter_mut() {
-            if route.waypoints.is_empty() {
+        for (mut state, route, entity_position, mut facing, mut movement, ai) in query.iter_mut() {
+            if ai.0 != AiBehavior::Patrolling || route.waypoints.is_empty() {
                 continue;
             }
             // we're at the waypoint
@@ -119,9 +131,6 @@ pub mod patrol {
             }
         }
     }
-
-    #[derive(Component, Reflect, Debug, Clone)]
-    pub struct Patrolling;
 
     #[derive(Component, Reflect, Debug, Clone)]
     #[reflect(Component)]
