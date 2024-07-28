@@ -99,7 +99,7 @@ impl CurrentRecordQueue {
 }
 
 #[derive(Component)]
-struct Ghost;
+pub(crate) struct Ghost;
 
 #[derive(Component)]
 pub struct GhostRecordQueue {

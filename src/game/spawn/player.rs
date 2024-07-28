@@ -98,5 +98,5 @@ fn spawn_player(
         InputManagerBundle::with_map(PlayerAction::default_input_map()),
         player_animation,
         PlayerLineOfSightBundle { ..default() },
-    ));
+        ));
 }

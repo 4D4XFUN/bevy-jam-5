@@ -8,6 +8,7 @@ use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::audio::sfx::Sfx;
 use crate::game::end_game::EndGameCondition;
+use crate::game::ghost::Ghost;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::enemy::SpawnCoords;
 use crate::game::spawn::health::OnDeath;
@@ -22,6 +23,7 @@ pub(super) fn plugin(app: &mut App) {
     // systems
     app.add_systems(Update, fix_loaded_ldtk_entities);
     app.add_systems(Update, pickup_key);
+    app.add_systems(Update, follow_player);
     // reflection
     app.register_type::<Key>();
     app.observe(on_end_game_reset_keys);
@@ -90,19 +92,33 @@ fn on_end_game_reset_keys(
 }
 
 fn pickup_key(
-    player: Query<(&Transform, &Aabb), (With<Player>, Without<Key>)>,
-    mut keys: Query<(Entity, &mut Transform, &Aabb), (With<Key>, With<CanPickup>)>,
+    player: Query<(&Transform, &Aabb), (With<Player>, Without<Ghost>, Without<Key>)>,
+    mut keys: Query<(Entity, &Transform, &Aabb), (With<Key>, With<CanPickup>)>,
     mut commands: Commands,
 ) {
     let Ok(player) = player.get_single() else {
         return;
     };
 
-    for (key_entity, mut key_transform, key) in &mut keys {
+    for (key_entity, key_transform, key) in &mut keys {
         if intersect(player, (&key_transform, key)) {
             commands.trigger(Sfx::KeyPickup);
             commands.entity(key_entity).remove::<CanPickup>();
-            key_transform.translation.z = -10.;
+        }
+    }
+}
+
+pub fn follow_player(
+    time: Res<Time>,
+    player_query: Query<&Transform, (With<Player>, Without<Ghost>, Without<Key>)>,
+    mut key_query: Query<&mut Transform, (With<Key>, Without<CanPickup>)>,
+) {
+    if let Ok(player_transform) = player_query.get_single() {
+        let speed = 5.0;
+        for mut key_transform in &mut key_query {
+            key_transform.translation = key_transform
+                .translation
+                .lerp(player_transform.translation, speed * time.delta_seconds());
         }
     }
 }
