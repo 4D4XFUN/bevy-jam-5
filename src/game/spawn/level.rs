@@ -24,7 +24,8 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<LevelVisionBlockers>();
     app.add_systems(Update, cache_wall_locations);
     app.add_systems(Update, cache_vision_blocker_locations);
-
+    app.observe(rebuild_movement_cache_on_remove);
+    app.observe(rebuild_movement_cache_on_add);
     // reflection
     app.register_type::<LevelWalls>();
     app.register_type::<LevelVisionBlockers>();
@@ -58,7 +59,9 @@ impl LevelVisionBlockers {
             || y < 0
             || x >= self.level_width
             || y >= self.level_height
-            || self.vision_blocker_locations.contains(&GridCoords::new(x, y))
+            || self
+                .vision_blocker_locations
+                .contains(&GridCoords::new(x, y))
     }
 }
 
@@ -146,5 +149,27 @@ fn cache_vision_blocker_locations(
             level_height: level.px_hei / GRID_SIZE,
         };
         *level_vision_blocker = new_vision_blocker;
+    }
+}
+
+fn rebuild_movement_cache_on_remove(
+    trigger: Trigger<OnRemove, BlocksVision>,
+    mut movement_blocker: ResMut<LevelWalls>,
+    query: Query<(Entity, &GridCoords)>,
+) {
+    let entity = trigger.entity();
+    if let Ok((_, coordinates)) = query.get(entity) {
+        movement_blocker.wall_locations.remove(coordinates);
+    }
+}
+
+fn rebuild_movement_cache_on_add(
+    trigger: Trigger<OnAdd, BlocksVision>,
+    mut movement_blocker: ResMut<LevelWalls>,
+    query: Query<(Entity, &GridCoords)>,
+) {
+    let entity = trigger.entity();
+    if let Ok((_, coordinates)) = query.get(entity) {
+        movement_blocker.wall_locations.insert(*coordinates);
     }
 }
