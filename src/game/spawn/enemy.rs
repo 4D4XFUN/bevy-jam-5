@@ -1,12 +1,13 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::ldtk::{FieldValue, GridPoint};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use rand::Rng;
 
-use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
 use crate::game::ai::{AiBehavior, HasAiBehavior, Hunter};
+use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
 use crate::game::audio::sfx::Sfx;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
@@ -21,11 +22,7 @@ pub(super) fn plugin(app: &mut App) {
     // spawning
     app.register_ldtk_entity::<LdtkEnemyBundle>("Enemy");
 
-    #[cfg(feature = "dev")]
-    app.observe(spawn_oneshot_enemy);
-
     // systems
-    app.add_systems(Update, fix_loaded_ldtk_entities);
     app.add_systems(Update, detect_player);
 
     // reflection
@@ -53,18 +50,26 @@ pub struct LdtkEnemy;
 // This is ldtk-specific stuff for loading enemy assets.
 // These should be transformed into an enemy type internal to our app
 #[derive(Default, Bundle, LdtkEntity)]
-struct LdtkEnemyBundle {
+pub struct LdtkEnemyBundle {
     tag: LdtkEnemy,
     #[sprite_sheet_bundle]
     sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]
     grid_coords: GridCoords,
+    #[with(fix_loaded_ldtk_entities)]
+    enemy_bundle: EnemyBundle,
+}
+
+/// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
+fn fix_loaded_ldtk_entities(instance: &EntityInstance) -> EnemyBundle {
+    EnemyBundle::new(instance)
 }
 
 // This is what our game needs to make an enemy work, separate from LDTK
 // Keeping the stuff we need to work separate from LDTK lets us instantiate enemies in code, if we want/need to.
-#[derive(Bundle)]
+#[derive(Bundle, Default, Clone)]
 struct EnemyBundle {
+    name: Name,
     spawn_coords: SpawnCoords,
     grid_position: GridPosition,
     grid_movement: GridMovement,
@@ -73,11 +78,12 @@ struct EnemyBundle {
     vision: VisionBundle,
     role: Hunter,
     ai_state: HasAiBehavior,
-    can_patrol: PatrolBundle,
+    patrol_bundle: PatrolBundle,
 }
 
 impl EnemyBundle {
-    pub fn new(x: i32, y: i32) -> Self {
+    pub fn new(instance: &EntityInstance) -> Self {
+        const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(1, 0);
         // todo delete this it's for testing - randomize types of enemies
         let mut rng = rand::thread_rng();
         let is_sniper = rng.gen_ratio(1, 3);
@@ -87,9 +93,28 @@ impl EnemyBundle {
             VisionArchetype::Patrol
         };
 
-        let grid_position = GridPosition::new(x as f32, y as f32);
+        let grid_position =
+            GridPosition::new(instance.grid.x as f32, 64.0 - instance.grid.y as f32);
 
+        let mut patrol_nodes: Vec<PatrolWaypoint> = vec![];
+        for field in instance.field_instances.clone() {
+            if let FieldValue::Points(points) = field.value {
+                for point in points {
+                    let p = point.unwrap();
+                    patrol_nodes.push(PatrolWaypoint {
+                        position: GridPosition::new(p.x as f32, 64.0 - p.y as f32),
+                        facing: Default::default(),
+                        wait_time: DEFAULT_WAYPOINT_WAIT_TIME,
+                    });
+
+                    println!("found a point!");
+                }
+            } else {
+                println!("couldn't find points");
+            };
+        }
         Self {
+            name: Name::new("LdtkEnemy"),
             marker: Enemy,
             can_damage: CanApplyDamage,
             spawn_coords: SpawnCoords(grid_position),
@@ -101,44 +126,14 @@ impl EnemyBundle {
             },
             role: Hunter,
             ai_state: HasAiBehavior(AiBehavior::Patrolling),
-            can_patrol: PatrolBundle {
+            patrol_bundle: PatrolBundle {
                 state: PatrolState {
                     current_waypoint: 0,
-                    wait_timer: Timer::new(Duration::new(1, 0), TimerMode::Once),
+                    wait_timer: Timer::new(DEFAULT_WAYPOINT_WAIT_TIME, TimerMode::Once),
                     direction: 1,
                 },
                 route: PatrolRoute {
-                    waypoints: vec![
-                        PatrolWaypoint {
-                            position: grid_position,
-                            facing: Facing(Vec2::X),
-                            wait_time: Duration::new(1, 0),
-                        },
-                        PatrolWaypoint {
-                            position: GridPosition::new(
-                                grid_position.coordinates.x + 3.0,
-                                grid_position.coordinates.y,
-                            ),
-                            facing: Facing(Vec2::Y),
-                            wait_time: Duration::new(1, 0),
-                        },
-                        PatrolWaypoint {
-                            position: GridPosition::new(
-                                grid_position.coordinates.x + 3.0,
-                                grid_position.coordinates.y + 3.0,
-                            ),
-                            facing: Facing(Vec2::NEG_X),
-                            wait_time: Duration::new(1, 0),
-                        },
-                        PatrolWaypoint {
-                            position: GridPosition::new(
-                                grid_position.coordinates.x,
-                                grid_position.coordinates.y + 3.0,
-                            ),
-                            facing: Facing(Vec2::NEG_Y),
-                            wait_time: Duration::new(1, 0),
-                        },
-                    ],
+                    waypoints: patrol_nodes,
                     mode: PatrolMode::Cycle,
                 },
             },
@@ -146,42 +141,8 @@ impl EnemyBundle {
     }
 }
 
-/// Takes all ldtk enemy entities, and adds all the components we need for them to work in our game.
-fn fix_loaded_ldtk_entities(
-    query: Query<(Entity, &GridCoords), With<LdtkEnemy>>,
-    mut commands: Commands,
-) {
-    for (ldtk_entity, grid_coords) in query.iter() {
-        commands
-            .entity(ldtk_entity)
-            .remove::<LdtkEnemy>() // we have to remove it because it's used as the query for this function
-            .insert((
-                Name::new("LdtkEnemy"),
-                EnemyBundle::new(grid_coords.x, grid_coords.y),
-            ));
-    }
-}
-
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
-
-#[cfg(feature = "dev")]
-fn spawn_oneshot_enemy(
-    _trigger: Trigger<SpawnEnemyTrigger>,
-    mut commands: Commands,
-    images: Res<crate::game::assets::ImageAssets>,
-) {
-    info!("Spawning a dev-only gargoyle next to player to test non-ldtk enemy functionality");
-    commands.spawn((
-        Name::new("custom_gargoyle"),
-        EnemyBundle::new(42, 24), // right next to player
-        SpriteBundle {
-            texture: images[&crate::game::assets::ImageAsset::Gargoyle].clone_weak(),
-            transform: Transform::from_translation(Vec3::default().with_z(100.)),
-            ..Default::default()
-        },
-    ));
-}
 
 fn rotate_facing(
     mut query: Query<&mut Facing, (With<Enemy>, Without<CanSeePlayer>)>,

@@ -22,7 +22,7 @@ pub fn plugin(app: &mut App) {
     app.register_type::<VisionAbility>();
 }
 
-#[derive(Bundle, Default)]
+#[derive(Bundle, Default, Clone)]
 pub struct VisionBundle {
     pub facing: Facing,
     pub vision_ability: VisionAbility,

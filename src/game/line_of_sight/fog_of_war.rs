@@ -6,11 +6,11 @@ use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::render::texture::{ImageSampler, ImageSamplerDescriptor};
 use bevy::sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle};
 
+use crate::AppSet;
 use crate::game::grid::grid_layout::GridLayout;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::vision::VisibleSquares;
 use crate::game::line_of_sight::CanRevealFog;
-use crate::AppSet;
+use crate::game::line_of_sight::vision::VisibleSquares;
 
 pub(super) fn plugin(app: &mut App) {
     //systems
@@ -203,7 +203,7 @@ fn reveal_fog_of_war(
 }
 
 fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>) {
-    const RECOVERY_SPEED: f32 = 0.01;
+    const RECOVERY_SPEED: f32 = 0.02;
     for mut s in fog_of_war_query.iter_mut() {
         let data = &mut s.data;
         for d in data.iter_mut() {

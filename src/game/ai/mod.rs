@@ -1,9 +1,9 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
+use crate::AppSet;
 use crate::game::ai::patrol::Patrolling;
 use crate::screen::Screen;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // plugins
@@ -20,18 +20,20 @@ pub fn plugin(app: &mut App) {
 }
 
 /// Hunters have vision, movement, and look for prey. When they see one, they chase it.
-#[derive(Component)]
+#[derive(Component, Default, Copy, Clone)]
 pub struct Hunter;
 
 /// Preys are targets for hunters to see and chase down. There's probably only one - the player.
-#[derive(Component)]
+#[derive(Component, Default, Copy, Clone)]
 pub struct _Prey;
 
 // It's wrapping an enum to ensure we only have one of these at a time
-#[derive(Component)]
+#[derive(Component, Default, Copy, Clone)]
 pub struct HasAiBehavior(pub AiBehavior);
 
+#[derive(Default, Copy, Clone)]
 pub enum AiBehavior {
+    #[default]
     Idle,
     Patrolling,
     Chasing,
@@ -54,12 +56,13 @@ pub mod patrol {
     use bevy::app::App;
     use bevy::prelude::*;
 
+    use crate::AppSet::UpdateAi;
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
     use crate::game::movement::GridMovement;
     use crate::game::spawn::enemy::{Enemy, ENEMY_PATROL_SPEED};
+    use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
     use crate::screen::Screen;
-    use crate::AppSet::UpdateAi;
 
     pub fn plugin(app: &mut App) {
         // systems
@@ -87,9 +90,14 @@ pub mod patrol {
             ),
             (With<Enemy>, With<Patrolling>),
         >,
+        threat_settings: Res<ThreatTimerSettings>,
+        mut threat_timer: ResMut<ThreatTimer>,
         time: Res<Time>,
     ) {
         for (mut state, route, entity_position, mut facing, mut movement) in query.iter_mut() {
+            if route.waypoints.is_empty() {
+                continue;
+            }
             // we're at the waypoint
             let direction_to_waypoint =
                 entity_position.direction_to(&route.waypoints[state.current_waypoint].position);
@@ -105,8 +113,9 @@ pub mod patrol {
             }
             // we're not at our target yet, so move towards it
             else {
-                const ACCEL: f32 = ENEMY_PATROL_SPEED;
-                movement.acceleration_player_force = direction_to_waypoint.normalize() * ACCEL;
+                let accel: f32 = ENEMY_PATROL_SPEED
+                    * (1.0 + threat_timer.current_level as f32 / threat_settings.levels as f32);
+                movement.acceleration_player_force = direction_to_waypoint.normalize() * accel;
             }
         }
     }
@@ -171,7 +180,7 @@ pub mod patrol {
         pub direction: i8, // 1 for forward, -1 for backward along route
     }
 
-    #[derive(Bundle, Default)]
+    #[derive(Bundle, Default, Clone)]
     pub struct PatrolBundle {
         pub state: PatrolState,
         pub route: PatrolRoute,

@@ -130,7 +130,7 @@ fn on_death_spawn_new_ghost(
     _trigger: Trigger<OnDeath>,
     mut ghost_queue: ResMut<GhostQueue>,
     mut current_record_queue: ResMut<CurrentRecordQueue>,
-    spawn_points: Query<&SpawnPointGridPosition>,
+    spawn_points: Query<&SpawnPointGridPosition, With<Player>>,
     images: Res<ImageAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut commands: Commands,
@@ -159,7 +159,7 @@ fn on_death_spawn_new_ghost(
                     color: Color::srgba(0.5, 0.5, 0.5, GHOST_DEFAULT_ALPHA),
                     ..default()
                 },
-                transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                transform: Transform::from_xyz(0.0, 0.0, 2.0),
                 ..Default::default()
             },
             TextureAtlas {

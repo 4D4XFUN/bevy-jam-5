@@ -20,7 +20,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component, Reflect, Default)]
 pub struct CanReceiveDamage;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Default, Clone)]
 pub struct CanApplyDamage;
 
 #[derive(Component, Reflect, Default)]
