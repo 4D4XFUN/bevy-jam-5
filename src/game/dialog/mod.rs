@@ -12,7 +12,7 @@ pub fn plugin(app: &mut App) {
 
 #[derive(Component)]
 pub struct Dialog {
-    pub content: String,
+    pub _content: String,
     pub time_to_show: Timer,
 }
 
@@ -57,6 +57,7 @@ impl DialogLines {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Hash, Eq, PartialEq, Clone, Debug)]
 pub enum DialogLineType {
     PlayerSpawn,
@@ -79,6 +80,7 @@ pub struct ShowDialogEvent {
     pub dialog_type: ShowDialogType,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum ShowDialogType {
     /// Just show any arbitrary string
@@ -198,7 +200,7 @@ fn handle_show_dialog_event(
                 ..default()
             },
             Dialog {
-                content,
+                _content: content,
                 time_to_show: Timer::from_seconds(duration, TimerMode::Once),
             },
         ));
