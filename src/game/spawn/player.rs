@@ -6,7 +6,7 @@ use leafwing_input_manager::InputManagerBundle;
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::PlayerLineOfSightBundle;
 use crate::game::movement::GridMovement;
-use crate::game::movement::Roll;
+use crate::game::movement::RollState;
 use crate::game::spawn::health::{CanReceiveDamage, SpawnPointGridPosition};
 use crate::input::PlayerAction;
 use crate::{
@@ -67,7 +67,7 @@ fn spawn_player(
         CanReceiveDamage,
         GridPosition::new(32., 64. - 33.),
         GridMovement::default(),
-        Roll::default(),
+        RollState::default(),
         InputManagerBundle::with_map(PlayerAction::default_input_map()),
         player_animation,
         PlayerLineOfSightBundle { ..default() },
