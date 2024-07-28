@@ -30,6 +30,7 @@ impl Plugin for AppPlugin {
                 AppSet::RecordInput,
                 AppSet::UpdateVirtualGrid,
                 AppSet::Update,
+                AppSet::UpdateAi,
                 AppSet::UpdateWorld,
                 AppSet::UpdateFog,
             )
@@ -98,6 +99,8 @@ enum AppSet {
     UpdateVirtualGrid,
     /// Do everything else (consider splitting this into further variants).
     Update,
+    /// Ai behaviors execute in here
+    UpdateAi,
     /// After all grid coordinates are settled, we translate them to real pixels in world space
     UpdateWorld,
     /// Fog updates happen last

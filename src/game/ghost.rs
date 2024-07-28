@@ -27,7 +27,7 @@ use super::{
 /// Records ghost data (player movement intent) during FixedUpdate.
 /// Replays
 pub fn plugin(app: &mut App) {
-    app.insert_resource(Time::<Fixed>::from_hz(30.0));
+    app.insert_resource(Time::<Fixed>::from_hz(60.0));
     app.insert_resource(CurrentRecordQueue::new());
     app.insert_resource(GhostQueue {
         ghosts: VecDeque::new(),
@@ -65,7 +65,9 @@ fn ghost_visibility(
     mut commands: Commands,
 ) {
     for (entity, mut sprite, ghost_record_queue) in query.iter_mut() {
-        if ghost_record_queue.records[ghost_record_queue.current_record - 1].is_alive {
+        if ghost_record_queue.current_record > 0
+            && ghost_record_queue.records[ghost_record_queue.current_record - 1].is_alive
+        {
             sprite.color = sprite.color.with_alpha(GHOST_DEFAULT_ALPHA);
         } else if sprite.color.alpha() > 0.0 {
             sprite.color = sprite
@@ -128,7 +130,7 @@ fn on_death_spawn_new_ghost(
     _trigger: Trigger<OnDeath>,
     mut ghost_queue: ResMut<GhostQueue>,
     mut current_record_queue: ResMut<CurrentRecordQueue>,
-    spawn_points: Query<&SpawnPointGridPosition>,
+    spawn_points: Query<&SpawnPointGridPosition, With<Player>>,
     images: Res<ImageAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut commands: Commands,
@@ -157,7 +159,7 @@ fn on_death_spawn_new_ghost(
                     color: Color::srgba(0.5, 0.5, 0.5, GHOST_DEFAULT_ALPHA),
                     ..default()
                 },
-                transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                transform: Transform::from_xyz(0.0, 0.0, 2.0),
                 ..Default::default()
             },
             TextureAtlas {

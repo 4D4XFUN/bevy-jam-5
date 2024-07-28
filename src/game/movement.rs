@@ -74,7 +74,7 @@ impl Default for GridMovement {
             friction: 0.85,
             acceleration_player_force: Vec2::ZERO,
             acceleration_external_force: Vec2::ZERO,
-            acceleration_player_multiplier: 1.0,
+            acceleration_player_multiplier: 0.7,
             is_rolling: false,
         }
     }
