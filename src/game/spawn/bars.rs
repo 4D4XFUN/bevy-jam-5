@@ -5,7 +5,7 @@ use super::level::BlocksMovement;
 
 pub fn plugin(app: &mut App) {
     // spawning
-    app.register_ldtk_entity::<LdtkBarsBundle>("Bars");
+    app.register_ldtk_entity::<LdtkBarsBundle>("CanPlayerSeeThrough");
 }
 
 #[derive(Component, Default, Copy, Clone)]
