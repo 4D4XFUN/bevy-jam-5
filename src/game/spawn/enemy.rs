@@ -2,13 +2,14 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
-use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
-use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::AppSet;
 use crate::game::ai::{AiState, HasAiState, Hunter};
+use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
 use crate::game::animation::{PlayerAnimation, PlayerAnimationState};
 use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::audio::sfx::Sfx;
@@ -16,12 +17,12 @@ use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
     Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
 };
+use crate::game::line_of_sight::vision_cones::RenderedFieldOfView;
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 use crate::screen::Screen;
-use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -88,6 +89,7 @@ struct EnemyBundle {
     can_damage: CanApplyDamage,
     marker: Enemy,
     vision: VisionBundle,
+    rendered_field_of_view: RenderedFieldOfView,
     role: Hunter,
     ai_state: HasAiState,
     patrol_bundle: PatrolBundle,
@@ -149,6 +151,7 @@ impl EnemyBundle {
                 vision_ability: VisionAbility::of(vision_archetype),
                 ..default()
             },
+            rendered_field_of_view: RenderedFieldOfView,
             role: Hunter,
             ai_state: HasAiState {
                 current_state: ai,
