@@ -105,10 +105,32 @@ fn setup_dialog_system(mut commands: Commands) {
     // Here's an example of how to add dialog lines from a rust vec.
     dialog_line_resource.store.insert(
         DialogLineType::PlayerSpawn,
-        DialogLines::from(vec![
-            "How do I get out of here?".to_string(),
-            "How..?".to_string(),
-        ]),
+        DialogLines::from(
+            vec![
+                "That guard dropped a key!",
+                "How..?",
+                "This must be a time spell.",
+                "I need to get out of here!",
+            ]
+            .map(|s| s.to_owned())
+            .collect(),
+        ),
+    );
+    dialog_line_resource.store.insert(
+        DialogLineType::PlayerFindsKey,
+        DialogLines::from(
+            vec!["Now to find a door!", "Another one?"]
+                .map(|s| s.to_owned())
+                .collect(),
+        ),
+    );
+    dialog_line_resource.store.insert(
+        DialogLineType::PlayerUnlocksDoor,
+        DialogLines::from(
+            vec!["Of course it wasn't that easy..", "This place is huge!"]
+                .map(|s| s.to_owned())
+                .collect(),
+        ),
     );
 
     // Another way of adding lines, this time from a file
