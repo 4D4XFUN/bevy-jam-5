@@ -116,7 +116,7 @@ fn setup_dialog_system(mut commands: Commands) {
 }
 
 fn handle_show_dialog_event(
-    mut trigger: Trigger<ShowDialogEvent>,
+    trigger: Trigger<ShowDialogEvent>,
     mut commands: Commands,
     mut dialog_line_resource: ResMut<DialogLineResource>,
     dialog_query: Query<(Entity, &Parent), With<Dialog>>,
@@ -143,7 +143,7 @@ fn handle_show_dialog_event(
         ShowDialogType::Custom(text, duration) => Some((text.clone(), *duration)),
         ShowDialogType::NextLine(dialog_type) => {
             let store = &mut dialog_line_resource.store;
-            if let Some(mut dialog_lines) = store.get_mut(dialog_type) {
+            if let Some(dialog_lines) = store.get_mut(dialog_type) {
                 dialog_lines.next_line().map(|l| (l, default_duration))
             } else {
                 info!("Can't find dialog lines for {:?}", dialog_type);
