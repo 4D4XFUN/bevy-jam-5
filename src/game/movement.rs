@@ -50,7 +50,9 @@ impl Default for Roll {
         Self {
             timer: Timer::from_seconds(0.25, TimerMode::Once),
             velocity_multiplier: 3.0,
-            cooldown: Timer::from_seconds(5.0, TimerMode::Once),
+            cooldown: Timer::from_seconds(5.0, TimerMode::Once)
+                .tick(Duration::from_secs_f32(5.0))
+                .clone(),
         }
     }
 }
