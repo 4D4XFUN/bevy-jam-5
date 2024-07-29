@@ -72,7 +72,14 @@ fn setup_fog_of_war(
     }
 
     // despawn old fogs of war
-    for (e, fow) in old_fog.iter() {
+    if let Ok((e, fow)) = old_fog.get_single() {
+        if fow.width as usize == grid.width && fow.height as usize == grid.height {
+            // info!(
+            //     "Fog size hasn't actually changed, ignoring change event. {}x{}",
+            //     fow.width, fow.height,
+            // );
+            return; // no real change, return
+        }
         info!("Despawning old {} x {} fog", fow.width, fow.height);
         commands.entity(e).despawn_recursive();
     }
@@ -185,14 +192,14 @@ fn reveal_fog_of_war(
 
         for square in with_neighbors.iter() {
             let index = fog.index(square.x as u32, square.y as u32);
-            fog.data[index as usize] =
-                (fog.data[index as usize] - REVEAL_SPEED * time.delta_seconds()).max(0.0);
+            fog.data[index as usize] = 0.0;
+            // (fog.data[index as usize] - REVEAL_SPEED * time.delta_seconds()).max(0.0);
         }
     }
 }
 
 fn recover_fog_of_war(mut fog_of_war_query: Query<&mut FogOfWar>, time: Res<Time>) {
-    const RECOVERY_SPEED: f32 = 6.0;
+    const RECOVERY_SPEED: f32 = 2.0;
     for mut s in fog_of_war_query.iter_mut() {
         let data = &mut s.data;
         for d in data.iter_mut() {
