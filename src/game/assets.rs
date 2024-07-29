@@ -6,11 +6,7 @@ use bevy::{
 
 #[derive(PartialEq, Eq, Hash, Reflect)]
 pub enum ImageAsset {
-    Ducky,
-    Crab,
-    RoboCrab,
     Player,
-    Gargoyle,
     Decoration,
     Skeleton,
 }
