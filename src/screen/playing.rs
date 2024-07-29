@@ -2,8 +2,8 @@
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
-use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
 use crate::game::threat::ThreatTimer;
+use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
 use crate::ui::prelude::*;
 
 use super::Screen;
@@ -13,12 +13,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnExit(Screen::Playing), exit_playing);
 
     app.add_systems(Update, update_timer.run_if(in_state(Screen::Playing)));
-
-    app.add_systems(
-        Update,
-        return_to_title_screen
-            .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::Escape))),
-    );
 }
 
 #[derive(Component)]
