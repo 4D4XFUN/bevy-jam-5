@@ -106,6 +106,7 @@ impl SfxAssets {
         );
 
         assets.insert(SfxAsset::Door, asset_server.load("audio/sfx/door.ogg"));
+        assets.insert(SfxAsset::Win, asset_server.load("audio/sfx/win.ogg"));
 
         Self(assets)
     }
