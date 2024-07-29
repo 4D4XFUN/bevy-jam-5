@@ -2,6 +2,7 @@ use bevy::app::App;
 use bevy::prelude::*;
 
 use crate::game::audio::sfx::Sfx;
+use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::grid::GridPosition;
 use crate::game::movement::GridMovement;
 use crate::AppSet;
@@ -83,6 +84,10 @@ fn on_receive_damage(
             receiver_grid_position.offset = Vec2::ZERO; // reset offset within the tile
             grid_movement.reset();
             commands.trigger(Sfx::Death);
+            commands.trigger(ShowDialogEvent {
+                entity: id,
+                dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerSpawn),
+            });
         }
     }
 }

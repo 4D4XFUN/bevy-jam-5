@@ -7,6 +7,7 @@ use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::audio::sfx::Sfx;
+use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::end_game::EndGameCondition;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::enemy::SpawnCoords;
@@ -90,19 +91,24 @@ fn on_end_game_reset_keys(
 }
 
 fn pickup_key(
-    player: Query<(&Transform, &Aabb), (With<Player>, Without<Key>)>,
+    player: Query<(Entity, &Transform, &Aabb), (With<Player>, Without<Key>)>,
     mut keys: Query<(Entity, &mut Transform, &Aabb), (With<Key>, With<CanPickup>)>,
     mut commands: Commands,
 ) {
-    let Ok(player) = player.get_single() else {
+    let Ok((player_ent, player_transform, player_aabb)) = player.get_single() else {
         return;
     };
 
     for (key_entity, mut key_transform, key) in &mut keys {
-        if intersect(player, (&key_transform, key)) {
+        if intersect((player_transform, player_aabb), (&key_transform, key)) {
             commands.trigger(Sfx::KeyPickup);
             commands.entity(key_entity).remove::<CanPickup>();
             key_transform.translation.z = -10.;
+
+            commands.trigger(ShowDialogEvent {
+                entity: player_ent,
+                dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerFindsKey),
+            });
         }
     }
 }

@@ -15,6 +15,7 @@ pub mod movement;
 pub mod spawn;
 pub mod threat;
 
+pub mod dialog;
 mod utilities;
 
 pub(super) fn plugin(app: &mut App) {
@@ -28,5 +29,6 @@ pub(super) fn plugin(app: &mut App) {
         line_of_sight::plugin,
         ghost::plugin,
         threat::plugin,
+        dialog::plugin,
     ));
 }
