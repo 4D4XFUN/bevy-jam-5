@@ -2627,7 +2627,7 @@
 						},
 						{
 							"__identifier": "Key",
-							"__grid": [2,46],
+							"__grid": [1,44],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 54, "x": 144, "y": 64, "w": 16, "h": 16 },
@@ -2636,10 +2636,10 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 52,
-							"px": [32,736],
+							"px": [16,704],
 							"fieldInstances": [],
-							"__worldX": 32,
-							"__worldY": 736
+							"__worldX": 16,
+							"__worldY": 704
 						},
 						{
 							"__identifier": "Goal",
@@ -3473,90 +3473,6 @@
 						},
 						{
 							"__identifier": "Enemy",
-							"__grid": [19,5],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "66d61e30-4ce0-11ef-bbe7-31d6a092a32d",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [304,80],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 304,
-							"__worldY": 80
-						},
-						{
-							"__identifier": "Enemy",
-							"__grid": [17,7],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "68608ec0-4ce0-11ef-bbe7-072979d60b69",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [272,112],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [
-								{ "cx": 17, "cy": 7 },
-								{ "cx": 17, "cy": 2 },
-								{ "cx": 22, "cy": 2 },
-								{ "cx": 22, "cy": 8 },
-								{ "cx": 23, "cy": 8 },
-								{ "cx": 23, "cy": 18 },
-								{ "cx": 23, "cy": 8 },
-								{ "cx": 22, "cy": 8 },
-								{ "cx": 22, "cy": 2 },
-								{ "cx": 17, "cy": 2 }
-							], "__tile": null, "defUid": 51, "realEditorValues": [
-								{
-									"id": "V_String",
-									"params": ["17,7"]
-								},
-								{
-									"id": "V_String",
-									"params": ["17,2"]
-								},
-								{
-									"id": "V_String",
-									"params": ["22,2"]
-								},
-								{
-									"id": "V_String",
-									"params": ["22,8"]
-								},
-								{
-									"id": "V_String",
-									"params": ["23,8"]
-								},
-								{
-									"id": "V_String",
-									"params": ["23,18"]
-								},
-								{
-									"id": "V_String",
-									"params": ["23,8"]
-								},
-								{
-									"id": "V_String",
-									"params": ["22,8"]
-								},
-								{
-									"id": "V_String",
-									"params": ["22,2"]
-								},
-								{
-									"id": "V_String",
-									"params": ["17,2"]
-								}
-							] }],
-							"__worldX": 272,
-							"__worldY": 112
-						},
-						{
-							"__identifier": "Enemy",
 							"__grid": [26,6],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -3615,38 +3531,6 @@
 						},
 						{
 							"__identifier": "Enemy",
-							"__grid": [35,13],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "6bafe0d0-4ce0-11ef-bbe7-19bc80a518ab",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [560,208],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 560,
-							"__worldY": 208
-						},
-						{
-							"__identifier": "Enemy",
-							"__grid": [41,4],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "74781bb0-4ce0-11ef-bbe7-d51e440bb2da",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [656,64],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 656,
-							"__worldY": 64
-						},
-						{
-							"__identifier": "Enemy",
 							"__grid": [39,10],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -3657,7 +3541,19 @@
 							"height": 16,
 							"defUid": 48,
 							"px": [624,160],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 38, "cy": 9 }, { "cx": 38, "cy": 6 }, { "cx": 41, "cy": 6 }, { "cx": 41, "cy": 9 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["38,9"]
+							}, {
+								"id": "V_String",
+								"params": ["38,6"]
+							}, {
+								"id": "V_String",
+								"params": ["41,6"]
+							}, {
+								"id": "V_String",
+								"params": ["41,9"]
+							} ] }],
 							"__worldX": 624,
 							"__worldY": 160
 						},
@@ -3673,7 +3569,19 @@
 							"height": 16,
 							"defUid": 48,
 							"px": [672,176],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 44, "cy": 11 }, { "cx": 44, "cy": 8 }, { "cx": 41, "cy": 8 }, { "cx": 41, "cy": 11 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["44,11"]
+							}, {
+								"id": "V_String",
+								"params": ["44,8"]
+							}, {
+								"id": "V_String",
+								"params": ["41,8"]
+							}, {
+								"id": "V_String",
+								"params": ["41,11"]
+							} ] }],
 							"__worldX": 672,
 							"__worldY": 176
 						},
@@ -3689,7 +3597,19 @@
 							"height": 16,
 							"defUid": 48,
 							"px": [704,112],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 42, "cy": 7 }, { "cx": 42, "cy": 4 }, { "cx": 45, "cy": 4 }, { "cx": 45, "cy": 7 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["42,7"]
+							}, {
+								"id": "V_String",
+								"params": ["42,4"]
+							}, {
+								"id": "V_String",
+								"params": ["45,4"]
+							}, {
+								"id": "V_String",
+								"params": ["45,7"]
+							} ] }],
 							"__worldX": 704,
 							"__worldY": 112
 						},
@@ -3705,13 +3625,19 @@
 							"height": 16,
 							"defUid": 48,
 							"px": [864,176],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 61, "cy": 11 }, { "cx": 53, "cy": 11 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["61,11"]
+							}, {
+								"id": "V_String",
+								"params": ["53,11"]
+							} ] }],
 							"__worldX": 864,
 							"__worldY": 176
 						},
 						{
 							"__identifier": "Enemy",
-							"__grid": [54,14],
+							"__grid": [58,14],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
@@ -3720,41 +3646,15 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 48,
-							"px": [864,224],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 864,
-							"__worldY": 224
-						},
-						{
-							"__identifier": "Enemy",
-							"__grid": [54,17],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "7b1bc8e0-4ce0-11ef-bbe7-c3fa3cd92c08",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [864,272],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 864,
-							"__worldY": 272
-						},
-						{
-							"__identifier": "Enemy",
-							"__grid": [60,14],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "7bb41140-4ce0-11ef-bbe7-cb167d5cb85e",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [960,224],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 960,
+							"px": [928,224],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 53, "cy": 14 }, { "cx": 61, "cy": 14 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["53,14"]
+							}, {
+								"id": "V_String",
+								"params": ["61,14"]
+							} ] }],
+							"__worldX": 928,
 							"__worldY": 224
 						},
 						{
@@ -3769,25 +3669,15 @@
 							"height": 16,
 							"defUid": 48,
 							"px": [960,272],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 61, "cy": 17 }, { "cx": 53, "cy": 17 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["61,17"]
+							}, {
+								"id": "V_String",
+								"params": ["53,17"]
+							} ] }],
 							"__worldX": 960,
 							"__worldY": 272
-						},
-						{
-							"__identifier": "Enemy",
-							"__grid": [60,11],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "7cdeae90-4ce0-11ef-bbe7-554d06d7f423",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [960,176],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 960,
-							"__worldY": 176
 						},
 						{
 							"__identifier": "Enemy",
@@ -3851,7 +3741,7 @@
 						},
 						{
 							"__identifier": "Enemy",
-							"__grid": [5,44],
+							"__grid": [3,43],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
@@ -3860,10 +3750,42 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 48,
-							"px": [80,704],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 80,
-							"__worldY": 704
+							"px": [48,688],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [
+								{ "cx": 1, "cy": 43 },
+								{ "cx": 1, "cy": 46 },
+								{ "cx": 5, "cy": 46 },
+								{ "cx": 7, "cy": 43 },
+								{ "cx": 7, "cy": 46 },
+								{ "cx": 5, "cy": 43 }
+							], "__tile": null, "defUid": 51, "realEditorValues": [
+								{
+									"id": "V_String",
+									"params": ["1,43"]
+								},
+								{
+									"id": "V_String",
+									"params": ["1,46"]
+								},
+								{
+									"id": "V_String",
+									"params": ["5,46"]
+								},
+								{
+									"id": "V_String",
+									"params": ["7,43"]
+								},
+								{
+									"id": "V_String",
+									"params": ["7,46"]
+								},
+								{
+									"id": "V_String",
+									"params": ["5,43"]
+								}
+							] }],
+							"__worldX": 48,
+							"__worldY": 688
 						},
 						{
 							"__identifier": "Enemy",
@@ -4690,38 +4612,6 @@
 							"__worldY": 240
 						},
 						{
-							"__identifier": "Enemy",
-							"__grid": [32,13],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "ab083920-4ce0-11ef-bbe7-890f8e8de772",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [512,208],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 512,
-							"__worldY": 208
-						},
-						{
-							"__identifier": "Enemy",
-							"__grid": [19,7],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#EAD4AA",
-							"iid": "3c08e3c0-4ce0-11ef-bbe7-256cc3174c78",
-							"width": 16,
-							"height": 16,
-							"defUid": 48,
-							"px": [304,112],
-							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 51, "realEditorValues": [] }],
-							"__worldX": 304,
-							"__worldY": 112
-						},
-						{
 							"__identifier": "Barrel",
 							"__grid": [8,39],
 							"__pivot": [0,0],
@@ -5136,6 +5026,34 @@
 							"fieldInstances": [],
 							"__worldX": 512,
 							"__worldY": 496
+						},
+						{
+							"__identifier": "Enemy",
+							"__grid": [16,7],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 53, "x": 48, "y": 0, "w": 16, "h": 16 },
+							"__smartColor": "#EAD4AA",
+							"iid": "d1e5f0a0-4ce0-11ef-a6c6-c93283229321",
+							"width": 16,
+							"height": 16,
+							"defUid": 48,
+							"px": [256,112],
+							"fieldInstances": [{ "__identifier": "PatrolPath", "__type": "Array<Point>", "__value": [ { "cx": 19, "cy": 7 }, { "cx": 19, "cy": 5 }, { "cx": 15, "cy": 5 }, { "cx": 15, "cy": 7 } ], "__tile": null, "defUid": 51, "realEditorValues": [ {
+								"id": "V_String",
+								"params": ["19,7"]
+							}, {
+								"id": "V_String",
+								"params": ["19,5"]
+							}, {
+								"id": "V_String",
+								"params": ["15,5"]
+							}, {
+								"id": "V_String",
+								"params": ["15,7"]
+							} ] }],
+							"__worldX": 256,
+							"__worldY": 112
 						}
 					]
 				},
@@ -5242,7 +5160,7 @@
 						2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 						1,1,1,1,1,1,1,1,1,1,1,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,1,1,1,2,2,2,2,2,2,
 						2,2,2,2,2,2,2,2,2,2,2,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-						1,1,1,1,1,2,2,1,1,2,2,2,1,1,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+						1,1,1,1,1,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
 						2,2,2,2,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 						1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,
 						2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -6301,6 +6219,10 @@
 						{ "px": [448,720], "src": [48,48], "f": 0, "t": 33, "d": [76,2908], "a": 1 },
 						{ "px": [464,720], "src": [128,64], "f": 0, "t": 48, "d": [76,2909], "a": 1 },
 						{ "px": [640,720], "src": [112,64], "f": 0, "t": 47, "d": [76,2920], "a": 1 },
+						{ "px": [32,736], "src": [112,64], "f": 0, "t": 47, "d": [76,2946], "a": 1 },
+						{ "px": [48,736], "src": [128,64], "f": 0, "t": 48, "d": [76,2947], "a": 1 },
+						{ "px": [64,736], "src": [32,48], "f": 0, "t": 32, "d": [76,2948], "a": 1 },
+						{ "px": [80,736], "src": [32,48], "f": 0, "t": 32, "d": [76,2949], "a": 1 },
 						{ "px": [96,736], "src": [48,48], "f": 0, "t": 33, "d": [76,2950], "a": 1 },
 						{ "px": [176,736], "src": [48,48], "f": 0, "t": 33, "d": [76,2955], "a": 1 },
 						{ "px": [192,736], "src": [128,64], "f": 0, "t": 48, "d": [76,2956], "a": 1 },
@@ -6354,7 +6276,6 @@
 						{ "px": [544,640], "src": [64,48], "f": 0, "t": 34, "d": [77,2594], "a": 1 },
 						{ "px": [800,656], "src": [64,48], "f": 0, "t": 34, "d": [77,2674], "a": 1 },
 						{ "px": [688,672], "src": [144,64], "f": 0, "t": 49, "d": [77,2731], "a": 1 },
-						{ "px": [32,736], "src": [64,48], "f": 0, "t": 34, "d": [77,2946], "a": 1 },
 						{ "px": [112,736], "src": [144,64], "f": 0, "t": 49, "d": [77,2951], "a": 1 },
 						{ "px": [240,736], "src": [144,64], "f": 0, "t": 49, "d": [77,2959], "a": 1 },
 						{ "px": [656,752], "src": [64,48], "f": 0, "t": 34, "d": [77,3049], "a": 1 },
@@ -6495,7 +6416,6 @@
 						{ "px": [304,720], "src": [96,64], "f": 0, "t": 46, "d": [80,2899], "a": 1 },
 						{ "px": [624,720], "src": [16,48], "f": 0, "t": 31, "d": [80,2919], "a": 1 },
 						{ "px": [16,736], "src": [96,64], "f": 0, "t": 46, "d": [80,2945], "a": 1 },
-						{ "px": [80,736], "src": [96,64], "f": 0, "t": 46, "d": [80,2949], "a": 1 },
 						{ "px": [160,736], "src": [16,48], "f": 0, "t": 31, "d": [80,2954], "a": 1 },
 						{ "px": [480,768], "src": [96,64], "f": 0, "t": 46, "d": [80,3102], "a": 1 },
 						{ "px": [96,0], "src": [112,144], "f": 0, "t": 97, "d": [23,6], "a": 1 },
@@ -8372,10 +8292,8 @@
 						{ "px": [0,704], "src": [0,32], "f": 0, "t": 20, "d": [25,2816], "a": 1 },
 						{ "px": [608,704], "src": [0,32], "f": 0, "t": 20, "d": [25,2854], "a": 1 },
 						{ "px": [0,720], "src": [0,32], "f": 0, "t": 20, "d": [25,2880], "a": 1 },
-						{ "px": [64,720], "src": [0,32], "f": 0, "t": 20, "d": [25,2884], "a": 1 },
 						{ "px": [608,720], "src": [0,32], "f": 0, "t": 20, "d": [25,2918], "a": 1 },
 						{ "px": [0,736], "src": [0,32], "f": 0, "t": 20, "d": [25,2944], "a": 1 },
-						{ "px": [64,736], "src": [0,32], "f": 0, "t": 20, "d": [25,2948], "a": 1 },
 						{ "px": [464,752], "src": [0,32], "f": 0, "t": 20, "d": [25,3037], "a": 1 },
 						{ "px": [464,768], "src": [0,32], "f": 0, "t": 20, "d": [25,3101], "a": 1 },
 						{ "px": [80,16], "src": [80,32], "f": 0, "t": 25, "d": [24,69], "a": 1 },
@@ -8543,10 +8461,8 @@
 						{ "px": [704,672], "src": [80,32], "f": 0, "t": 25, "d": [24,2732], "a": 1 },
 						{ "px": [128,688], "src": [80,32], "f": 0, "t": 25, "d": [24,2760], "a": 1 },
 						{ "px": [416,688], "src": [80,32], "f": 0, "t": 25, "d": [24,2778], "a": 1 },
-						{ "px": [48,720], "src": [80,32], "f": 0, "t": 25, "d": [24,2883], "a": 1 },
 						{ "px": [576,720], "src": [80,32], "f": 0, "t": 25, "d": [24,2916], "a": 1 },
 						{ "px": [672,720], "src": [80,32], "f": 0, "t": 25, "d": [24,2922], "a": 1 },
-						{ "px": [48,736], "src": [80,32], "f": 0, "t": 25, "d": [24,2947], "a": 1 },
 						{ "px": [256,736], "src": [80,32], "f": 0, "t": 25, "d": [24,2960], "a": 1 },
 						{ "px": [672,736], "src": [80,32], "f": 0, "t": 25, "d": [24,2986], "a": 1 },
 						{ "px": [672,752], "src": [80,32], "f": 0, "t": 25, "d": [24,3050], "a": 1 },
@@ -8735,6 +8651,8 @@
 						{ "px": [448,736], "src": [32,64], "f": 0, "t": 42, "d": [27,2972], "a": 1 },
 						{ "px": [16,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3009], "a": 1 },
 						{ "px": [32,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3010], "a": 1 },
+						{ "px": [48,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3011], "a": 1 },
+						{ "px": [64,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3012], "a": 1 },
 						{ "px": [80,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3013], "a": 1 },
 						{ "px": [96,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3014], "a": 1 },
 						{ "px": [112,752], "src": [32,64], "f": 0, "t": 42, "d": [27,3015], "a": 1 },
@@ -8925,7 +8843,6 @@
 						{ "px": [560,656], "src": [80,64], "f": 0, "t": 45, "d": [43,2659], "a": 1 },
 						{ "px": [816,672], "src": [80,64], "f": 0, "t": 45, "d": [43,2739], "a": 1 },
 						{ "px": [704,688], "src": [80,64], "f": 0, "t": 45, "d": [43,2796], "a": 1 },
-						{ "px": [48,752], "src": [80,64], "f": 0, "t": 45, "d": [43,3011], "a": 1 },
 						{ "px": [128,752], "src": [80,64], "f": 0, "t": 45, "d": [43,3016], "a": 1 },
 						{ "px": [256,752], "src": [80,64], "f": 0, "t": 45, "d": [43,3024], "a": 1 },
 						{ "px": [672,768], "src": [80,64], "f": 0, "t": 45, "d": [43,3114], "a": 1 },
@@ -9019,7 +8936,6 @@
 						{ "px": [576,688], "src": [0,64], "f": 0, "t": 40, "d": [42,2788], "a": 1 },
 						{ "px": [288,736], "src": [0,64], "f": 0, "t": 40, "d": [42,2962], "a": 1 },
 						{ "px": [0,752], "src": [0,64], "f": 0, "t": 40, "d": [42,3008], "a": 1 },
-						{ "px": [64,752], "src": [0,64], "f": 0, "t": 40, "d": [42,3012], "a": 1 },
 						{ "px": [144,752], "src": [0,64], "f": 0, "t": 40, "d": [42,3017], "a": 1 },
 						{ "px": [464,784], "src": [0,64], "f": 0, "t": 40, "d": [42,3165], "a": 1 },
 						{ "px": [16,0], "src": [32,0], "f": 0, "t": 2, "d": [26,1], "a": 1 },
@@ -9270,6 +9186,7 @@
 						{ "px": [192,672], "src": [48,80], "f": 0, "t": 53, "d": [30,2700], "a": 1 },
 						{ "px": [288,688], "src": [48,80], "f": 0, "t": 53, "d": [30,2770], "a": 1 },
 						{ "px": [144,704], "src": [48,80], "f": 0, "t": 53, "d": [30,2825], "a": 1 },
+						{ "px": [64,720], "src": [48,80], "f": 0, "t": 53, "d": [30,2884], "a": 1 },
 						{ "px": [80,32], "src": [32,80], "f": 0, "t": 52, "d": [31,133], "a": 1 },
 						{ "px": [96,48], "src": [32,80], "f": 0, "t": 52, "d": [31,198], "a": 1 },
 						{ "px": [288,64], "src": [32,80], "f": 0, "t": 52, "d": [31,274], "a": 1 },
@@ -9320,6 +9237,7 @@
 						{ "px": [128,704], "src": [32,80], "f": 0, "t": 52, "d": [31,2824], "a": 1 },
 						{ "px": [416,704], "src": [32,80], "f": 0, "t": 52, "d": [31,2842], "a": 1 },
 						{ "px": [640,704], "src": [32,80], "f": 0, "t": 52, "d": [31,2856], "a": 1 },
+						{ "px": [48,720], "src": [32,80], "f": 0, "t": 52, "d": [31,2883], "a": 1 },
 						{ "px": [576,736], "src": [32,80], "f": 0, "t": 52, "d": [31,2980], "a": 1 },
 						{ "px": [800,80], "src": [128,112], "f": 0, "t": 78, "d": [55,370], "a": 1 },
 						{ "px": [928,80], "src": [128,112], "f": 0, "t": 78, "d": [55,378], "a": 1 },
