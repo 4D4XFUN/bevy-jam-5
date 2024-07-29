@@ -1,10 +1,10 @@
 use bevy::app::App;
 use bevy::prelude::*;
 
+use crate::AppSet;
 use crate::game::ai::AiState::{Idle, Patrolling, ReturnedToPost, ReturningToPost};
 use crate::game::spawn::enemy::CanSeePlayer;
 use crate::screen::Screen;
-use crate::AppSet;
 
 pub fn plugin(app: &mut App) {
     // plugins
@@ -90,6 +90,7 @@ pub mod patrol {
     use bevy::app::App;
     use bevy::prelude::*;
 
+    use crate::AppSet::UpdateAi;
     use crate::game::ai::{AiState, HasAiState};
     use crate::game::grid::GridPosition;
     use crate::game::line_of_sight::vision::Facing;
@@ -97,7 +98,6 @@ pub mod patrol {
     use crate::game::spawn::enemy::{Enemy, ENEMY_PATROL_SPEED};
     use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
     use crate::screen::Screen;
-    use crate::AppSet::UpdateAi;
 
     pub fn plugin(app: &mut App) {
         // systems
@@ -137,10 +137,10 @@ pub mod patrol {
             // we're at the waypoint
             let direction_to_waypoint =
                 entity_position.direction_to(&route.waypoints[state.current_waypoint].position);
-            if direction_to_waypoint.length() <= 1.0 {
+            if direction_to_waypoint.length() <= 0.1 {
                 state.wait_timer.tick(time.delta());
                 facing.0 = route.waypoints[state.current_waypoint].facing.0;
-
+                movement.acceleration_player_force = Vec2::ZERO;
                 // we've waited here long enough, advance the waypoint
                 if state.wait_timer.finished() {
                     state.wait_timer.reset();

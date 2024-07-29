@@ -2,13 +2,14 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
-use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
-use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::AppSet;
 use crate::game::ai::{AiState, HasAiState, Hunter};
+use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
 use crate::game::animation::{PlayerAnimation, PlayerAnimationState};
 use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::audio::sfx::Sfx;
@@ -23,7 +24,6 @@ use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 use crate::screen::Screen;
-use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -98,7 +98,7 @@ struct EnemyBundle {
 
 impl EnemyBundle {
     pub fn new(instance: &EntityInstance) -> Self {
-        const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(1, 0);
+        const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(5, 0);
         // todo delete this it's for testing - randomize types of enemies
         //let mut rng = rand::thread_rng();
         let is_sniper = false; //rng.gen_ratio(1, 3);
