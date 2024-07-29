@@ -66,7 +66,7 @@ fn spawn_player(
                 index: player_animation.get_atlas_index(),
             },
             SpawnPointGridPosition(Vec2::new(29., 64. - 28.)),
-            // CanReceiveDamage, /TODO uncomment
+            CanReceiveDamage,
             GridPosition::new(29., 64. - 28.),
             GridMovement::default(),
             RollState::default(),
