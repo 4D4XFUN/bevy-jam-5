@@ -1,11 +1,11 @@
 use bevy::{prelude::*, render::primitives::Aabb};
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
-use crate::game::{grid::GridPosition, utilities::intersect};
 use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::keys::{CanPickup, Key};
 use crate::game::spawn::level::BlocksMovement;
+use crate::game::{grid::GridPosition, utilities::intersect};
 use crate::{
     game::{
         assets::{ImageAsset, ImageAssets},
