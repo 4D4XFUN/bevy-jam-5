@@ -6,7 +6,7 @@ use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::keys::{CanPickup, Key};
 use crate::game::spawn::level::BlocksMovement;
 use crate::game::{grid::GridPosition, utilities::intersect};
-
+use crate::game::dialog::{ShowDialogEvent, ShowDialogType, DialogLineType};
 use super::player::Player;
 
 pub fn plugin(app: &mut App) {
@@ -79,7 +79,7 @@ pub struct NumKeysPickedUp(pub i32);
 
 fn open_locked_doors(
     mut picked_up_keys: ResMut<NumKeysPickedUp>,
-    player_query: Query<(&Transform, &Aabb), With<Player>>,
+    player_query: Query<(Entity, &Transform, &Aabb), With<Player>>,
     mut door_query: Query<
         (Entity, &mut Visibility, &Transform, &Aabb),
         (
@@ -91,17 +91,23 @@ fn open_locked_doors(
     key: Query<Entity, (With<Key>, Without<CanPickup>)>,
     mut commands: Commands,
 ) {
-    let Ok(player) = player_query.get_single() else {
+    let Ok((player_ent, player_transform, player_aabb)) = player_query.get_single() else {
         return;
     };
 
     if picked_up_keys.0 > 0 {
         for (entity, mut visibility, transform, aabb) in &mut door_query {
-            if intersect(player, (transform, aabb)) {
+            if intersect((player_transform, player_aabb), (transform, aabb)) {
                 commands.entity(entity).remove::<BlocksMovement>();
                 commands.entity(entity).remove::<BlocksVision>();
                 *visibility = Visibility::Hidden;
                 picked_up_keys.0 -= 1;
+
+                commands.trigger(ShowDialogEvent {
+                    entity: player_ent,
+                    dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerUnlocksDoor),
+                });
+
                 if let Ok(key) = key.get_single() {
                     commands.entity(key).despawn();
                 }
