@@ -3,13 +3,13 @@
 use std::collections::HashSet;
 
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
-use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::front_facing_edges::RebuildCache;
 use crate::game::line_of_sight::BlocksVision;
+use crate::game::line_of_sight::front_facing_edges::RebuildCache;
 use crate::game::spawn::enemy::SpawnEnemyTrigger;
 use crate::game::spawn::ldtk::LdtkEntityBundle;
 
@@ -34,7 +34,7 @@ pub(super) fn plugin(app: &mut App) {
 
 pub const GRID_SIZE: i32 = 16;
 
-#[derive(Default, Component)]
+#[derive(Default, Component, Copy, Clone)]
 pub struct BlocksMovement;
 
 #[derive(Default, Bundle, LdtkIntCell)]

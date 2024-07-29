@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
+
 use front_facing_edges::RebuildCache;
 
 use crate::game::line_of_sight::front_facing_edges::FacingWallsCache;
@@ -11,6 +12,7 @@ pub mod fog_of_war;
 pub mod vision;
 
 pub mod front_facing_edges;
+pub mod vision_cones;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
@@ -19,7 +21,7 @@ pub(super) fn plugin(app: &mut App) {
     app.observe(rebuild_vision_cache_on_add);
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Clone)]
 pub struct BlocksVision;
 
 #[derive(Component)]

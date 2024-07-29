@@ -3,14 +3,15 @@ use bevy::core::Name;
 use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
-use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
+use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 use crate::game::audio::sfx::Sfx;
 use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::end_game::EndGameCondition;
 use crate::game::grid::GridPosition;
 use crate::game::spawn::enemy::SpawnCoords;
+use crate::game::spawn::exit::NumKeysPickedUp;
 use crate::game::spawn::health::OnDeath;
 use crate::game::utilities::intersect;
 
@@ -94,6 +95,7 @@ fn pickup_key(
     player: Query<(Entity, &Transform, &Aabb), (With<Player>, Without<Key>)>,
     mut keys: Query<(Entity, &mut Transform, &Aabb), (With<Key>, With<CanPickup>)>,
     mut commands: Commands,
+    mut picked_up_keys: ResMut<NumKeysPickedUp>,
 ) {
     let Ok((player_ent, player_transform, player_aabb)) = player.get_single() else {
         return;
@@ -109,6 +111,7 @@ fn pickup_key(
                 entity: player_ent,
                 dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerFindsKey),
             });
+            picked_up_keys.0 += 1;
         }
     }
 }
