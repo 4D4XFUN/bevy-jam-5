@@ -1,9 +1,9 @@
+use bevy::window::WindowResolution;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
-use bevy::window::WindowResolution;
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
 
 #[cfg(feature = "dev")]
@@ -40,6 +40,9 @@ impl Plugin for AppPlugin {
         // Spawn the main camera.
         app.add_systems(Startup, spawn_ldtk_world_bundle);
         app.insert_resource(LevelSelection::index(0));
+
+        // Set background color
+        app.insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)));
 
         // Add Bevy plugins.
         app.add_plugins(
