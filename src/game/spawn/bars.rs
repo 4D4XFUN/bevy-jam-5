@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 use crate::game::line_of_sight::BlocksVision;
+use crate::game::spawn::ldtk::LdtkEntityBundle;
 
 use super::level::BlocksMovement;
 
@@ -15,6 +16,10 @@ pub fn plugin(app: &mut App) {
     app.register_ldtk_entity::<LdtkBarsBundle>("Crate3");
     app.register_ldtk_entity::<LdtkBarsBundle>("Crate4");
     app.register_ldtk_entity::<LdtkBarsBundle>("Podium");
+    app.register_ldtk_entity::<LdtkBarsBundle>("Pouch");
+    app.register_ldtk_entity::<LdtkEntityBundle>("Bones");
+    app.register_ldtk_entity::<LdtkEntityBundle>("Bones2");
+    app.register_ldtk_entity::<LdtkEntityBundle>("Light");
     app.register_ldtk_entity::<LdtkBarsBundle>("Podium2");
     app.register_ldtk_entity::<LdtkBarsBundle>("Chest");
     app.register_ldtk_entity::<LdtkBarsBundle>("Chest2");

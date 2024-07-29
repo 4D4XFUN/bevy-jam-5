@@ -1,9 +1,9 @@
-use bevy::window::WindowResolution;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
+use bevy::window::WindowResolution;
 use bevy_ecs_ldtk::{LdtkPlugin, LdtkWorldBundle, LevelSelection};
 
 #[cfg(feature = "dev")]
@@ -57,7 +57,7 @@ impl Plugin for AppPlugin {
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
                         prevent_default_event_handling: true,
-                        resolution: WindowResolution::new(1280.0, 1280.0),
+                        resolution: WindowResolution::new(720.0, 720.0),
                         ..default()
                     }
                     .into(),
