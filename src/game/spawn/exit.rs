@@ -109,6 +109,7 @@ fn open_locked_doors(
                 });
 
                 if let Ok(key) = key.get_single() {
+                    info!("Despawning key {:?}", &key);
                     commands.entity(key).despawn();
                 }
             }

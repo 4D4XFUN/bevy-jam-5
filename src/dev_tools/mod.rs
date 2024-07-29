@@ -1,11 +1,12 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
+use crate::game::spawn::health::ReceiveDamage;
+use crate::game::spawn::player::Player;
+use crate::input::DevActionToggles;
+use crate::screen::Screen;
 use bevy::{dev_tools::states::log_transitions, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use leafwing_input_manager::prelude::*;
-
-use crate::input::DevActionToggles;
-use crate::screen::Screen;
 
 pub mod grid_overlay;
 
@@ -19,7 +20,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, log_transitions::<DebugOverlaysState>);
     app.add_systems(Startup, spawn_dev_input_manager);
 
-    app.add_systems(Update, toggle_debug_overlays);
+    app.add_systems(Update, (toggle_debug_overlays, kill_player));
 
     // press F1 in dev builds to open an entity inspector
     app.init_state::<WorldInspectorState>()
@@ -74,6 +75,21 @@ pub fn toggle_debug_overlays(
                 DebugOverlaysState::Disabled => DebugOverlaysState::Enabled,
                 DebugOverlaysState::Enabled => DebugOverlaysState::Disabled,
             });
+        }
+    }
+}
+
+fn kill_player(
+    mut commands: Commands,
+    query: Query<&ActionState<DevActionToggles>>,
+    player_query: Query<Entity, With<Player>>,
+) {
+    for act in query.iter() {
+        if act.just_pressed(&DevActionToggles::KillPlayer) {
+            let Ok(receiver) = player_query.get_single() else {
+                return;
+            };
+            commands.trigger_targets(ReceiveDamage, receiver);
         }
     }
 }
