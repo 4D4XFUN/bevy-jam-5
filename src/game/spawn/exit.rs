@@ -95,6 +95,13 @@ fn open_locked_doors(
         return;
     };
 
+    let Ok(player) = players.get_single() else {
+        return;
+    };
+
+    if intersect(exit, player) {
+        commands.trigger(Sfx::Win);
+        commands.trigger(EndGameCondition::Win);
     if picked_up_keys.0 > 0 {
         for (entity, mut visibility, transform, aabb) in &mut door_query {
             if intersect(player, (transform, aabb)) {

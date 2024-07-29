@@ -229,6 +229,7 @@ fn detect_player(
                 > ENEMY_CHASE_RANGE
         {
             commands.entity(enemy_entity).remove::<CanSeePlayer>();
+            commands.trigger(Sfx::LostPlayer);
             commands.trigger(ShowDialogEvent {
                 entity: enemy_entity,
                 dialog_type: ShowDialogType::RandomLine(DialogLineType::EnemyLosesPlayer),
