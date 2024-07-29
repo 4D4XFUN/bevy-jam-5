@@ -108,9 +108,10 @@ fn open_locked_doors(
                     dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerUnlocksDoor),
                 });
 
-                if let Ok(key) = key.get_single() {
+                let keys: Vec<_> = key.iter().collect();
+                if let Some(key) = keys.first() {
                     info!("Despawning key {:?}", &key);
-                    commands.entity(key).despawn();
+                    commands.entity(*key).despawn();
                 }
             }
         }
