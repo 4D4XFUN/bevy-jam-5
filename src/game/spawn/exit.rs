@@ -2,12 +2,12 @@ use bevy::{prelude::*, render::primitives::Aabb};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
+use super::player::Player;
+use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::keys::{CanPickup, Key};
 use crate::game::spawn::level::BlocksMovement;
 use crate::game::{grid::GridPosition, utilities::intersect};
-use crate::game::dialog::{ShowDialogEvent, ShowDialogType, DialogLineType};
-use super::player::Player;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, open_locked_doors);
