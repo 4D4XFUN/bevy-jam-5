@@ -4,6 +4,7 @@ use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 use crate::game::{grid::GridPosition, utilities::intersect};
 use crate::game::line_of_sight::BlocksVision;
+use crate::game::spawn::keys::{CanPickup, Key};
 use crate::game::spawn::level::BlocksMovement;
 
 use super::player::Player;
@@ -11,6 +12,9 @@ use super::player::Player;
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, open_locked_doors);
     app.register_ldtk_entity::<LdtkLockedDoorBundle>("DoorLocked");
+    app.init_resource::<NumKeysPickedUp>();
+
+    app.register_type::<NumKeysPickedUp>();
 }
 
 #[derive(Event)]
@@ -69,7 +73,8 @@ impl LockedDoorBundle {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
 pub struct NumKeysPickedUp(pub i32);
 
 fn open_locked_doors(
@@ -83,6 +88,7 @@ fn open_locked_doors(
             With<BlocksVision>,
         ),
     >,
+    key: Query<Entity, (With<Key>, Without<CanPickup>)>,
     mut commands: Commands,
 ) {
     let Ok(player) = player_query.get_single() else {
@@ -96,6 +102,9 @@ fn open_locked_doors(
                 commands.entity(entity).remove::<BlocksVision>();
                 *visibility = Visibility::Hidden;
                 picked_up_keys.0 -= 1;
+                if let Ok(key) = key.get_single() {
+                    commands.entity(key).despawn();
+                }
             }
         }
     }

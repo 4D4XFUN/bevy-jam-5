@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+use crate::game::line_of_sight::BlocksVision;
+
 use super::level::BlocksMovement;
 
 pub fn plugin(app: &mut App) {
@@ -29,4 +31,5 @@ struct LdtkBarsBundle {
     #[grid_coords]
     grid_coords: GridCoords,
     wall: BlocksMovement,
+    blocks_vision: BlocksVision,
 }

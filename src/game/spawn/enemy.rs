@@ -32,7 +32,7 @@ pub(super) fn plugin(app: &mut App) {
     // systems
     app.add_systems(
         Update,
-        (detect_player, return_to_post, follow_player, rotate_facing)
+        (detect_player, return_to_post, follow_player)
             .chain()
             .run_if(in_state(Screen::Playing))
             .in_set(AppSet::Update),
@@ -130,7 +130,7 @@ impl EnemyBundle {
                     }
                     let facing = match next_waypoint {
                         None => Facing::default(),
-                        Some(last_point) => Facing((last_point - p).as_vec2()),
+                        Some(next_point) => Facing((next_point - p).as_vec2()),
                     };
                     patrol_nodes.push(PatrolWaypoint {
                         position: GridPosition::new(p.x as f32, 64.0 - p.y as f32 - 1.),
