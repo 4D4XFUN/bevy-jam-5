@@ -2,14 +2,13 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
-use crate::AppSet;
-use crate::game::ai::{AiState, HasAiState, Hunter};
-use crate::game::ai::AiState::{Chasing, ReturnedToPost};
 use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
+use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::game::ai::{AiState, HasAiState, Hunter};
 use crate::game::animation::{PlayerAnimation, PlayerAnimationState};
 use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::audio::sfx::Sfx;
@@ -24,6 +23,7 @@ use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 use crate::screen::Screen;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -182,6 +182,7 @@ impl EnemyBundle {
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
 
+#[allow(dead_code)]
 fn rotate_facing(
     mut query: Query<(&mut Facing, &HasAiState), (With<Enemy>, Without<CanSeePlayer>)>,
     time: Res<Time>,
