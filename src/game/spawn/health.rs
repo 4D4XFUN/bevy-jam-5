@@ -14,7 +14,10 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<CanReceiveDamage>();
     app.register_type::<CanApplyDamage>();
     app.register_type::<Health>();
-    // app.add_systems( Update, apply_damage_on_collision.in_set(AppSet::UpdateWorld), );
+    app.add_systems(
+        Update,
+        apply_damage_on_collision.in_set(AppSet::UpdateWorld),
+    );
     app.observe(on_receive_damage);
 }
 
