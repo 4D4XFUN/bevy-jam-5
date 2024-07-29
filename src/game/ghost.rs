@@ -31,7 +31,7 @@ pub fn plugin(app: &mut App) {
     app.insert_resource(CurrentRecordQueue::new());
     app.insert_resource(GhostQueue {
         ghosts: VecDeque::new(),
-        max_ghosts: 9000,
+        max_ghosts: 10,
     });
     app.add_systems(
         FixedUpdate,
@@ -42,6 +42,9 @@ pub fn plugin(app: &mut App) {
     app.observe(on_death_reset_ghosts);
     app.observe(clean_up);
 }
+
+#[derive(Event)]
+struct PleaseResetGhostsNow;
 
 fn record_intent(
     mut ghost_records: ResMut<CurrentRecordQueue>,
@@ -174,10 +177,11 @@ fn on_death_spawn_new_ghost(
     }
 
     current_record_queue.0.records.clear();
+    commands.trigger(PleaseResetGhostsNow);
 }
 
 fn on_death_reset_ghosts(
-    _trigger: Trigger<OnDeath>,
+    _trigger: Trigger<PleaseResetGhostsNow>,
     spawn_points: Query<&SpawnPointGridPosition>,
     mut alive_ghosts: Query<
         (&mut GridPosition, &mut GhostRecordQueue),
