@@ -16,6 +16,7 @@ pub(super) fn play_sfx(trigger: Trigger<Sfx>, mut commands: Commands, sfxs: Res<
         Sfx::KeyPickup => &sfxs[&SfxAsset::KeyPickup],
         Sfx::KeyDrop => &sfxs[&SfxAsset::KeyDrop],
         Sfx::Door => &sfxs[&SfxAsset::Door],
+        Sfx::Win => &sfxs[&SfxAsset::Win],
 
     }
     .clone_weak();

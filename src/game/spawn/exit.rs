@@ -2,10 +2,7 @@ use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
     game::{
-        assets::{ImageAsset, ImageAssets},
-        end_game::EndGameCondition,
-        grid::GridPosition,
-        utilities::intersect,
+        assets::{ImageAsset, ImageAssets}, audio::sfx::Sfx, end_game::EndGameCondition, grid::GridPosition, utilities::intersect
     },
     screen::Screen,
 };
@@ -97,6 +94,7 @@ fn check_exit(
     };
 
     if intersect(exit, player) {
+        commands.trigger(Sfx::Win);
         commands.trigger(EndGameCondition::Win);
     }
 }
