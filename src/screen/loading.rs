@@ -5,13 +5,15 @@ use bevy::prelude::*;
 
 use super::Screen;
 use crate::{
-    game::assets::{ImageAssets, SfxAssets, SoundtrackAssets},
+    game::{assets::{ImageAssets, SfxAssets, SoundtrackAssets}, spawn::health::OnDeath},
     ui::prelude::*,
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Loading), enter_loading);
     app.add_systems(Update, check_all_loaded.run_if(in_state(Screen::Loading)));
+
+    app.observe(check_all_loaded_on_death);
 }
 
 fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -42,4 +44,20 @@ fn check_all_loaded(
     if all_loaded {
         next_screen.set(Screen::Playing);
     }
+}
+
+fn check_all_loaded_on_death(
+    _trigger: Trigger<OnDeath>,
+    image_assets: Res<Assets<Image>>,
+    audio_assets: Res<Assets<AudioSource>>,
+    images: Res<ImageAssets>,
+    sfxs: Res<SfxAssets>,
+    soundtracks: Res<SoundtrackAssets>,
+    mut next_screen: ResMut<NextState<Screen>>,
+) {
+    if images.all_loaded(&image_assets)
+        && sfxs.all_loaded(&audio_assets)
+        && soundtracks.all_loaded(&audio_assets) {
+            next_screen.set(Screen::Playing);
+        }
 }
