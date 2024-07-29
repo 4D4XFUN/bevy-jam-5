@@ -5,15 +5,15 @@ use bevy::core::Name;
 use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
-use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
 use crate::game::audio::sfx::Sfx;
 use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::end_game::EndGameCondition;
 use crate::game::grid::GridPosition;
-use crate::game::line_of_sight::{CanRevealFog, PlayerLineOfSightBundle};
 use crate::game::line_of_sight::vision::VisionAbility;
+use crate::game::line_of_sight::{CanRevealFog, PlayerLineOfSightBundle};
 use crate::game::spawn::enemy::SpawnCoords;
 use crate::game::spawn::exit::NumKeysPickedUp;
 use crate::game::spawn::health::OnDeath;
@@ -70,7 +70,7 @@ impl KeyBundle {
                 facing: Default::default(),
                 can_reveal_fog: CanRevealFog,
                 vision_ability: VisionAbility {
-                    field_of_view_radians: 2. * consts::PI,
+                    field_of_view_radians: 2.0 * consts::PI,
                     range_in_grid_units: 1.0,
                 },
                 facing_walls_cache: Default::default(),

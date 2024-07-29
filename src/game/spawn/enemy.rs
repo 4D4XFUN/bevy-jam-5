@@ -2,14 +2,13 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
+use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundle};
 
-use crate::AppSet;
-use crate::game::ai::{AiState, HasAiState, Hunter};
-use crate::game::ai::AiState::{Chasing, ReturnedToPost};
 use crate::game::ai::patrol::{PatrolBundle, PatrolMode, PatrolRoute, PatrolState, PatrolWaypoint};
+use crate::game::ai::AiState::{Chasing, ReturnedToPost};
+use crate::game::ai::{AiState, HasAiState, Hunter};
 use crate::game::animation::{PlayerAnimation, PlayerAnimationState};
 use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::audio::sfx::Sfx;
@@ -24,6 +23,7 @@ use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
 use crate::game::threat::{ThreatTimer, ThreatTimerSettings};
 use crate::screen::Screen;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     // spawning
@@ -116,27 +116,31 @@ impl EnemyBundle {
         let mut patrol_nodes: Vec<PatrolWaypoint> = vec![];
         for field in instance.field_instances.clone() {
             if let FieldValue::Points(points) = field.value {
-                let mut next_waypoint: Option<IVec2>;
                 if points.is_empty() {
                     ai = AiState::Idle;
                     break;
                 }
                 for (i, point) in points.iter().enumerate() {
                     let p = point.unwrap();
-                    if points.len() > i + 1 {
-                        next_waypoint = points[i];
-                    } else {
+                    let next_waypoint: Option<IVec2>;
+                    if i == points.len() - 1 {
                         next_waypoint = points[0];
+                    } else {
+                        next_waypoint = points[i + 1];
                     }
                     let facing = match next_waypoint {
                         None => Facing::default(),
-                        Some(next_point) => Facing((next_point - p).as_vec2()),
+                        Some(next_point) => {
+                            let direction = IVec2::new(next_point.x - p.x, p.y - next_point.y);
+                            Facing(direction.as_vec2())
+                        }
                     };
                     patrol_nodes.push(PatrolWaypoint {
                         position: GridPosition::new(p.x as f32, 64.0 - p.y as f32 - 1.),
                         facing,
                         wait_time: DEFAULT_WAYPOINT_WAIT_TIME,
                     });
+
                     ai = AiState::Patrolling;
                 }
             }

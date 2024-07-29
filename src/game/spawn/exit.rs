@@ -3,8 +3,6 @@ use bevy_ecs_ldtk::{EntityInstance, GridCoords, LdtkEntity, LdtkSpriteSheetBundl
 use bevy_ecs_ldtk::prelude::LdtkEntityAppExt;
 
 use crate::game::{grid::GridPosition, utilities::intersect};
-use crate::game::audio::sfx::Sfx;
-use crate::game::end_game::EndGameCondition;
 use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::keys::{CanPickup, Key};
 use crate::game::spawn::level::BlocksMovement;
