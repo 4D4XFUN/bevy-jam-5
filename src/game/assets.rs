@@ -60,8 +60,11 @@ pub enum SfxAsset {
     Roll,
     Death,
     Detected,
+    LostPlayer,
     KeyPickup,
     KeyDrop,
+    Door,
+    Win,
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
@@ -92,6 +95,11 @@ impl SfxAssets {
         );
 
         assets.insert(
+            SfxAsset::LostPlayer,
+            asset_server.load("audio/sfx/enemy_loses_player.ogg"),
+        );
+
+        assets.insert(
             SfxAsset::KeyPickup,
             asset_server.load("audio/sfx/key_collect.ogg"),
         );
@@ -99,6 +107,9 @@ impl SfxAssets {
             SfxAsset::KeyDrop,
             asset_server.load("audio/sfx/key_drop.ogg"),
         );
+
+        assets.insert(SfxAsset::Door, asset_server.load("audio/sfx/door.ogg"));
+        assets.insert(SfxAsset::Win, asset_server.load("audio/sfx/win.ogg"));
 
         Self(assets)
     }

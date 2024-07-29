@@ -15,6 +15,7 @@ use crate::AppSet;
 use super::audio::sfx::Sfx;
 use super::movement::RollState;
 use super::spawn::health::OnDeath;
+use super::spawn::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
     // Animate and play sound effects based on controls.
@@ -83,7 +84,7 @@ fn update_animation_atlas(mut query: Query<(&PlayerAnimation, &mut TextureAtlas)
 }
 
 /// If the player is moving, play a step sound effect synchronized with the animation.
-fn trigger_step_sfx(mut commands: Commands, mut step_query: Query<&PlayerAnimation>) {
+fn trigger_step_sfx(mut commands: Commands, mut step_query: Query<&PlayerAnimation, With<Player>>) {
     for animation in &mut step_query {
         if animation.state == PlayerAnimationState::Walking
             && animation.changed()
@@ -95,7 +96,7 @@ fn trigger_step_sfx(mut commands: Commands, mut step_query: Query<&PlayerAnimati
 }
 
 // If the player is rolling, play a roll sound effect.
-fn trigger_roll_sfx(mut commands: Commands, mut roll_query: Query<&PlayerAnimation>) {
+fn trigger_roll_sfx(mut commands: Commands, mut roll_query: Query<&PlayerAnimation, With<Player>>) {
     for animation in &mut roll_query {
         if animation.state == PlayerAnimationState::Rolling
             && animation.changed()

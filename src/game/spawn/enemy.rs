@@ -12,10 +12,12 @@ use crate::game::ai::{AiState, HasAiState, Hunter};
 use crate::game::animation::{PlayerAnimation, PlayerAnimationState};
 use crate::game::assets::{ImageAsset, ImageAssets};
 use crate::game::audio::sfx::Sfx;
+use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::vision::{
     Facing, VisibleSquares, VisionAbility, VisionArchetype, VisionBundle,
 };
+use crate::game::line_of_sight::vision_cones::RenderedFieldOfView;
 use crate::game::movement::GridMovement;
 use crate::game::spawn::health::{CanApplyDamage, OnDeath};
 use crate::game::spawn::player::Player;
@@ -88,6 +90,7 @@ struct EnemyBundle {
     can_damage: CanApplyDamage,
     marker: Enemy,
     vision: VisionBundle,
+    rendered_field_of_view: RenderedFieldOfView,
     role: Hunter,
     ai_state: HasAiState,
     patrol_bundle: PatrolBundle,
@@ -149,6 +152,7 @@ impl EnemyBundle {
                 vision_ability: VisionAbility::of(vision_archetype),
                 ..default()
             },
+            rendered_field_of_view: RenderedFieldOfView,
             role: Hunter,
             ai_state: HasAiState {
                 current_state: ai,
@@ -225,12 +229,21 @@ fn detect_player(
                 > ENEMY_CHASE_RANGE
         {
             commands.entity(enemy_entity).remove::<CanSeePlayer>();
+            commands.trigger(Sfx::LostPlayer);
+            commands.trigger(ShowDialogEvent {
+                entity: enemy_entity,
+                dialog_type: ShowDialogType::RandomLine(DialogLineType::EnemyLosesPlayer),
+            });
         }
     }
     for (enemy_entity, enemy_vision) in &unaware_enemies {
         if enemy_vision.contains(player_grid_pos) {
             commands.entity(enemy_entity).insert(CanSeePlayer);
             commands.trigger(Sfx::Detected);
+            commands.trigger(ShowDialogEvent {
+                entity: enemy_entity,
+                dialog_type: ShowDialogType::RandomLine(DialogLineType::EnemySpotsPlayer),
+            });
         }
     }
 }
