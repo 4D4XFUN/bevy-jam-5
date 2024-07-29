@@ -121,7 +121,7 @@ fn setup_fog_of_war(
     // Create the material
     let rgb = (37., 19., 26.);
     let mut color = Color::srgb(rgb.0 / 255., rgb.1 / 255., rgb.2 / 255.);
-    let color = color.darker(0.005);
+    color = color.darker(0.005);
     let material = materials.add(FogOfWarMaterial {
         color: color.to_linear(),
         fog_texture: fog_texture_handle.clone(),
@@ -175,9 +175,7 @@ fn reveal_fog_of_war(
     grid: Res<GridLayout>,
     line_of_sight_query: Query<&VisibleSquares, With<CanRevealFog>>,
     mut fog_of_war_query: Query<&mut FogOfWar>,
-    time: Res<Time>,
 ) {
-    const REVEAL_SPEED: f32 = 12.0;
     let Ok(mut fog) = fog_of_war_query.get_single_mut() else {
         return;
     };

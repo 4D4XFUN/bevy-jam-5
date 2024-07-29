@@ -1,6 +1,6 @@
 //! The screen state for the main game loop.
 
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy::prelude::*;
 
 use crate::game::threat::ThreatTimer;
 use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
@@ -50,10 +50,6 @@ fn enter_playing(mut commands: Commands) {
 fn exit_playing(mut commands: Commands) {
     // We could use [`StateScoped`] on the sound playing entites instead.
     commands.trigger(Soundtrack::Disable);
-}
-
-pub(crate) fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::Title);
 }
 
 fn update_timer(

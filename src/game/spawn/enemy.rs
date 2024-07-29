@@ -316,7 +316,7 @@ fn on_death_reset_enemies(
     >,
     mut commands: Commands,
 ) {
-    for (enemy, mut pos, spawn_point, mut facing, mut maybe_patrol) in &mut query {
+    for (enemy, mut pos, spawn_point, mut facing, maybe_patrol) in &mut query {
         *pos = spawn_point.0;
         facing.0 = Vec2::new(1., 0.);
         commands.entity(enemy).remove::<CanSeePlayer>();
