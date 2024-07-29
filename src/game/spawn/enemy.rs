@@ -305,13 +305,16 @@ pub(crate) fn follow_player(
 
 fn on_death_reset_enemies(
     _trigger: Trigger<OnDeath>,
-    mut query: Query<(Entity, &mut GridPosition, &SpawnCoords, &mut Facing), With<Enemy>>,
+    mut query: Query<(Entity, &mut GridPosition, &SpawnCoords, &mut Facing, Option<&mut PatrolState>), With<Enemy>>,
     mut commands: Commands,
 ) {
-    for (enemy, mut pos, spawn_point, mut facing) in &mut query {
+    for (enemy, mut pos, spawn_point, mut facing, mut maybe_patrol) in &mut query {
         *pos = spawn_point.0;
         facing.0 = Vec2::new(1., 0.);
         commands.entity(enemy).remove::<CanSeePlayer>();
+        if let Some(mut patrol) = maybe_patrol {
+            patrol.current_waypoint = 0;
+        }
     }
 }
 
