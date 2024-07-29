@@ -23,11 +23,7 @@ impl ImageAssets {
         let mut assets = HashMap::new();
 
         for (path, image_asset_tag) in [
-            ("images/ducky.png", ImageAsset::Ducky),
-            ("images/crab.png", ImageAsset::Crab),
-            ("images/robo_crab.png", ImageAsset::RoboCrab),
             ("images/character_animated.png", ImageAsset::Player),
-            ("images/gargoyle.png", ImageAsset::Gargoyle),
             ("images/skeleton.png", ImageAsset::Skeleton),
             ("atlas/Dungeon_item_props_v2.png", ImageAsset::Decoration),
         ] {
