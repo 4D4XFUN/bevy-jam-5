@@ -4,21 +4,19 @@ use std::collections::HashSet;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::LdtkProject;
-use bevy_ecs_ldtk::prelude::{LdtkEntityAppExt, LdtkIntCellAppExt, LevelMetadataAccessor};
+use bevy_ecs_ldtk::prelude::{LdtkIntCellAppExt, LevelMetadataAccessor};
 use bevy_ecs_ldtk::{GridCoords, LdtkIntCell, LevelEvent};
 
 use crate::game::grid::GridPosition;
 use crate::game::line_of_sight::front_facing_edges::RebuildCache;
 use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::enemy::SpawnEnemyTrigger;
-use crate::game::spawn::ldtk::LdtkEntityBundle;
 
 use super::exit::SpawnExitTrigger;
 use super::player::SpawnPlayerTrigger;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
-    app.register_ldtk_entity::<LdtkEntityBundle>("Goal");
     app.register_ldtk_int_cell::<WallBundle>(1);
     app.register_ldtk_int_cell::<GroundBundle>(2);
     app.init_resource::<LevelWalls>();

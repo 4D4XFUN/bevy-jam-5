@@ -8,6 +8,7 @@ mod bars;
 mod door;
 pub(crate) mod enemy;
 mod exit;
+mod goal;
 pub mod health;
 pub(crate) mod keys;
 mod ldtk;
@@ -24,5 +25,6 @@ pub(super) fn plugin(app: &mut App) {
         exit::plugin,
         door::plugin,
         bars::plugin,
+        goal::plugin,
     ));
 }
