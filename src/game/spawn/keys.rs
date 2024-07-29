@@ -133,16 +133,21 @@ fn pickup_key(
 
 pub fn on_death_respawn_key(
     _trigger: Trigger<OnDeath>,
-    mut keys: Query<(Entity, &mut GridPosition, &SpawnCoords), (With<Key>, Without<CanPickup>)>,
+    mut keys: Query<
+        (Entity, &mut Transform, &mut GridPosition, &SpawnCoords),
+        (With<Key>, Without<CanPickup>),
+    >,
     mut commands: Commands,
     mut num_keys_picked_up: ResMut<NumKeysPickedUp>,
 ) {
-    for (key_entity, mut grid_pos, spawn_coords) in &mut keys {
+    for (key_entity, mut transform, mut grid_pos, spawn_coords) in &mut keys {
         let coordinates = spawn_coords.0.coordinates;
         commands.entity(key_entity).insert(CanPickup);
 
         grid_pos.coordinates = coordinates;
         grid_pos.offset = Vec2::ZERO;
+
+        transform.translation.z = 20.;
 
         commands.trigger(Sfx::KeyDrop);
         num_keys_picked_up.0 = 0;
