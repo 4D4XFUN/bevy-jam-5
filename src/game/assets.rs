@@ -94,7 +94,10 @@ impl SfxAssets {
             asset_server.load("audio/sfx/enemy_detect.ogg"),
         );
 
-        assets.insert(SfxAsset::LostPlayer, asset_server.load("audio/sfx/enemy_loses_player.ogg"));
+        assets.insert(
+            SfxAsset::LostPlayer,
+            asset_server.load("audio/sfx/enemy_loses_player.ogg"),
+        );
 
         assets.insert(
             SfxAsset::KeyPickup,

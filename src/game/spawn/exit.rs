@@ -2,7 +2,11 @@ use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
     game::{
-        assets::{ImageAsset, ImageAssets}, audio::sfx::Sfx, end_game::EndGameCondition, grid::GridPosition, utilities::intersect
+        assets::{ImageAsset, ImageAssets},
+        audio::sfx::Sfx,
+        end_game::EndGameCondition,
+        grid::GridPosition,
+        utilities::intersect,
     },
     screen::Screen,
 };
