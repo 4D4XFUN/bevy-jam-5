@@ -6,6 +6,16 @@ use crate::game::{grid::GridPosition, utilities::intersect};
 use crate::game::line_of_sight::BlocksVision;
 use crate::game::spawn::keys::{CanPickup, Key};
 use crate::game::spawn::level::BlocksMovement;
+use crate::{
+    game::{
+        assets::{ImageAsset, ImageAssets},
+        audio::sfx::Sfx,
+        end_game::EndGameCondition,
+        grid::GridPosition,
+        utilities::intersect,
+    },
+    screen::Screen,
+};
 
 use super::player::Player;
 
@@ -178,3 +188,21 @@ const LADDER_INDEX: usize = 4 * 12;
 //         commands.trigger(EndGameCondition::Win);
 //     }
 // }
+fn check_exit(
+    exits: Query<(&Transform, &Aabb), (With<Exit>, With<CanBeUnlocked>)>,
+    players: Query<(&Transform, &Aabb), With<Player>>,
+    mut commands: Commands,
+) {
+    let Ok(exit) = exits.get_single() else {
+        return;
+    };
+
+    let Ok(player) = players.get_single() else {
+        return;
+    };
+
+    if intersect(exit, player) {
+        commands.trigger(Sfx::Win);
+        commands.trigger(EndGameCondition::Win);
+    }
+}
