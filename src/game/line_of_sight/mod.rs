@@ -17,6 +17,7 @@ pub mod vision_cones;
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((front_facing_edges::plugin, fog_of_war::plugin));
     app.add_plugins(vision::plugin);
+    app.add_plugins(vision_cones::plugin);
     app.observe(rebuild_vision_cache_on_remove);
     app.observe(rebuild_vision_cache_on_add);
 }
