@@ -11,6 +11,7 @@ use crate::game::spawn::player::Player;
 use crate::input::PlayerAction;
 use crate::AppSet;
 
+use super::line_of_sight::front_facing_edges::RebuildCache;
 use super::spawn::health::OnDeath;
 
 pub fn plugin(app: &mut App) {
@@ -117,9 +118,12 @@ pub fn apply_movement(
     mut query: Query<(&mut GridPosition, &mut GridMovement, Option<&RollState>)>,
     time: Res<Time>,
     walls: Res<LevelWalls>,
+    mut commands: Commands,
 ) {
     let dt = time.delta_seconds();
     for (mut position, mut movement, maybe_roll) in query.iter_mut() {
+        let prev_x = position.coordinates.x;
+        let prev_y = position.coordinates.y;
         let force = movement.current_force() * dt; // scale it by time
 
         // apply forces and friction
@@ -188,6 +192,10 @@ pub fn apply_movement(
         // apply the movement to our actual position
         position.coordinates = next_pos.coordinates;
         position.offset = next_pos.offset;
+
+        if prev_x != position.coordinates.x || prev_y != position.coordinates.y {
+            commands.trigger(RebuildCache);
+        }
     }
 }
 

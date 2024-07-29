@@ -1,3 +1,5 @@
+use std::f32::consts;
+
 use bevy::app::{App, Update};
 use bevy::core::Name;
 use bevy::math::Vec3;
@@ -10,7 +12,10 @@ use crate::game::audio::sfx::Sfx;
 use crate::game::dialog::{DialogLineType, ShowDialogEvent, ShowDialogType};
 use crate::game::end_game::EndGameCondition;
 use crate::game::grid::GridPosition;
+use crate::game::line_of_sight::vision::VisionAbility;
+use crate::game::line_of_sight::{CanRevealFog, PlayerLineOfSightBundle};
 use crate::game::spawn::enemy::SpawnCoords;
+use crate::game::spawn::exit::NumKeysPickedUp;
 use crate::game::spawn::health::OnDeath;
 use crate::game::utilities::intersect;
 
@@ -26,7 +31,7 @@ pub(super) fn plugin(app: &mut App) {
     // reflection
     app.register_type::<Key>();
     app.observe(on_end_game_reset_keys);
-    app.observe(on_death_drop_key);
+    app.observe(on_death_respawn_key);
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -52,6 +57,7 @@ struct KeyBundle {
     spawn_coords: SpawnCoords,
     grid_position: GridPosition,
     can_pickup: CanPickup,
+    player_line_of_sight_bundle: PlayerLineOfSightBundle,
 }
 
 impl KeyBundle {
@@ -60,6 +66,16 @@ impl KeyBundle {
             spawn_coords: SpawnCoords(GridPosition::new(x, y)),
             grid_position: GridPosition::new(x, y),
             can_pickup: CanPickup,
+            player_line_of_sight_bundle: PlayerLineOfSightBundle {
+                facing: Default::default(),
+                can_reveal_fog: CanRevealFog,
+                vision_ability: VisionAbility {
+                    field_of_view_radians: 2.0 * consts::PI,
+                    range_in_grid_units: 1.0,
+                },
+                facing_walls_cache: Default::default(),
+                visible_squares: Default::default(),
+            },
         }
     }
 }
@@ -94,6 +110,7 @@ fn pickup_key(
     player: Query<(Entity, &Transform, &Aabb), (With<Player>, Without<Key>)>,
     mut keys: Query<(Entity, &mut Transform, &Aabb), (With<Key>, With<CanPickup>)>,
     mut commands: Commands,
+    mut picked_up_keys: ResMut<NumKeysPickedUp>,
 ) {
     let Ok((player_ent, player_transform, player_aabb)) = player.get_single() else {
         return;
@@ -109,24 +126,26 @@ fn pickup_key(
                 entity: player_ent,
                 dialog_type: ShowDialogType::NextLine(DialogLineType::PlayerFindsKey),
             });
+            picked_up_keys.0 += 1;
         }
     }
 }
 
-pub fn on_death_drop_key(
-    trigger: Trigger<OnDeath>,
-    mut keys: Query<(Entity, &mut Transform), (With<Key>, Without<CanPickup>)>,
+pub fn on_death_respawn_key(
+    _trigger: Trigger<OnDeath>,
+    mut keys: Query<(Entity, &mut Transform, &SpawnCoords), With<Key>>,
     mut commands: Commands,
+    mut num_keys_picked_up: ResMut<NumKeysPickedUp>,
 ) {
-    let death = trigger.event();
-
-    for (key_entity, mut transform) in &mut keys {
+    for (key_entity, mut transform, spawn_coords) in &mut keys {
+        let coordinates = spawn_coords.0.coordinates;
         commands
             .entity(key_entity)
-            .insert(KeyBundle::new(death.0.x, death.0.y));
+            .insert(KeyBundle::new(coordinates.x, coordinates.y));
 
         transform.translation = Vec3::ZERO;
 
         commands.trigger(Sfx::KeyDrop);
+        num_keys_picked_up.0 = 0;
     }
 }

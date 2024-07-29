@@ -32,7 +32,7 @@ pub(super) fn plugin(app: &mut App) {
     // systems
     app.add_systems(
         Update,
-        (detect_player, return_to_post, follow_player, rotate_facing)
+        (detect_player, return_to_post, follow_player)
             .chain()
             .run_if(in_state(Screen::Playing))
             .in_set(AppSet::Update),
@@ -98,7 +98,7 @@ struct EnemyBundle {
 
 impl EnemyBundle {
     pub fn new(instance: &EntityInstance) -> Self {
-        const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(1, 0);
+        const DEFAULT_WAYPOINT_WAIT_TIME: Duration = Duration::new(5, 0);
         // todo delete this it's for testing - randomize types of enemies
         //let mut rng = rand::thread_rng();
         let is_sniper = false; //rng.gen_ratio(1, 3);
@@ -116,27 +116,31 @@ impl EnemyBundle {
         let mut patrol_nodes: Vec<PatrolWaypoint> = vec![];
         for field in instance.field_instances.clone() {
             if let FieldValue::Points(points) = field.value {
-                let mut next_waypoint: Option<IVec2>;
                 if points.is_empty() {
                     ai = AiState::Idle;
                     break;
                 }
                 for (i, point) in points.iter().enumerate() {
                     let p = point.unwrap();
-                    if points.len() > i + 1 {
-                        next_waypoint = points[i];
-                    } else {
+                    let next_waypoint: Option<IVec2>;
+                    if i == points.len() - 1 {
                         next_waypoint = points[0];
+                    } else {
+                        next_waypoint = points[i + 1];
                     }
                     let facing = match next_waypoint {
                         None => Facing::default(),
-                        Some(last_point) => Facing((last_point - p).as_vec2()),
+                        Some(next_point) => {
+                            let direction = IVec2::new(next_point.x - p.x, p.y - next_point.y);
+                            Facing(direction.as_vec2())
+                        }
                     };
                     patrol_nodes.push(PatrolWaypoint {
                         position: GridPosition::new(p.x as f32, 64.0 - p.y as f32 - 1.),
                         facing,
                         wait_time: DEFAULT_WAYPOINT_WAIT_TIME,
                     });
+
                     ai = AiState::Patrolling;
                 }
             }
@@ -178,6 +182,7 @@ impl EnemyBundle {
 #[derive(Event, Debug)]
 pub struct SpawnEnemyTrigger;
 
+#[allow(dead_code)]
 fn rotate_facing(
     mut query: Query<(&mut Facing, &HasAiState), (With<Enemy>, Without<CanSeePlayer>)>,
     time: Res<Time>,

@@ -4,6 +4,8 @@
 
 use bevy::prelude::*;
 
+mod bars;
+mod door;
 pub(crate) mod enemy;
 mod exit;
 pub mod health;
@@ -20,5 +22,7 @@ pub(super) fn plugin(app: &mut App) {
         enemy::plugin,
         keys::plugin,
         exit::plugin,
+        door::plugin,
+        bars::plugin,
     ));
 }

@@ -28,6 +28,7 @@ pub(super) fn play_sfx(trigger: Trigger<Sfx>, mut commands: Commands, sfxs: Res<
 
 /// Play a single sound effect.
 #[derive(Event)]
+#[allow(dead_code)]
 pub enum Sfx {
     ButtonHover,
     ButtonPress,
