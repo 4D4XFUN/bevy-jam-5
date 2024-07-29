@@ -305,7 +305,16 @@ pub(crate) fn follow_player(
 
 fn on_death_reset_enemies(
     _trigger: Trigger<OnDeath>,
-    mut query: Query<(Entity, &mut GridPosition, &SpawnCoords, &mut Facing, Option<&mut PatrolState>), With<Enemy>>,
+    mut query: Query<
+        (
+            Entity,
+            &mut GridPosition,
+            &SpawnCoords,
+            &mut Facing,
+            Option<&mut PatrolState>,
+        ),
+        With<Enemy>,
+    >,
     mut commands: Commands,
 ) {
     for (enemy, mut pos, spawn_point, mut facing, mut maybe_patrol) in &mut query {
