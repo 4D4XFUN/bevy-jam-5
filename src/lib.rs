@@ -42,7 +42,10 @@ impl Plugin for AppPlugin {
         app.insert_resource(LevelSelection::index(0));
 
         // Set background color
-        app.insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)));
+        let rgb = (37., 19., 26.);
+        let color = Color::srgb(rgb.0 / 255., rgb.1 / 255., rgb.2 / 255.);
+        let color = color.darker(0.005);
+        app.insert_resource(ClearColor(color));
 
         // Add Bevy plugins.
         app.add_plugins(

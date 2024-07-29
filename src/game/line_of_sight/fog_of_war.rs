@@ -26,6 +26,8 @@ pub(super) fn plugin(app: &mut App) {
             .chain()
             .in_set(AppSet::UpdateFog),
     );
+
+    // app.register_type::<FogOfWarMaterial>();
 }
 
 #[derive(Component)]
@@ -117,8 +119,11 @@ fn setup_fog_of_war(
     let fog_texture_handle = images.add(fog_texture);
 
     // Create the material
+    let rgb = (37., 19., 26.);
+    let mut color = Color::srgb(rgb.0 / 255., rgb.1 / 255., rgb.2 / 255.);
+    let color = color.darker(0.005);
     let material = materials.add(FogOfWarMaterial {
-        color: LinearRgba::BLACK,
+        color: color.to_linear(),
         fog_texture: fog_texture_handle.clone(),
     });
 
