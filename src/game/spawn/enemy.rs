@@ -122,12 +122,11 @@ impl EnemyBundle {
                 }
                 for (i, point) in points.iter().enumerate() {
                     let p = point.unwrap();
-                    let next_waypoint: Option<IVec2>;
-                    if i == points.len() - 1 {
-                        next_waypoint = points[0];
+                    let next_waypoint = if i == points.len() - 1 {
+                        points[0]
                     } else {
-                        next_waypoint = points[i + 1];
-                    }
+                        points[i + 1]
+                    };
                     let facing = match next_waypoint {
                         None => Facing::default(),
                         Some(next_point) => {
