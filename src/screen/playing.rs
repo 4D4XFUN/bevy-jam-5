@@ -2,8 +2,8 @@
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
-use crate::game::threat::ThreatTimer;
 use crate::game::{audio::soundtrack::Soundtrack, spawn::level::SpawnLevel};
+use crate::game::threat::ThreatTimer;
 use crate::ui::prelude::*;
 
 use super::Screen;
@@ -35,7 +35,7 @@ fn enter_playing(mut commands: Commands) {
                     TextBundle::from_section(
                         "TempText".to_string(),
                         TextStyle {
-                            font_size: 40.0,
+                            font_size: 30.0,
                             ..default()
                         },
                     )
